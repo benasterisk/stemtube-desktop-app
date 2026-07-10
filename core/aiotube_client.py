@@ -1,0 +1,656 @@
+"""
+YouTube API client using aiotube for StemTubes application.
+Alternative implementation that doesn't require an API key.
+"""
+import os
+import json
+import time
+import threading
+from typing import Dict, List, Any, Optional, Tuple
+from pathlib import Path
+
+import yt_dlp
+import re
+import requests
+from bs4 import BeautifulSoup
+
+from .config import get_setting
+from .download_manager import get_youtube_cookies_config
+from .js_runtime import get_js_runtimes_config
+
+# Constants
+MAX_RESULTS_PER_PAGE = 50
+SEARCH_CACHE_DURATION = 86400  # 24 hours
+
+
+class YouTubeCache:
+    """Simple in-memory cache replacing Redis for desktop edition."""
+    _store: Dict[str, Tuple[float, Any]] = {}
+    _ttl = SEARCH_CACHE_DURATION
+
+    @classmethod
+    def _key(cls, *parts) -> str:
+        return ":".join(str(p) for p in parts)
+
+    @classmethod
+    def _get(cls, key: str):
+        entry = cls._store.get(key)
+        if entry and time.time() - entry[0] < cls._ttl:
+            return entry[1]
+        cls._store.pop(key, None)
+        return None
+
+    @classmethod
+    def _set(cls, key: str, value):
+        cls._store[key] = (time.time(), value)
+
+    @classmethod
+    def get_search(cls, query, max_results, page_token, filters):
+        return cls._get(cls._key("search", query, max_results, page_token, filters))
+
+    @classmethod
+    def set_search(cls, query, max_results, page_token, filters, data):
+        cls._set(cls._key("search", query, max_results, page_token, filters), data)
+
+    @classmethod
+    def get_video(cls, video_id):
+        return cls._get(cls._key("video", video_id))
+
+    @classmethod
+    def set_video(cls, video_id, data):
+        cls._set(cls._key("video", video_id), data)
+
+    @classmethod
+    def get_suggestions(cls, query):
+        return cls._get(cls._key("suggest", query))
+
+    @classmethod
+    def set_suggestions(cls, query, data):
+        cls._set(cls._key("suggest", query), data)
+
+
+class AiotubeClient:
+    """Client for interacting with YouTube using aiotube library."""
+
+    def __init__(self):
+        """Initialize the YouTube client with Redis cache."""
+        pass  # Redis cache is stateless — no init needed
+
+    def search_videos(self, query: str, max_results: int = 5, 
+                     page_token: Optional[str] = None, 
+                     filters: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Search for YouTube videos.
+
+        Args:
+            query: Search query.
+            max_results: Maximum number of results to return.
+            page_token: Token for pagination (not used with aiotube, kept for compatibility).
+            filters: Additional filters for the search (not used with aiotube, kept for compatibility).
+
+        Returns:
+            Dictionary containing search results and pagination info.
+        """
+        # Validate max_results (allow up to 50)
+        max_results = min(max(max_results, 1), 50)
+
+        # Check Redis cache
+        filters_str = json.dumps(filters or {}) if filters else "{}"
+        page_token_str = page_token or ""
+
+        cached = YouTubeCache.get_search(query, max_results, page_token_str, filters_str)
+        if cached:
+            return cached
+
+        try:
+            # Use yt-dlp to search for videos (aiotube and pytubefix are blocked by YouTube)
+            print(f"[YtDlpClient] Searching for '{query}' with limit={max_results}")
+
+            # Use yt-dlp search
+            ydl_opts = {
+                'quiet': True,
+                'extract_flat': True,
+                'no_warnings': True,
+            }
+            # Add cookies configuration (file or browser, with fallback)
+            ydl_opts.update(get_youtube_cookies_config())
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                search_results = ydl.extract_info(f"ytsearch{max_results}:{query}", download=False)
+
+            entries = search_results.get('entries', [])
+            print(f"[YtDlpClient] yt-dlp returned {len(entries)} results")
+
+            # Create a response structure similar to YouTube API
+            response = {
+                "items": [],
+                "pageInfo": {
+                    "totalResults": len(entries),
+                    "resultsPerPage": len(entries)
+                }
+            }
+
+            # Add video details for each result
+            for entry in entries:
+                try:
+                    video_id = entry.get('id', '')  # 11-char YouTube ID
+
+                    # DEBUG: Log each video_id from search results
+                    print(f"[YTDLP DEBUG] Processing video_id: '{video_id}' (length: {len(video_id)})")
+
+                    # Extract thumbnail URL - yt-dlp provides thumbnails array
+                    thumbnail_url = ""
+                    thumbnails = entry.get('thumbnails', [])
+                    if thumbnails:
+                        # Get medium quality thumbnail
+                        thumbnail_url = thumbnails[0].get('url', '')
+                        for t in thumbnails:
+                            if t.get('width', 0) >= 320 and t.get('width', 0) <= 480:
+                                thumbnail_url = t.get('url', '')
+                                break
+                    if not thumbnail_url:
+                        thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"
+
+                    # Clean up the thumbnail URL
+                    if thumbnail_url and '?' in thumbnail_url:
+                        thumbnail_url = thumbnail_url.split('?')[0]
+
+                    title = entry.get('title', '')
+
+                    # Debug: Show metadata to understand the structure
+                    print(f"DEBUG - Video ID: {video_id}")
+                    print(f"DEBUG - Thumbnail URL: {thumbnail_url}")
+                    print(f"DEBUG - Title: {title}")
+
+                    # Extract duration correctly
+                    duration = ""
+                    total_seconds = int(entry.get('duration', 0) or 0)
+                    if total_seconds > 0:
+                        # Convert seconds to detailed ISO 8601 format (with H, M, S as needed)
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds % 3600) // 60
+                        seconds = total_seconds % 60
+
+                        duration = "PT"
+                        if hours > 0:
+                            duration += f"{hours}H"
+                        if minutes > 0 or hours > 0:  # Include M even if 0 when there are hours
+                            duration += f"{minutes}M"
+                        duration += f"{seconds}S"
+
+                    # DEBUG: Log the video_id being returned
+                    print(f"[YTDLP DEBUG] Returning video_id: '{video_id}' with title: '{title[:50] if title else ''}...'")
+
+                    # Create a structure similar to YouTube API response
+                    item = {
+                        "id": video_id,
+                        "snippet": {
+                            "title": title,
+                            "channelTitle": entry.get('channel', '') or entry.get('uploader', ''),
+                            "publishedAt": entry.get('upload_date', '') or "",
+                            "thumbnails": {
+                                "medium": {
+                                    "url": thumbnail_url
+                                }
+                            }
+                        },
+                        "contentDetails": {
+                            "duration": duration
+                        },
+                        "statistics": {
+                            "viewCount": str(entry.get('view_count', 0) or 0),
+                            "likeCount": str(entry.get('like_count', 0) or 0)
+                        }
+                    }
+
+                    response["items"].append(item)
+                except Exception as e:
+                    print(f"Error getting video details: {e}")
+                    continue
+            
+            # Cache results in Redis
+            YouTubeCache.set_search(query, max_results, page_token_str, filters_str, response)
+
+            return response
+        except Exception as e:
+            print(f"Error searching videos: {e}")
+            return {"items": [], "error": str(e)}
+
+    def search_music(self, query: str, max_results: int = 10) -> Dict[str, Any]:
+        """Search YouTube Music for songs and albums using ytmusicapi.
+
+        Returns songs with proper artist/album metadata and album results
+        with individual track listings (not full-album single videos).
+        """
+        max_results = min(max(max_results, 1), 30)
+
+        try:
+            from ytmusicapi import YTMusic
+            ytm = YTMusic()
+            from core.db.downloads import find_global_download
+
+            response = {
+                "items": [],
+                "albums": [],
+                "pageInfo": {"totalResults": 0, "resultsPerPage": max_results},
+                "source": "ytmusic",
+            }
+
+            # Search songs
+            songs = ytm.search(query, filter='songs', limit=max_results)
+            for s in songs:
+                video_id = s.get('videoId', '')
+                if not video_id or len(video_id) != 11:
+                    continue
+
+                title = s.get('title', '')
+                artists = s.get('artists', [])
+                artist = artists[0]['name'] if artists else ''
+                album_info = s.get('album', {})
+                album_name = album_info.get('name', '') if album_info else ''
+                duration_str = s.get('duration', '')
+                total_seconds = self._parse_duration_str(duration_str)
+
+                # ISO duration
+                duration = ""
+                if total_seconds > 0:
+                    h, m, sec = total_seconds // 3600, (total_seconds % 3600) // 60, total_seconds % 60
+                    duration = "PT"
+                    if h: duration += f"{h}H"
+                    if m or h: duration += f"{m}M"
+                    duration += f"{sec}S"
+
+                thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"
+                thumbs = s.get('thumbnails', [])
+                if thumbs:
+                    thumbnail_url = thumbs[-1].get('url', thumbnail_url)
+
+                # Dedup check
+                already_in_library = False
+                try:
+                    if find_global_download(video_id, 'audio', 'best'):
+                        already_in_library = True
+                except Exception:
+                    pass
+
+                response["items"].append({
+                    "id": video_id,
+                    "snippet": {
+                        "title": title,
+                        "channelTitle": artist,
+                        "thumbnails": {"medium": {"url": thumbnail_url}},
+                    },
+                    "contentDetails": {"duration": duration},
+                    "musicMetadata": {
+                        "artist": artist,
+                        "album": album_name,
+                        "duration_seconds": total_seconds,
+                    },
+                    "already_in_library": already_in_library,
+                })
+
+            # Search albums (separate results)
+            albums = ytm.search(query, filter='albums', limit=min(max_results, 5))
+            for a in albums:
+                browse_id = a.get('browseId', '')
+                if not browse_id:
+                    continue
+                artists = a.get('artists', [])
+                artist = artists[0]['name'] if artists else ''
+                thumbs = a.get('thumbnails', [])
+                thumb = thumbs[-1]['url'] if thumbs else ''
+
+                response["albums"].append({
+                    "browse_id": browse_id,
+                    "title": a.get('title', ''),
+                    "artist": artist,
+                    "thumbnail": thumb,
+                    "year": a.get('year', ''),
+                    "type": "album",
+                })
+
+            response["pageInfo"]["totalResults"] = len(response["items"]) + len(response["albums"])
+            print(f"[YTMusic] Search '{query}': {len(response['items'])} songs, {len(response['albums'])} albums")
+            return response
+
+        except Exception as e:
+            print(f"[YTMusic] Search error: {e}")
+            return {"items": [], "albums": [], "error": str(e), "source": "ytmusic"}
+
+    def get_album_tracks(self, browse_id: str) -> Dict[str, Any]:
+        """Fetch all individual tracks from a YouTube Music album.
+
+        Returns album metadata + list of tracks with individual videoIds.
+        """
+        try:
+            from ytmusicapi import YTMusic
+            ytm = YTMusic()
+            album = ytm.get_album(browse_id)
+
+            artists = album.get('artists', [])
+            artist = artists[0]['name'] if artists else ''
+            thumbs = album.get('thumbnails', [])
+            thumb = thumbs[-1]['url'] if thumbs else ''
+
+            tracks = []
+            for t in album.get('tracks', []):
+                video_id = t.get('videoId', '')
+                if not video_id:
+                    continue
+                tracks.append({
+                    'video_id': video_id,
+                    'title': t.get('title', ''),
+                    'artist': artist,
+                    'album': album.get('title', ''),
+                    'duration': t.get('duration', ''),
+                    'track_number': t.get('trackNumber', 0),
+                })
+
+            return {
+                'success': True,
+                'title': album.get('title', ''),
+                'artist': artist,
+                'year': album.get('year', ''),
+                'thumbnail': thumb,
+                'track_count': len(tracks),
+                'tracks': tracks,
+            }
+        except Exception as e:
+            print(f"[YTMusic] Album fetch error: {e}")
+            return {'success': False, 'error': str(e)}
+
+    @staticmethod
+    def _parse_duration_str(dur_str):
+        """Parse '3:45' or '1:02:30' duration string to seconds."""
+        if not dur_str:
+            return 0
+        parts = dur_str.split(':')
+        try:
+            if len(parts) == 3:
+                return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+            elif len(parts) == 2:
+                return int(parts[0]) * 60 + int(parts[1])
+            return int(parts[0])
+        except (ValueError, IndexError):
+            return 0
+
+    def get_video_info(self, video_id: str) -> Dict[str, Any]:
+        """Get detailed information about a specific video."""
+        # Check if it's an ID or a URL
+        if "youtube.com/" in video_id or "youtu.be/" in video_id:
+            # It's a URL, let's try to extract the ID
+            print(f"YouTube URL detected: {video_id}", end="")
+            try:
+                # Extract video ID from URL
+                if "youtube.com/watch" in video_id:
+                    # Format standard: https://www.youtube.com/watch?v=VIDEO_ID
+                    match = re.search(r'v=([^&]+)', video_id)
+                    if match:
+                        video_id = match.group(1)
+                elif "youtu.be/" in video_id:
+                    # Short format: https://youtu.be/VIDEO_ID
+                    # Handle additional parameters like "si="
+                    match = re.search(r'youtu\.be/([^?&]+)', video_id)
+                    if match:
+                        video_id = match.group(1)
+                elif "youtube.com/embed/" in video_id:
+                    # Format embed: https://www.youtube.com/embed/VIDEO_ID
+                    match = re.search(r'embed/([^?&]+)', video_id)
+                    if match:
+                        video_id = match.group(1)
+                elif "youtube.com/shorts/" in video_id:
+                    # Format shorts: https://www.youtube.com/shorts/VIDEO_ID
+                    match = re.search(r'shorts/([^?&]+)', video_id)
+                    if match:
+                        video_id = match.group(1)
+                
+                print(f" -> Extracted ID: {video_id}")
+            except Exception as e:
+                print(f"Error extracting ID: {e}")
+                return {"error": f"Error extracting ID: {e}"}
+        
+        # Check Redis cache
+        cached = YouTubeCache.get_video(video_id)
+        if cached:
+            return cached
+
+        try:
+            # Detect if the ID starts with a dash causing issues with aiotube
+            if video_id.startswith('-'):
+                # Alternative approach for IDs starting with a dash
+                import requests
+                from bs4 import BeautifulSoup
+                
+                # Create a basic response with the ID
+                response = {
+                    "items": [{
+                        "id": {
+                            "videoId": video_id  # Format compatible with frontend (item.id.videoId)
+                        },
+                        "snippet": {
+                            "title": "",
+                            "description": "",
+                            "channelTitle": "",
+                            "publishedAt": "",
+                            "thumbnails": {
+                                "default": {"url": f"https://i.ytimg.com/vi/{video_id}/default.jpg"},
+                                "medium": {"url": f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"},
+                                "high": {"url": f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"}
+                            }
+                        },
+                        "contentDetails": {
+                            "duration": ""
+                        },
+                        "statistics": {
+                            "viewCount": "0",
+                            "likeCount": "0"
+                        }
+                    }]
+                }
+
+                # Try to retrieve at least the title from the YouTube page
+                try:
+                    url = f"https://www.youtube.com/watch?v={video_id}"
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                    r = requests.get(url, headers=headers)
+                    if r.status_code == 200:
+                        soup = BeautifulSoup(r.text, 'html.parser')
+                        # Search for title in different ways
+                        title = None
+                        # Method 1: title tag
+                        if soup.title:
+                            title_text = soup.title.string
+                            if ' - YouTube' in title_text:
+                                title = title_text.replace(' - YouTube', '')
+                        
+                        if title:
+                            response["items"][0]["snippet"]["title"] = title
+                except Exception as web_error:
+                    print(f"Error retrieving web information: {web_error}")
+                    # Continue with basic information, without stopping the process
+            else:
+                # Use yt-dlp for standard IDs (aiotube and pytubefix are blocked by YouTube)
+                url = f"https://www.youtube.com/watch?v={video_id}"
+
+                ydl_opts = {
+                    'quiet': True,
+                    'no_warnings': True,
+                    'js_runtimes': get_js_runtimes_config(),
+                }
+                # Add cookies configuration (file or browser, with fallback)
+                ydl_opts.update(get_youtube_cookies_config())
+
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+
+                # Extract thumbnail URL
+                thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"
+                thumbnails = info.get('thumbnails', [])
+                if thumbnails:
+                    for t in thumbnails:
+                        if t.get('width', 0) >= 320 and t.get('width', 0) <= 480:
+                            thumbnail_url = t.get('url', '')
+                            break
+                    if not thumbnail_url:
+                        thumbnail_url = thumbnails[-1].get('url', '') if thumbnails else f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"
+
+                # Clean up the thumbnail URL
+                if thumbnail_url and '?' in thumbnail_url:
+                    thumbnail_url = thumbnail_url.split('?')[0]
+
+                title = info.get('title', '')
+
+                # Debug: Show metadata to understand the structure
+                print(f"DEBUG - Video ID: {video_id}")
+                print(f"DEBUG - Thumbnail URL: {thumbnail_url}")
+                print(f"DEBUG - Title: {title}")
+
+                # Extract duration correctly
+                duration = ""
+                total_seconds = int(info.get('duration', 0) or 0)
+                if total_seconds > 0:
+                    # Convert seconds to detailed ISO 8601 format (with H, M, S as needed)
+                    hours = total_seconds // 3600
+                    minutes = (total_seconds % 3600) // 60
+                    seconds = total_seconds % 60
+
+                    duration = "PT"
+                    if hours > 0:
+                        duration += f"{hours}H"
+                    if minutes > 0 or hours > 0:  # Include M even if 0 when there are hours
+                        duration += f"{minutes}M"
+                    duration += f"{seconds}S"
+
+                # Create a structure similar to YouTube API response
+                response = {
+                    "items": [{
+                        "id": {
+                            "videoId": video_id  # Format compatible with frontend (item.id.videoId)
+                        },
+                        "snippet": {
+                            "title": title,
+                            "description": info.get('description', '') or "",
+                            "channelTitle": info.get('channel', '') or info.get('uploader', '') or "",
+                            "publishedAt": info.get('upload_date', '') or "",
+                            "thumbnails": {
+                                "default": {"url": thumbnail_url},
+                                "medium": {"url": thumbnail_url},
+                                "high": {"url": thumbnail_url}
+                            }
+                        },
+                        "contentDetails": {
+                            "duration": duration
+                        },
+                        "statistics": {
+                            "viewCount": str(info.get('view_count', 0) or 0),
+                            "likeCount": str(info.get('like_count', 0) or 0)
+                        }
+                    }]
+                }
+            
+            # Cache results in Redis
+            YouTubeCache.set_video(video_id, response)
+
+            return response
+        except Exception as e:
+            print(f"Error getting video info: {e}")
+            return {"error": str(e)}
+
+    def get_search_suggestions(self, query: str) -> List[str]:
+        """Get search suggestions for a query.
+
+        Args:
+            query: Partial search query.
+
+        Returns:
+            List of search suggestions.
+        """
+        if not query:
+            return []
+
+        # Check Redis cache
+        cached = YouTubeCache.get_suggestions(query)
+        if cached:
+            return cached
+
+        try:
+            # Search for videos using yt-dlp (aiotube and pytubefix are blocked by YouTube)
+            ydl_opts = {
+                'quiet': True,
+                'extract_flat': True,
+                'no_warnings': True,
+            }
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                search_results = ydl.extract_info(f"ytsearch3:{query}", download=False)
+
+            entries = search_results.get('entries', [])
+
+            # Extract titles as suggestions
+            suggestions = []
+            for entry in entries:
+                try:
+                    title = entry.get('title', '') or ""
+                    if title and title not in suggestions:
+                        suggestions.append(title)
+                except Exception as e:
+                    print(f"Error getting video title: {e}")
+                    continue
+            
+            # Cache results in Redis
+            YouTubeCache.set_suggestions(query, suggestions)
+
+            return suggestions
+        except Exception as e:
+            print(f"Error getting search suggestions: {e}")
+            return []
+
+    def parse_video_duration(self, duration: str) -> int:
+        """Parse duration format to seconds.
+
+        Args:
+            duration: Duration string.
+
+        Returns:
+            Duration in seconds.
+        """
+        if not duration:
+            return 0
+        
+        try:
+            # Parse duration in format like "3:45" or "1:23:45"
+            parts = duration.split(':')
+            if len(parts) == 2:  # MM:SS
+                return int(parts[0]) * 60 + int(parts[1])
+            elif len(parts) == 3:  # HH:MM:SS
+                return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+            else:
+                return 0
+        except (ValueError, IndexError):
+            return 0
+
+    def get_quota_remaining(self):
+        """Get remaining quota for today.
+        Included for compatibility with the original API client.
+        aiotube doesn't use quotas.
+        
+        Returns:
+            A high number to indicate unlimited quota.
+        """
+        return 1000000  # Effectively unlimited
+
+
+# Create a singleton instance
+_aiotube_client = None
+
+def get_aiotube_client():
+    """Get the aiotube client singleton instance.
+    
+    Returns:
+        AiotubeClient instance.
+    """
+    global _aiotube_client
+    if _aiotube_client is None:
+        _aiotube_client = AiotubeClient()
+    return _aiotube_client

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StemTube Desktop</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #1e0a10 0%, #2a1520 100%);
+    color: #e8d0d5;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+  }
+  .logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: #e41b36;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .tagline {
+    font-size: 13px;
+    color: #8a7077;
+    margin-bottom: 32px;
+  }
+  .step {
+    font-size: 15px;
+    color: #e8d0d5;
+    margin-bottom: 12px;
+    min-height: 22px;
+  }
+  .bar-wrap {
+    width: 100%;
+    height: 8px;
+    background: rgba(228, 27, 54, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .bar {
+    height: 100%;
+    background: linear-gradient(90deg, #e41b36, #ff4757);
+    width: 0%;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 12px rgba(228, 27, 54, 0.6);
+  }
+  .details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #8a7077;
+    font-family: "SF Mono", Consolas, monospace;
+  }
+  .details .pct { color: #e41b36; font-weight: 600; }
+  .sub {
+    margin-top: 24px;
+    font-size: 11px;
+    color: #5c4248;
+  }
+  .indeterminate .bar {
+    width: 30%;
+    animation: slide 1.4s ease-in-out infinite;
+  }
+  @keyframes slide {
+    0%   { margin-left: -30%; }
+    100% { margin-left: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">STEMTUBE DESKTOP</div>
+    <div class="tagline">Beta edition · first launch setup</div>
+    <div class="step" id="step">Preparing…</div>
+    <div class="bar-wrap" id="bar-wrap">
+      <div class="bar" id="bar"></div>
+    </div>
+    <div class="details">
+      <span id="detail-left">—</span>
+      <span class="pct" id="pct">0%</span>
+    </div>
+    <div class="sub" id="sub">
+      First launch only: downloads ~2.7 GB from GitHub, extracts the backend, and starts the Python engine.<br>
+      Allow <b>5 to 10 minutes</b> depending on your connection. <span id="timer"></span><br>
+      Subsequent launches take only a few seconds.
+    </div>
+  </div>
+
+<script>
+  const step = document.getElementById('step');
+  const bar = document.getElementById('bar');
+  const pct = document.getElementById('pct');
+  const detail = document.getElementById('detail-left');
+  const wrap = document.getElementById('bar-wrap');
+
+  // Start with an indeterminate state so the user sees activity even before
+  // the first Rust event arrives
+  wrap.classList.add('indeterminate');
+  step.textContent = 'Starting up…';
+  pct.textContent = '';
+
+  // Elapsed-time counter so the user sees the app is not frozen
+  const startedAt = Date.now();
+  const timerEl = document.getElementById('timer');
+  setInterval(() => {
+    const s = Math.floor((Date.now() - startedAt) / 1000);
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    if (timerEl) timerEl.textContent = `(elapsed: ${mm}:${ss})`;
+  }, 1000);
+
+  // Guard: wait for Tauri API to be available
+  function waitForTauri(cb, tries = 0) {
+    if (window.__TAURI__ && window.__TAURI__.event && window.__TAURI__.event.listen) {
+      cb(window.__TAURI__.event.listen);
+    } else if (tries < 100) {
+      setTimeout(() => waitForTauri(cb, tries + 1), 50);
+    } else {
+      step.textContent = 'Tauri API not available — please reinstall';
+      detail.textContent = 'Missing window.__TAURI__';
+    }
+  }
+
+  function setIndeterminate(on) {
+    if (on) wrap.classList.add('indeterminate');
+    else wrap.classList.remove('indeterminate');
+  }
+
+  function fmtBytes(n) {
+    if (!n) return '—';
+    if (n > 1073741824) return (n / 1073741824).toFixed(2) + ' GB';
+    if (n > 1048576) return (n / 1048576).toFixed(0) + ' MB';
+    return (n / 1024).toFixed(0) + ' KB';
+  }
+
+  waitForTauri((listen) => {
+    listen('setup_progress', (event) => {
+      const p = event.payload;
+      if (p.step) step.textContent = p.step;
+      if (p.indeterminate) {
+        setIndeterminate(true);
+        pct.textContent = '';
+        detail.textContent = p.detail || '';
+      } else {
+        setIndeterminate(false);
+        const percent = Math.max(0, Math.min(100, p.percent || 0));
+        bar.style.width = percent + '%';
+        pct.textContent = percent.toFixed(0) + '%';
+        if (p.current != null && p.total != null && p.total > 0) {
+          detail.textContent = `${fmtBytes(p.current)} / ${fmtBytes(p.total)}`;
+        } else {
+          detail.textContent = p.detail || '';
+        }
+      }
+    });
+
+    listen('setup_done', () => {
+      step.textContent = 'Starting StemTube…';
+      setIndeterminate(true);
+      pct.textContent = '';
+    });
+
+    listen('setup_error', (event) => {
+      step.textContent = 'Setup failed';
+      setIndeterminate(false);
+      bar.style.background = '#8a7077';
+      detail.textContent = event.payload || 'Unknown error';
+    });
+  });
+</script>
+</body>
+</html>

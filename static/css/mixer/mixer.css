@@ -1,0 +1,11 @@
+/* StemTube Mixer Styles — split into modular files */
+@import url('layout.css');      /* Title bar, tabs, mode visibility, practice layout, transport */
+@import url('responsive.css');  /* Mobile/responsive design */
+@import url('controls.css');    /* Pitch, tempo, waveform, tracks, playhead */
+@import url('structure.css');   /* Structure analysis display */
+@import url('karaoke.css');     /* Karaoke display, lyrics dialog */
+@import url('chords.css');      /* Chord linear grid view */
+@import url('export.css');      /* Chord grid popup, export mix modal */
+@import url('neumorphic.css'); /* Neumorphic theme overrides */
+@import url('glassmorphism.css'); /* Glassmorphism theme overrides */
+@import url('cyberpunk.css'); /* Cyberpunk Neon theme overrides */

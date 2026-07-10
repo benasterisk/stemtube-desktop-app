@@ -1,0 +1,14 @@
+{
+  "name": "stemtube-desktop",
+  "version": "1.0.0",
+  "description": "StemTube Desktop - AI-powered music stem separation, chord detection, and mixing",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1"
+  }
+}

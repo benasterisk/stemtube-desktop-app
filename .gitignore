@@ -1,0 +1,41 @@
+venv/
+venv-py313-backup/
+__pycache__/
+*.pyc
+dist/*
+!dist/splash.html
+!dist/index.html
+build/
+src-tauri/target/
+src-tauri/stemtube-backend/
+node_modules/
+flask_session/
+logs/
+*.db
+.secret_key
+.license
+.trial
+.env
+*.env
+# Secrets / personal session data — NEVER commit (live auth cookies)
+*cookies*.txt
+core/youtube_cookies.txt
+core/ffmpeg/
+core/deno/
+core/downloads/
+core/models/
+installer_output/
+*.zip
+*.tar.gz
+
+# Friend dev artifacts
+_test_madmom.py
+build_madmom.bat
+nuitka-crash-report.xml
+*.log
+
+# Old portable backup
+StemTube_Desktop_GPU_portable/
+StemTube_Desktop_GPU_portable.zip
+StemTube_Desktop_portable.zip
+.dev

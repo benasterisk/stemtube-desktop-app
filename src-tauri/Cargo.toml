@@ -1,0 +1,29 @@
+[package]
+name = "stemtube-desktop"
+version = "2.0.0"
+description = "StemTube Desktop - Music Stem Separation & Mixing"
+authors = ["StemTube"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["devtools"] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.dev]
+strip = "debuginfo"
+
+[profile.release]
+opt-level = "z"      # Optimize for size
+codegen-units = 1
+lto = true
+strip = true
+panic = "abort"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

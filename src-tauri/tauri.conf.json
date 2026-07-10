@@ -1,0 +1,55 @@
+{
+  "productName": "StemTube Desktop",
+  "version": "2.0.0",
+  "identifier": "com.stemtube.desktop.standard",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:5011"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "StemTube Desktop",
+        "width": 560,
+        "height": 340,
+        "resizable": false,
+        "center": true,
+        "decorations": true,
+        "url": "splash.html"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "resources": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "category": "Music",
+    "shortDescription": "Music analysis and stem extraction (local files)",
+    "longDescription": "StemTube Desktop — Local-file music studio: stem extraction, chord detection, beat tracking and mixing. No account, no license required.",
+    "copyright": "Copyright 2026 StemTube",
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "nsis": {
+        "compression": "lzma",
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      }
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    }
+  }
+}
