@@ -150,9 +150,6 @@ function createCleanupTableRow(item) {
         <td class="extracted-column">${extractedStatus}</td>
         <td class="date-column">${createdAt}</td>
         <td class="actions-column">
-            <button class="row-action primary" onclick="reloadDownload('${item.video_id}')" title="Reload from YouTube">
-                <i class="fas fa-sync-alt"></i>
-            </button>
             <button class="row-action danger" onclick="deleteDownload('${item.video_id}')" title="Delete Download">
                 <i class="fas fa-trash"></i>
             </button>
@@ -501,39 +498,6 @@ function resetExtraction(videoId) {
     })
     .catch(error => {
         console.error('Error resetting extraction:', error);
-        showToast(`Error: ${error.message}`, 'error');
-    });
-}
-
-function reloadDownload(videoId) {
-    if (!confirm('Reload this video from YouTube? Existing files will be removed and the download will restart.')) {
-        return;
-    }
-
-    fetch(`/api/admin/cleanup/downloads/${encodeURIComponent(videoId)}/reload`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': getCsrfToken()
-        },
-        body: JSON.stringify({})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const reassigned = data.reassigned_users || 0;
-            let message = data.message || 'Reload started';
-            if (reassigned > 0) {
-                message += ` (restoring ${reassigned} user${reassigned > 1 ? 's' : ''})`;
-            }
-            showToast(message, 'success');
-            loadCleanupData();
-        } else {
-            throw new Error(data.error || 'Reload failed');
-        }
-    })
-    .catch(error => {
-        console.error('Error reloading download:', error);
         showToast(`Error: ${error.message}`, 'error');
     });
 }

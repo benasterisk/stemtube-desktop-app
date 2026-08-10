@@ -289,7 +289,6 @@ def install_requirements(venv_python):
     # List of essential packages to install
     # These are carefully selected to avoid dependency conflicts with PyTorch CUDA versions
     essential_packages = [
-        "aiotube",              # YouTube search
         "beautifulsoup4",       # HTML parsing
         "Flask",                # Web framework
         "Flask-Login",          # Session management
@@ -303,8 +302,6 @@ def install_requirements(venv_python):
         "soundfile",            # Audio I/O
         "scipy",                # Scientific computing
         "scikit-learn",         # Machine learning
-        "yt-dlp",               # YouTube downloader
-        "yt-dlp-ejs",           # YouTube JS challenge solver (required since late 2025)
         "faster-whisper",       # Speech recognition (GPU)
         "msaf",                 # Music structure analysis
         "syncedlyrics",         # Synchronized lyrics (Musixmatch)
@@ -611,39 +608,6 @@ def ensure_chord_library():
         return False
 
 
-def check_nodejs_runtime():
-    """
-    Check that Node.js is installed (required by yt-dlp for JavaScript challenge solving).
-    Node.js 20+ is needed. On Linux/macOS it is expected to be installed via system package manager.
-    """
-    logger.info("\n[CHECKING] Node.js runtime...")
-
-    try:
-        result = subprocess.run(
-            ["node", "--version"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0:
-            version = result.stdout.strip()
-            logger.info(f"[SUCCESS] Node.js found: {version}")
-            return True
-    except FileNotFoundError:
-        pass
-    except Exception:
-        pass
-
-    logger.info("[WARNING] Node.js is not installed.")
-    platform_name = get_platform()
-    if platform_name == "linux":
-        logger.info("[INFO] Install it with: sudo apt-get install -y nodejs")
-    elif platform_name == "macos":
-        logger.info("[INFO] Install it with: brew install node")
-    elif platform_name == "windows":
-        logger.info("[INFO] Install it from: https://nodejs.org/")
-    logger.info("[INFO] Node.js 20+ is required for full functionality.")
-    return False
-
-
 def preload_whisper_large(venv_python, use_gpu):
     """Pre-download the faster-whisper model best suited for the host."""
     target_model = "large-v3"
@@ -806,9 +770,6 @@ def main():
 
     # Apply madmom numpy compatibility patch (required for chord detection)
     apply_madmom_patch(venv_python)
-
-    # Check Node.js runtime (required for yt-dlp JS challenge solving)
-    check_nodejs_runtime()
 
     # Ensure mobile chord diagrams + lyrics workflow assets are ready
     if not ensure_chord_library():

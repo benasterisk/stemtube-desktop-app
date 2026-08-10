@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import sqlite3
 from core.downloads_db import update_download_analysis
-from core.download_manager import DownloadManager
+from core.audio_analysis import analyze_audio
 from core.chord_detector import analyze_audio_file
 
 def reanalyze_song(video_id):
@@ -39,8 +39,7 @@ def reanalyze_song(video_id):
 
     # Step 1: Re-run audio analysis (BPM + Key detection with improved algorithm)
     print("Step 1: Audio Analysis (BPM + Key)...")
-    dm = DownloadManager()
-    analysis_results = dm.analyze_audio_with_librosa(audio_path)
+    analysis_results = analyze_audio(audio_path)
 
     if not analysis_results or not analysis_results.get('bpm'):
         print("❌ Audio analysis failed")

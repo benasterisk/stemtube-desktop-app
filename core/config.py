@@ -1,16 +1,12 @@
 """
 Configuration module for StemTube Desktop.
 Contains application settings, paths, and constants.
-Pro edition: localhost only, single-user mode, no YouTube features.
+Standard edition: localhost/LAN, single-user, local files only.
 """
 import os
 import json
 import platform
 from pathlib import Path
-try:
-    from edition import HAS_YOUTUBE as _EDITION_HAS_YOUTUBE
-except Exception:
-    _EDITION_HAS_YOUTUBE = True   # default to enabled if edition.py is unavailable
 from dotenv import load_dotenv
 import tempfile
 import urllib.request
@@ -105,9 +101,6 @@ else:
     FFMPEG_EXECUTABLE = "ffmpeg"
     FFPROBE_EXECUTABLE = "ffprobe"
 
-# YouTube API settings
-YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "")
-
 # Default application settings
 DEFAULT_SETTINGS = {
     "theme": "dark",
@@ -134,7 +127,6 @@ DEFAULT_SETTINGS = {
     "chords_use_btc": True,
     "chords_use_madmom": True,
     "chords_use_hybrid": True,
-    "enable_youtube_features": _EDITION_HAS_YOUTUBE,
 }
 
 
@@ -391,7 +383,7 @@ def ensure_ffmpeg_available():
     if os.path.exists(FFMPEG_EXECUTABLE) and os.path.exists(FFPROBE_EXECUTABLE):
         ffmpeg_dir = os.path.dirname(FFMPEG_EXECUTABLE)
         update_setting("ffmpeg_path", ffmpeg_dir)
-        # Prepend bundled ffmpeg to PATH so subprocesses (madmom, demucs, yt-dlp) find it
+        # Prepend bundled ffmpeg to PATH so subprocesses (madmom, demucs) find it
         if ffmpeg_dir not in os.environ.get("PATH", ""):
             os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
         print(f"Using bundled FFmpeg at: {ffmpeg_dir}")

@@ -150,8 +150,8 @@ def upload_file_route():
                 logger.info(f"[UPLOAD ANALYSIS] Starting analysis for {vid}")
 
                 # BPM & key detection
-                dm = user_session_manager.get_download_manager()
-                analysis = dm.analyze_audio_with_librosa(file_path)
+                from core.audio_analysis import analyze_audio
+                analysis = analyze_audio(file_path)
                 bpm = analysis.get('bpm')
                 key = analysis.get('key')
                 confidence = analysis.get('confidence')

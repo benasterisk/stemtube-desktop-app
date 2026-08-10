@@ -38,19 +38,6 @@ def remove_download_from_user_list(video_id):
         success, message = remove_user_download_access(current_user.id, video_id)
 
         if success:
-            # Clear any session data for this video
-            try:
-                dm = user_session_manager.get_download_manager()
-                # Remove from all session collections that might contain this video_id
-                for collection_name in ['queued_downloads', 'active_downloads', 'failed_downloads', 'completed_downloads']:
-                    collection = getattr(dm, collection_name, {})
-                    keys_to_remove = [k for k, v in collection.items() if hasattr(v, 'video_id') and v.video_id == video_id]
-                    for key in keys_to_remove:
-                        del collection[key]
-                        print(f"[SESSION CLEANUP] Removed {key} from {collection_name}")
-            except Exception as session_error:
-                print(f"[SESSION CLEANUP] Warning: {session_error}")
-
             return jsonify({'success': True, 'message': message})
         else:
             return jsonify({'error': message}), 400
@@ -183,18 +170,8 @@ def force_remove_download_from_user_list(video_id):
         success, message = force_remove_all_user_access(current_user.id, video_id)
 
         if success:
-            # Clear all session data for this video
+            # Clear extraction session data for this video
             try:
-                # Clear download manager session data
-                dm = user_session_manager.get_download_manager()
-                for collection_name in ['queued_downloads', 'active_downloads', 'failed_downloads', 'completed_downloads']:
-                    collection = getattr(dm, collection_name, {})
-                    keys_to_remove = [k for k, v in collection.items() if hasattr(v, 'video_id') and v.video_id == video_id]
-                    for key in keys_to_remove:
-                        del collection[key]
-                        print(f"[FORCE CLEANUP] Removed {key} from {collection_name}")
-
-                # Clear extraction manager session data
                 se = user_session_manager.get_stems_extractor()
                 for collection_name in ['queued_extractions', 'active_extractions', 'failed_extractions', 'completed_extractions']:
                     collection = getattr(se, collection_name, {})
