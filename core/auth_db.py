@@ -49,12 +49,6 @@ def init_db():
         except sqlite3.OperationalError:
             pass  # Column already exists
 
-        # Add youtube_enabled column for per-user YouTube access control
-        try:
-            conn.execute('ALTER TABLE users ADD COLUMN youtube_enabled BOOLEAN DEFAULT 0')
-        except sqlite3.OperationalError:
-            pass  # Column already exists
-
         conn.commit()
         
         # Check if admin user exists, create if not
@@ -182,12 +176,12 @@ def get_all_users():
     """Get all users from the database."""
     conn = get_db_connection()
     try:
-        users = conn.execute('SELECT id, username, email, is_admin, youtube_enabled, created_at FROM users').fetchall()
+        users = conn.execute('SELECT id, username, email, is_admin, created_at FROM users').fetchall()
         return [dict(user) for user in users]
     finally:
         conn.close()
 
-def add_user(username, password, email=None, is_admin=False, youtube_enabled=False):
+def add_user(username, password, email=None, is_admin=False):
     """Add a new user to the database."""
     # Check if username already exists
     if get_user_by_username(username):
@@ -197,8 +191,8 @@ def add_user(username, password, email=None, is_admin=False, youtube_enabled=Fal
     conn = get_db_connection()
     try:
         conn.execute(
-            'INSERT INTO users (username, password_hash, email, is_admin, youtube_enabled) VALUES (?, ?, ?, ?, ?)',
-            (username, password_hash, email, is_admin, youtube_enabled)
+            'INSERT INTO users (username, password_hash, email, is_admin) VALUES (?, ?, ?, ?)',
+            (username, password_hash, email, is_admin)
         )
         conn.commit()
         return True, "User created successfully"
@@ -208,7 +202,7 @@ def add_user(username, password, email=None, is_admin=False, youtube_enabled=Fal
     finally:
         conn.close()
 
-def update_user(user_id, username=None, email=None, is_admin=None, youtube_enabled=None):
+def update_user(user_id, username=None, email=None, is_admin=None):
     """Update user information."""
     conn = get_db_connection()
     try:
@@ -236,9 +230,6 @@ def update_user(user_id, username=None, email=None, is_admin=None, youtube_enabl
         if is_admin is not None:
             updates.append('is_admin = ?')
             params.append(is_admin)
-        if youtube_enabled is not None:
-            updates.append('youtube_enabled = ?')
-            params.append(youtube_enabled)
 
         if updates:
             params.append(user_id)
@@ -294,26 +285,6 @@ def delete_user(user_id):
     finally:
         conn.close()
 
-def set_user_youtube_access(user_id, enabled):
-    """Set YouTube access for a specific user."""
-    conn = get_db_connection()
-    try:
-        user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
-        if not user:
-            return False, "User not found"
-
-        conn.execute(
-            'UPDATE users SET youtube_enabled = ? WHERE id = ?',
-            (1 if enabled else 0, user_id)
-        )
-        conn.commit()
-        return True, "YouTube access updated successfully"
-    except Exception as e:
-        print(f"Error updating YouTube access: {e}")
-        return False, f"Error updating YouTube access: {str(e)}"
-    finally:
-        conn.close()
-
 def get_user_disclaimer_status(user_id):
     """Check if user has accepted the disclaimer."""
     conn = get_db_connection()
@@ -359,9 +330,9 @@ def ensure_desktop_user():
             'SELECT id FROM users WHERE username = ?', (DESKTOP_USERNAME,)
         ).fetchone()
         if user:
-            # Ensure desktop user has admin + youtube access
+            # Ensure desktop user has admin rights and has accepted the disclaimer
             conn.execute(
-                'UPDATE users SET is_admin = 1, youtube_enabled = 1, disclaimer_accepted = 1 WHERE id = ?',
+                'UPDATE users SET is_admin = 1, disclaimer_accepted = 1 WHERE id = ?',
                 (user['id'],)
             )
             conn.commit()
@@ -371,8 +342,8 @@ def ensure_desktop_user():
         password = generate_secure_password(32)
         password_hash = generate_password_hash(password)
         cursor = conn.execute(
-            'INSERT INTO users (username, password_hash, is_admin, youtube_enabled, disclaimer_accepted) '
-            'VALUES (?, ?, 1, 1, 1)',
+            'INSERT INTO users (username, password_hash, is_admin, disclaimer_accepted) '
+            'VALUES (?, ?, 1, 1)',
             (DESKTOP_USERNAME, password_hash)
         )
         conn.commit()

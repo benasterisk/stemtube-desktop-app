@@ -74,8 +74,6 @@ hidden_imports = [
     'faster_whisper',
     'madmom',
     'msaf',
-    'aiotube',
-    'yt_dlp',
     'pychord',
     'syncedlyrics',
     'webview',

@@ -50,8 +50,8 @@ let searchResultsPage = 1;
 let searchResultsPerPage = 10;
 let totalSearchResults = 0;
 let searchQuery = '';
-// Default to 'url' (upload) mode if YouTube features are disabled
-let searchMode = (typeof enableYoutube !== 'undefined' && enableYoutube) ? 'search' : 'url';
+// Desktop edition is upload-only.
+let searchMode = 'url';
 
 // CSRF protection has been disabled for this application
 function getCsrfToken() {
@@ -116,22 +116,6 @@ function initializeSocketIO() {
     if (window.setupSocketAuthHandling) {
         window.setupSocketAuthHandling(socket);
     }
-    
-    // Download events
-    socket.on('download_progress', (data) => {
-        console.log('Download progress:', data);
-        updateDownloadProgress(data);
-    });
-    
-    socket.on('download_complete', (data) => {
-        console.log('Download complete:', data);
-        updateDownloadComplete(data);
-    });
-    
-    socket.on('download_error', (data) => {
-        console.error('Download error:', data);
-        updateDownloadError(data);
-    });
     
     // Extraction events
     socket.on('extraction_progress', (data) => {
@@ -219,26 +203,6 @@ function loadConfig() {
 
 // Initialize Event Listeners
 function initializeEventListeners() {
-    // Search mode toggle
-    document.querySelectorAll('#searchMode .segment').forEach(button => {
-        button.addEventListener('click', () => {
-            document.querySelectorAll('#searchMode .segment').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            button.classList.add('active');
-            searchMode = button.dataset.mode;
-
-            // Toggle between search and file upload UI
-            if (searchMode === 'search') {
-                document.getElementById('searchInputContainer').style.display = 'flex';
-                document.getElementById('fileUploadContainer').style.display = 'none';
-            } else {
-                document.getElementById('searchInputContainer').style.display = 'none';
-                document.getElementById('fileUploadContainer').style.display = 'block';
-            }
-        });
-    });
-
     // File upload area click
     document.getElementById('fileUploadArea').addEventListener('click', () => {
         document.getElementById('fileInput').click();
@@ -281,25 +245,7 @@ function initializeEventListeners() {
     document.getElementById('clearFileButton').addEventListener('click', () => {
         clearFileSelection();
     });
-    
-    // Search button (only if YouTube search is enabled)
-    const searchButton = document.getElementById('searchButton');
-    if (searchButton) {
-        searchButton.addEventListener('click', () => {
-            performSearch();
-        });
-    }
 
-    // Search input (Enter key) - only if YouTube search is enabled
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-    }
-    
     // Tab switching
     document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => {
@@ -382,22 +328,6 @@ function initializeEventListeners() {
         });
     }
 
-    // Download type change (audio/video) - only if YouTube download is enabled
-    const downloadTypeSelect = document.getElementById('downloadType');
-    if (downloadTypeSelect) {
-        downloadTypeSelect.addEventListener('change', () => {
-            const downloadType = downloadTypeSelect.value;
-
-            if (downloadType === 'audio') {
-                document.getElementById('videoQualityContainer').style.display = 'none';
-                document.getElementById('audioQualityContainer').style.display = 'block';
-            } else {
-                document.getElementById('videoQualityContainer').style.display = 'block';
-                document.getElementById('audioQualityContainer').style.display = 'none';
-            }
-        });
-    }
-    
     // Two-stem mode toggle
     document.getElementById('twoStemMode').addEventListener('change', () => {
         const twoStemMode = document.getElementById('twoStemMode').checked;
@@ -409,14 +339,6 @@ function initializeEventListeners() {
         }
     });
     
-    // Start download button (only if YouTube download is enabled)
-    const startDownloadButton = document.getElementById('startDownloadButton');
-    if (startDownloadButton) {
-        startDownloadButton.addEventListener('click', () => {
-            startDownload();
-        });
-    }
-
     // Start extraction button
     document.getElementById('startExtractionButton').addEventListener('click', () => {
         startExtraction();

@@ -13,7 +13,6 @@ class User(UserMixin):
         self.username = user_data['username']
         self.email = user_data.get('email')
         self.is_admin = bool(user_data.get('is_admin', 0))
-        self.youtube_enabled = bool(user_data.get('youtube_enabled', 0))
         self.created_at = user_data.get('created_at')
         
     def get_id(self):

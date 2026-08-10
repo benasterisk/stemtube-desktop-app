@@ -1,7 +1,7 @@
 """
-Core page routes for StemTube Desktop Friend.
+Core page routes for StemTube Desktop.
 Desktop-only: no mobile redirect, no service worker, auto-login.
-YouTube enabled in Friend edition.
+Local files only — no YouTube.
 """
 
 import os
@@ -14,7 +14,7 @@ from flask_login import login_required, current_user, login_user
 from core.config import get_setting
 from extensions import user_session_manager, get_model_display_name
 from core.logging_config import get_logger
-from edition import HAS_YOUTUBE, HAS_LICENSE
+from edition import HAS_LICENSE
 
 logger = get_logger(__name__)
 
@@ -34,13 +34,12 @@ def index():
         else:
             return "Desktop user not found. Please restart the application.", 500
 
-    enable_youtube = HAS_YOUTUBE
     cache_buster = int(time.time())
     return render_template(
         'index.html',
         current_username=current_user.username,
         current_user=current_user,
-        enable_youtube=enable_youtube,
+        enable_youtube=False,
         has_license=HAS_LICENSE,
         cache_buster=cache_buster
     )

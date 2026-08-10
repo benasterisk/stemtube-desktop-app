@@ -12,7 +12,6 @@ Usage:
 
 Requirements:
     - Python 3.12+ (python.org installer, NOT Windows Store version)
-    - Node.js 20+ (for yt-dlp JS challenge solving)
     - Internet connection for downloading dependencies
     - ~4GB disk space (CPU) or ~8GB (GPU with models)
 """
@@ -49,7 +48,6 @@ ESSENTIAL_PACKAGES = [
     "soundfile",
     "scipy",
     "scikit-learn",
-    "yt-dlp[default]",
     "faster-whisper",
     "syncedlyrics",
     "pychord",
@@ -85,19 +83,6 @@ def check_python_version():
         log(f"Python {PYTHON_MIN_VERSION[0]}.{PYTHON_MIN_VERSION[1]}+ required, found {v.major}.{v.minor}", "ERROR")
         sys.exit(1)
     log(f"Python {v.major}.{v.minor}.{v.micro} OK")
-
-
-def check_node():
-    """Check if Node.js is available (needed by yt-dlp for JS challenges)."""
-    try:
-        result = subprocess.run(["node", "--version"], capture_output=True, text=True)
-        version = result.stdout.strip()
-        log(f"Node.js {version} found")
-        return True
-    except FileNotFoundError:
-        log("Node.js not found — YouTube downloads may fail without it", "WARN")
-        log("Install from https://nodejs.org/ (LTS v20+)", "WARN")
-        return False
 
 
 def detect_gpu():
@@ -388,7 +373,6 @@ def main():
     print()
 
     check_python_version()
-    check_node()
 
     # GPU detection
     cuda_version = None

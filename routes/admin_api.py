@@ -1,5 +1,5 @@
 """
-Admin API routes: cleanup, user management, system settings, cookies, system info.
+Admin API routes: cleanup, user management, system settings, system info.
 """
 
 import os
@@ -13,11 +13,9 @@ from extensions import (
     api_login_required,
     api_admin_required,
     user_session_manager,
-    COOKIES_FILE_PATH,
 )
 from core.config import get_setting, update_setting, DOWNLOADS_DIR
 from core.auth_db import get_user_by_id
-from core.download_manager import DownloadItem, DownloadType
 from core.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -106,9 +104,6 @@ def admin_delete_download_by_video_id(video_id):
         if not success:
             return jsonify({'error': message}), 400
 
-        # Clear from all active user sessions so it disappears from their library
-        user_session_manager.clear_download_from_all_sessions(video_id)
-
         file_cleanup_stats = {'files_deleted': [], 'total_size_freed': 0, 'errors': []}
 
         # Delete associated files if we have download info
@@ -125,115 +120,6 @@ def admin_delete_download_by_video_id(video_id):
         })
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@admin_api_bp.route('/api/admin/cleanup/downloads/<video_id>/reload', methods=['POST'])
-@api_login_required
-def admin_reload_download(video_id):
-    """Remove existing artifacts and re-download a video from YouTube as a fresh item."""
-    if not current_user.is_admin:
-        return jsonify({'error': 'Admin access required'}), 403
-
-    video_id = (video_id or "").strip()
-    if not video_id:
-        return jsonify({'error': 'Invalid video ID'}), 400
-
-    try:
-        from core.downloads_db import (
-            get_all_downloads_for_admin,
-            delete_download_completely,
-            get_user_ids_for_video
-        )
-        from core.file_cleanup import delete_download_files
-        from core.aiotube_client import get_aiotube_client
-
-        all_downloads = get_all_downloads_for_admin()
-        download_info = next((d for d in all_downloads if d['video_id'] == video_id), None)
-
-        affected_users = []
-        file_cleanup_stats = None
-        prev_title = None
-        prev_quality = 'best'
-        prev_media_type = 'audio'
-
-        if download_info:
-            prev_title = download_info.get('title')
-            prev_quality = download_info.get('quality') or prev_quality
-            prev_media_type = download_info.get('media_type') or prev_media_type
-            affected_users = get_user_ids_for_video(video_id)
-
-            success, message, detailed_info = delete_download_completely(download_info['global_id'])
-            if not success:
-                return jsonify({'error': message}), 400
-
-            try:
-                file_success, file_message, file_cleanup_stats = delete_download_files(detailed_info)
-                if not file_success:
-                    logger.warning(f"[ADMIN RELOAD] File cleanup warning for {video_id}: {file_message}")
-            except Exception as cleanup_error:
-                logger.warning(f"[ADMIN RELOAD] Error during file cleanup for {video_id}: {cleanup_error}")
-
-        # Ensure admin regains access once reload completes
-        if download_info and current_user.id not in affected_users:
-            affected_users.append(current_user.id)
-        if affected_users:
-            user_session_manager.schedule_reload_user_access(video_id, affected_users)
-
-        ai_client = get_aiotube_client()
-        if not ai_client:
-            return jsonify({'error': 'YouTube client not available'}), 503
-
-        # Fetch video info with fallback to cached data
-        try:
-            video_info = ai_client.get_video_info(video_id)
-        except Exception as fetch_err:
-            logger.warning(f"[ADMIN RELOAD] Video info fetch failed: {fetch_err}")
-            video_info = {'items': []}
-
-        if video_info.get('error'):
-            logger.warning(f"[ADMIN RELOAD] Video info error: {video_info['error']}")
-            video_info = {'items': []}
-
-        items = video_info.get('items') or []
-        snippet = items[0].get('snippet', {}) if items else {}
-        thumbnails = snippet.get('thumbnails') or {}
-
-        title = snippet.get('title') or prev_title or video_id
-        thumbnail_url = ''
-        for key in ('medium', 'high', 'default'):
-            thumb = thumbnails.get(key) or {}
-            if thumb.get('url'):
-                thumbnail_url = thumb['url']
-                break
-        if not thumbnail_url:
-            thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"
-
-        download_type = DownloadType.VIDEO if str(prev_media_type).lower() == 'video' else DownloadType.AUDIO
-
-        dm = user_session_manager.get_download_manager()
-        if not dm:
-            return jsonify({'error': 'Download manager not available'}), 503
-
-        item = DownloadItem(
-            video_id=video_id,
-            title=title,
-            thumbnail_url=thumbnail_url,
-            download_type=download_type,
-            quality=prev_quality
-        )
-        download_id = dm.add_download(item)
-
-        return jsonify({
-            'success': True,
-            'message': f'Reload started for {title}',
-            'download_id': download_id,
-            'reassigned_users': len(affected_users),
-            'file_cleanup': file_cleanup_stats
-        })
-
-    except Exception as e:
-        logger.error(f"[ADMIN RELOAD] Failed to reload {video_id}: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -367,10 +253,6 @@ def admin_bulk_delete_downloads():
 
                 # Delete from database
                 success, message, download_info = delete_download_completely(download_id)
-
-                # Clear from all active user sessions
-                if success and video_id:
-                    user_session_manager.clear_download_from_all_sessions(video_id)
 
                 file_cleanup_stats = {'files_deleted': [], 'total_size_freed': 0, 'errors': []}
 
@@ -815,253 +697,3 @@ def restart_server():
         'message': 'Server is restarting...'
     })
 
-
-# ============================================
-# YouTube Cookies Management API Routes
-# ============================================
-
-@admin_api_bp.route('/api/admin/cookies/status', methods=['GET'])
-@api_login_required
-@api_admin_required
-def get_cookies_status():
-    """Get YouTube cookies file status."""
-    try:
-        if os.path.exists(COOKIES_FILE_PATH):
-            stat = os.stat(COOKIES_FILE_PATH)
-            modified_time = datetime.fromtimestamp(stat.st_mtime)
-            age_hours = (datetime.now() - modified_time).total_seconds() / 3600
-
-            cookie_count = 0
-            has_auth_cookies = False
-            auth_cookie_names = {'__Secure-3PAPISID', 'SID', 'SAPISID', '__Secure-3PSID', 'HSID', 'SSID'}
-            found_auth_cookies = []
-            with open(COOKIES_FILE_PATH, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#'):
-                        cookie_count += 1
-                        parts = line.split('\t')
-                        if len(parts) >= 6:
-                            cookie_name = parts[5]
-                            if cookie_name in auth_cookie_names:
-                                has_auth_cookies = True
-                                found_auth_cookies.append(cookie_name)
-
-            return jsonify({
-                'success': True,
-                'exists': True,
-                'cookie_count': cookie_count,
-                'has_auth_cookies': has_auth_cookies,
-                'auth_cookies_found': found_auth_cookies,
-                'modified': modified_time.isoformat(),
-                'age_hours': round(age_hours, 1),
-                'is_fresh': age_hours < 48,
-                'file_size': stat.st_size
-            })
-        else:
-            return jsonify({
-                'success': True,
-                'exists': False
-            })
-    except Exception as e:
-        logger.error(f"[Cookies] Error checking status: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@admin_api_bp.route('/api/admin/cookies/upload', methods=['POST', 'OPTIONS'])
-def upload_cookies():
-    """
-    Receive cookies from bookmarklet and save as Netscape cookies.txt format.
-    Uses a one-time token for security.
-    """
-    if request.method == 'OPTIONS':
-        response = current_app.make_default_options_response()
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        return response
-
-    try:
-        data = request.json or {}
-        cookies_raw = data.get('cookies', '')
-        domain = data.get('domain', '')
-        token = data.get('token', '')
-
-        def cors_response(data, status=200):
-            response = jsonify(data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response, status
-
-        expected_token = get_setting('cookies_upload_token', None)
-        if not expected_token or token != expected_token:
-            return cors_response({'success': False, 'message': 'Invalid or expired token'}, 403)
-
-        update_setting('cookies_upload_token', None)
-
-        if not cookies_raw:
-            return cors_response({'success': False, 'message': 'No cookies received'}, 400)
-
-        if '.youtube.com' not in domain and 'youtube.com' not in domain:
-            return cors_response({'success': False, 'message': 'Cookies must be from youtube.com'}, 400)
-
-        lines = ['# Netscape HTTP Cookie File', '# Generated by StemTube Admin', '']
-        cookie_pairs = cookies_raw.split('; ')
-        for pair in cookie_pairs:
-            if '=' in pair:
-                name, value = pair.split('=', 1)
-                lines.append(f".youtube.com\tTRUE\t/\tTRUE\t0\t{name}\t{value}")
-
-        with open(COOKIES_FILE_PATH, 'w') as f:
-            f.write('\n'.join(lines))
-
-        cookie_count = len(cookie_pairs)
-        logger.info(f"[Cookies] Saved {cookie_count} cookies from bookmarklet")
-
-        return cors_response({
-            'success': True,
-            'message': f'{cookie_count} YouTube cookies saved!',
-            'cookie_count': cookie_count
-        })
-    except Exception as e:
-        logger.error(f"[Cookies] Error uploading: {e}")
-        response = jsonify({'success': False, 'message': str(e)})
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response, 500
-
-
-@admin_api_bp.route('/api/admin/cookies/upload-file', methods=['POST'])
-@api_login_required
-@api_admin_required
-def upload_cookies_file():
-    """Upload a Netscape-format cookies.txt file exported from a browser extension."""
-    try:
-        if 'file' not in request.files:
-            return jsonify({'success': False, 'message': 'No file provided'}), 400
-
-        file = request.files['file']
-        if not file.filename:
-            return jsonify({'success': False, 'message': 'No file selected'}), 400
-
-        content = file.read().decode('utf-8', errors='ignore')
-
-        first_line = content.strip().split('\n')[0].strip()
-        if not (first_line.startswith('# Netscape HTTP Cookie File') or
-                first_line.startswith('# HTTP Cookie File')):
-            return jsonify({
-                'success': False,
-                'message': 'Invalid format. File must be a Netscape HTTP Cookie File'
-            }), 400
-
-        has_youtube = False
-        cookie_count = 0
-        auth_cookie_names = {'__Secure-3PAPISID', 'SID', 'SAPISID', '__Secure-3PSID', 'HSID', 'SSID'}
-        found_auth_cookies = []
-
-        for line in content.split('\n'):
-            line = line.strip()
-            if line and not line.startswith('#'):
-                cookie_count += 1
-                if '.youtube.com' in line or 'youtube.com' in line or '.google.com' in line:
-                    has_youtube = True
-                parts = line.split('\t')
-                if len(parts) >= 6:
-                    cookie_name = parts[5]
-                    if cookie_name in auth_cookie_names:
-                        found_auth_cookies.append(cookie_name)
-
-        if not has_youtube:
-            return jsonify({
-                'success': False,
-                'message': 'No YouTube cookies found in file. Export cookies while on youtube.com'
-            }), 400
-
-        with open(COOKIES_FILE_PATH, 'w') as f:
-            f.write(content)
-
-        has_auth = len(found_auth_cookies) > 0
-        logger.info(f"[Cookies] Uploaded {cookie_count} cookies from file (auth cookies: {found_auth_cookies})")
-
-        message = f'{cookie_count} cookies uploaded successfully!'
-        if not has_auth:
-            message += ' WARNING: No authentication cookies found. Make sure you are logged into YouTube when exporting cookies.'
-
-        return jsonify({
-            'success': True,
-            'message': message,
-            'cookie_count': cookie_count,
-            'has_auth_cookies': has_auth,
-            'auth_cookies_found': found_auth_cookies
-        })
-    except Exception as e:
-        logger.error(f"[Cookies] Error uploading file: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-
-@admin_api_bp.route('/api/admin/cookies/generate-token', methods=['POST'])
-@api_login_required
-@api_admin_required
-def generate_cookies_token():
-    """Generate a one-time token for bookmarklet authentication."""
-    try:
-        import secrets
-        token = secrets.token_urlsafe(32)
-        update_setting('cookies_upload_token', token)
-        logger.info("[Cookies] Generated new upload token")
-        return jsonify({
-            'success': True,
-            'token': token
-        })
-    except Exception as e:
-        logger.error(f"[Cookies] Error generating token: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@admin_api_bp.route('/api/admin/cookies/bookmarklet', methods=['GET'])
-@api_login_required
-@api_admin_required
-def get_bookmarklet():
-    """Generate bookmarklet code with current server URL."""
-    try:
-        server_url = request.url_root.rstrip('/')
-        ngrok_url = os.environ.get('NGROK_URL', '')
-        if ngrok_url:
-            server_url = ngrok_url.rstrip('/')
-
-        import secrets
-        token = secrets.token_urlsafe(32)
-        update_setting('cookies_upload_token', token)
-
-        bookmarklet = f"""javascript:(function(){{
-if(!location.hostname.includes('youtube.com')){{alert('Please open this page on YouTube.com first!');return;}}
-fetch('{server_url}/api/admin/cookies/upload',{{
-method:'POST',
-headers:{{'Content-Type':'application/json'}},
-body:JSON.stringify({{cookies:document.cookie,domain:location.hostname,token:'{token}'}})
-}}).then(r=>r.json()).then(d=>alert(d.message||'Error')).catch(e=>alert('Error: '+e));
-}})();"""
-
-        return jsonify({
-            'success': True,
-            'bookmarklet': bookmarklet,
-            'server_url': server_url,
-        })
-    except Exception as e:
-        logger.error(f"[Cookies] Error generating bookmarklet: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@admin_api_bp.route('/api/admin/cookies', methods=['DELETE'])
-@api_login_required
-@api_admin_required
-def delete_cookies():
-    """Delete the cookies file."""
-    try:
-        if os.path.exists(COOKIES_FILE_PATH):
-            os.remove(COOKIES_FILE_PATH)
-            logger.info("[Cookies] Cookies file deleted")
-            return jsonify({'success': True, 'message': 'Cookies deleted'})
-        else:
-            return jsonify({'success': True, 'message': 'No cookies file found'})
-    except Exception as e:
-        logger.error(f"[Cookies] Error deleting: {e}")
-        return jsonify({'error': str(e)}), 500

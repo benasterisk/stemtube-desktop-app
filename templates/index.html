@@ -35,35 +35,11 @@
         <main id="split-main">
             <!-- Left Column: Dynamic content based on active tab -->
             <div class="column search-column" id="left-panel">
-                <!-- YouTube Search (for Downloads, Search tabs) -->
+                <!-- Local file upload -->
                 <div class="left-panel-content" id="searchContent">
                     <div class="search-container">
-                        {% if enable_youtube %}
-                        <div class="search-mode-container">
-                            <label for="searchMode">Mode:</label>
-                            <div class="segmented-control" id="searchMode">
-                                <button class="segment active" data-mode="search">🔍 Search</button>
-                                <button class="segment" data-mode="url">📁 Upload</button>
-                            </div>
-                        </div>
-
-                        <div class="search-input-container" id="searchInputContainer">
-                            <input type="text" id="searchInput" placeholder="Search YouTube...">
-                            <select id="resultsCount">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                            </select>
-                            <button id="searchButton"><i class="fas fa-search"></i></button>
-                        </div>
-                        {% endif %}
-
-                        <div class="file-upload-container" id="fileUploadContainer" style="{% if enable_youtube %}display: none;{% else %}display: block;{% endif %}">
-                            {% if not enable_youtube %}
+                        <div class="file-upload-container" id="fileUploadContainer">
                             <h3 style="margin-bottom: 15px; color: var(--text-primary);">Upload Audio/Video File</h3>
-                            {% endif %}
                             <div class="file-upload-area" id="fileUploadArea">
                                 <input type="file" id="fileInput" accept="audio/*,video/*,.mp3,.wav,.flac,.m4a,.aac,.ogg,.wma,.mp4,.avi,.mkv,.mov,.webm" style="display: none;">
                                 <i class="fas fa-cloud-upload-alt"></i>
@@ -249,29 +225,6 @@
                     </div>
                 </div>
 
-                {% if enable_youtube %}
-                <!-- YouTube Cookies -->
-                <div class="settings-section" id="youtubeCookiesSection">
-                    <h3><i class="fab fa-youtube"></i> YouTube Cookies</h3>
-                    <p class="info-detail" style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 10px;">
-                        Optional. If YouTube blocks downloads with a "bot detection" error, export a
-                        cookies.txt while logged into YouTube and upload it here.
-                    </p>
-                    <div id="cookies-status" style="margin-bottom:10px;"></div>
-                    <div class="setting-item" style="gap:8px; flex-wrap:wrap;">
-                        <input type="file" id="cookiesFileInput" accept=".txt" style="display:none;">
-                        <button id="uploadCookiesFileBtn" class="btn-secondary"><i class="fas fa-upload"></i> Upload cookies.txt</button>
-                        <button id="deleteCookiesBtn" class="btn-secondary" disabled><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                    <div id="bookmarklet-container" style="display:none; margin-top:8px;">
-                        <p class="info-detail" style="font-size:0.8rem; color:var(--text-secondary);">
-                            Drag this to your bookmarks bar, then click it on youtube.com:
-                        </p>
-                        <a id="bookmarklet-link" href="#" class="btn-secondary" style="display:inline-block; margin-top:4px;">📥 StemTube Cookies</a>
-                    </div>
-                </div>
-                {% endif %}
-
                 <!-- Storage & System -->
                 <div class="settings-section">
                     <h3><i class="fas fa-folder"></i> Storage</h3>
@@ -292,57 +245,6 @@
             </div>
         </div>
     </div>
-    
-    {% if enable_youtube %}
-    <div class="modal" id="downloadModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Download Options</h2>
-                <span class="close-button">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="video-info">
-                    <img id="downloadThumbnail" src="" alt="Video Thumbnail">
-                    <h3 id="downloadTitle"></h3>
-                </div>
-
-                <div class="download-options">
-                    <div class="option-item">
-                        <label for="downloadType">Download Type:</label>
-                        <select id="downloadType">
-                            <option value="audio" selected>Audio (MP3)</option>
-                            <option value="video">Video (MP4)</option>
-                        </select>
-                    </div>
-
-                    <div class="option-item" id="videoQualityContainer">
-                        <label for="videoQuality">Video Quality:</label>
-                        <select id="videoQuality">
-                            <option value="best">Best</option>
-                            <option value="1080p">1080p</option>
-                            <option value="720p" selected>720p</option>
-                            <option value="480p">480p</option>
-                            <option value="360p">360p</option>
-                        </select>
-                    </div>
-
-                    <div class="option-item" id="audioQualityContainer">
-                        <label for="audioQuality">Audio Quality:</label>
-                        <select id="audioQuality">
-                            <option value="best" selected>Best</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="startDownloadButton">Start Download</button>
-            </div>
-        </div>
-    </div>
-    {% endif %}
     
     <div class="modal" id="extractionModal">
         <div class="modal-content">
@@ -464,8 +366,8 @@
     <script>
         // Global admin status variable for JavaScript
         const isAdmin = {% if current_user.is_admin %}true{% else %}false{% endif %};
-        // YouTube features flag (controlled per-user via admin panel)
-        const enableYoutube = {% if enable_youtube %}true{% else %}false{% endif %};
+        // YouTube features permanently disabled — desktop app is local-files only
+        const enableYoutube = false;
     </script>
     <!-- Dynamic logging with admin-controlled config - timestamp forces cache refresh -->
     <script src="{{ url_for('static', filename='js/logging-dynamic.js') }}?t=1761906276"></script>
@@ -809,7 +711,6 @@
                     <h3>⚠️ User Legal Responsibility</h3>
                     <p><strong>BY USING THIS SOFTWARE, YOU ACKNOWLEDGE AND AGREE THAT:</strong></p>
                     <ul>
-                        <li><strong>You are solely responsible</strong> for compliance with YouTube Terms of Service</li>
                         <li><strong>You are solely responsible</strong> for compliance with copyright laws in your jurisdiction</li>
                         <li><strong>You will respect</strong> content creators' rights and monetization</li>
                         <li><strong>The developers assume NO liability</strong> for your actions or legal consequences</li>

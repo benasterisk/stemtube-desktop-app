@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Removed
+- **YouTube support fully deleted** — the Standard desktop edition no longer imports `yt_dlp` at any point, so the package no longer requires it. Deleted `core/download_manager.py`, `core/aiotube_client.py`, `core/js_runtime.py`, `core/youtube_cookies.txt`, the old YouTube search/download endpoints in `routes/downloads.py`, all cookie management routes in `routes/admin_api.py`, the admin "Reload from YouTube" button, the `HAS_YOUTUBE` edition flag, the per-user `youtube_enabled` column plumbing, and all matching UI (search bar, cookies section, download modal, JS handlers).
+- **`js_runtime` module** — Deno/Node bootstrapping was only needed to solve YouTube JS challenges.
+
+### Added
+- **`core/audio_analysis.py`** — standalone BPM + key detection function (STFT + autocorrelation), extracted from the deleted `DownloadManager` so the extraction and upload pipelines no longer depend on a YouTube-oriented class.
+
+### Changed
+- `routes/downloads.py` recreated as a minimal DB-only blueprint (5 endpoints: list library, extraction-status lookup, batch extraction-status, delete, clear-all).
+- `edition.py` no longer exports `HAS_YOUTUBE`.
+- `install.sh` no longer needs to install `yt-dlp` or a JS runtime.
+
 ## [Desktop Standard 2.0.0] - 2026-07-09
 
 ### Added

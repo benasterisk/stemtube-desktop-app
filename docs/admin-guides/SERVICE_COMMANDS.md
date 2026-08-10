@@ -1,3 +1,5 @@
+> **⚠️ Historical note:** this document was written when the app still shipped YouTube search/download. That support has been removed from the Standard desktop edition — `yt-dlp`, cookies, the `HAS_YOUTUBE` flag, `core/download_manager.py`, `core/aiotube_client.py`, `core/js_runtime.py`, and the corresponding routes/UI no longer exist. Sections describing them are kept only for historical context and no longer reflect the current code.
+
 # StemTube Service - systemctl Commands
 
 The StemTube service is installed and configured with systemd.

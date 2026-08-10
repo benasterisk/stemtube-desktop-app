@@ -1,6 +1,6 @@
 """
-Route blueprints for StemTube Desktop Friend.
-Single-user, YouTube enabled, no licensing.
+Route blueprints for StemTube Desktop.
+Single-user, local files only, no licensing.
 """
 
 from edition import HAS_LICENSE

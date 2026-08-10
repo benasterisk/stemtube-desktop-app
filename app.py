@@ -1,6 +1,6 @@
 """
-StemTube Desktop Friend — Desktop application for music analysis and stem extraction.
-Free edition with YouTube download support. No licensing, no server deployment,
+StemTube Desktop — Desktop application for music analysis and stem extraction.
+Local-files-only edition: no YouTube, no licensing, no server deployment,
 no mobile, no jam sessions.
 """
 # CRITICAL: Handle demucs subprocess mode BEFORE anything else
@@ -81,7 +81,6 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 import secrets
-import subprocess
 from flask import Flask
 from flask_session import Session
 
@@ -105,7 +104,7 @@ from core.downloads_db import (
     comprehensive_cleanup,
 )
 from extensions import socketio, login_manager
-from edition import HAS_LICENSE, HAS_YOUTUBE
+from edition import HAS_LICENSE
 
 if HAS_LICENSE:
     from core.licensing import is_authorized, get_license_status
@@ -134,64 +133,6 @@ logger.info("Recordings database initialized")
 
 comprehensive_cleanup()
 logger.info("Database cleanup completed")
-
-# ------------------------------------------------------------------
-# yt-dlp auto-update (Friend edition: YouTube enabled)
-# ------------------------------------------------------------------
-if HAS_YOUTUBE:
-    def check_ytdlp_update():
-        """Check and update yt-dlp nightly to avoid YouTube blocks.
-
-        Runs in a BACKGROUND daemon thread so it NEVER delays the web server
-        startup: this is a network call (pip install) that can take 25–120s,
-        and doing it synchronously before socketio.run() made the server miss
-        the launcher's 120s startup timeout on slower machines/connections
-        (the app would fail to open). The update is best-effort; if it's still
-        running when the user triggers a download, yt-dlp simply uses the
-        currently-installed version.
-        """
-        try:
-            logger.info("Checking for yt-dlp nightly updates (background)...")
-            # CREATE_NO_WINDOW prevents a console flash when spawned from a
-            # GUI parent (Tauri shell). Falls back to 0 on non-Windows.
-            no_window = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-            result = subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-U", "--pre", "--quiet", "yt-dlp[default]"],
-                capture_output=True,
-                text=True,
-                timeout=120,
-                creationflags=no_window
-            )
-            if result.returncode == 0:
-                import yt_dlp
-                logger.info(f"yt-dlp nightly is up to date: {yt_dlp.version.__version__}")
-            else:
-                logger.warning(f"yt-dlp update check failed: {result.stderr}")
-        except Exception as e:
-            logger.warning(f"Could not check yt-dlp updates: {e}")
-
-    # Fire-and-forget in a daemon thread so the web server binds the port
-    # immediately (the launcher waits for that, with a 120s budget).
-    import threading as _threading
-    _threading.Thread(target=check_ytdlp_update, daemon=True).start()
-
-    def _ensure_js_runtime():
-        """Fetch the bundled Deno runtime if no JS runtime is present.
-
-        yt-dlp needs deno or node to solve YouTube's JS challenges; without
-        one, downloads fail with "Requested format is not available" on any
-        machine that doesn't happen to have Node installed.
-        """
-        try:
-            from core.js_runtime import ensure_deno_available
-            if ensure_deno_available():
-                logger.info("JS runtime for yt-dlp is available (deno/node)")
-            else:
-                logger.warning("No JS runtime (deno/node) — YouTube downloads may fail")
-        except Exception as e:
-            logger.warning(f"JS runtime check failed: {e}")
-
-    _threading.Thread(target=_ensure_js_runtime, daemon=True).start()
 
 # ------------------------------------------------------------------
 # Flask & SocketIO setup
@@ -274,14 +215,6 @@ from routes import register_all_blueprints
 register_all_blueprints(app)
 
 logger.info("All routes registered successfully")
-
-# ------------------------------------------------------------------
-# YouTube client initialization (Friend edition)
-# ------------------------------------------------------------------
-if HAS_YOUTUBE:
-    from extensions import init_aiotube_client
-    init_aiotube_client()
-    logger.info("YouTube client (yt-dlp) initialized")
 
 # ------------------------------------------------------------------
 # License check (only for editions with licensing)

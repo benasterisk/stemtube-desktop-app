@@ -86,25 +86,3 @@ Type: files; Name: "{app}\stemtubes.db"
 Type: files; Name: "{app}\.secret_key"
 Type: filesandordirs; Name: "{app}\__pycache__"
 
-[Code]
-// Check for Node.js and warn if missing
-function InitializeSetup(): Boolean;
-var
-  ResultCode: Integer;
-begin
-  Result := True;
-
-  // Check Node.js
-  if not Exec('node', '--version', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-  begin
-    if MsgBox(
-      'Node.js was not found on your system.' + #13#10 +
-      'Node.js 20+ may be required for some features.' + #13#10 + #13#10 +
-      'You can install it later from https://nodejs.org/' + #13#10 + #13#10 +
-      'Continue installation without Node.js?',
-      mbConfirmation, MB_YESNO) = IDNO then
-    begin
-      Result := False;
-    end;
-  end;
-end;

@@ -103,7 +103,7 @@ Stemtube_Desktop/
 │   ├── config.py            # Application configuration
 │   ├── config.json          # User settings (managed via UI)
 │   ├── auth_db.py           # Single-user auto-login authentication
-│   ├── download_manager.py  # File import + analysis
+│   ├── audio_analysis.py    # BPM + key detection (STFT + autocorrelation)
 │   ├── stems_extractor.py   # Demucs stem separation
 │   ├── chord_detector.py    # BTC Transformer chord detection
 │   ├── madmom_chord_detector.py  # madmom CRF fallback
@@ -119,7 +119,7 @@ Stemtube_Desktop/
 │   ├── js/
 │   │   ├── app.js           # Desktop entry point
 │   │   ├── app-core.js      # Socket.IO, config
-│   │   ├── app-downloads.js # Search, download UI
+│   │   ├── app-downloads.js # Upload + extraction UI
 │   │   └── mixer/           # 25 modular mixer components
 │   └── css/
 │

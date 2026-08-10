@@ -96,11 +96,13 @@ c "Installing PyTorch for: $GPU_LABEL"
 "$VENV_PY" -m pip install torch torchaudio --index-url "$TORCH_INDEX"
 
 # ── 5. remaining Python deps ───────────────────────────────────────────────
+# demucs is pinned to 4.0.1: 4.1.0 removed `demucs.separate.load_track`, which
+# core/stems_extractor.py still uses.
 c "Installing audio/ML dependencies (this can take a few minutes)…"
 "$VENV_PY" -m pip install \
   Flask Flask-Login Flask-Session Flask-SocketIO eventlet requests python-dotenv \
-  Pillow librosa soundfile scipy scikit-learn numpy \
-  demucs faster-whisper syncedlyrics pychord beautifulsoup4
+  Pillow librosa soundfile scipy scikit-learn numpy psutil \
+  "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4
 
 # madmom (chord/beat detection) — needs Cython + numpy first, builds from source on Linux
 c "Installing madmom (chord & beat detection)…"
