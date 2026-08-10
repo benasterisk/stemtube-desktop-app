@@ -208,13 +208,26 @@
     <div class="container">
         <div class="section-label fade-in"><i class="fab fa-linux"></i> Linux</div>
         <h2 class="section-title fade-in" data-i18n="linux.title">Install on Linux</h2>
-        <p class="section-subtitle fade-in" data-i18n="linux.desc" style="max-width:720px;margin:0 auto 2rem;text-align:center;">
-            Same engine, no Tauri, no binary. One command clones the app, builds a Python environment (PyTorch CPU or CUDA auto-detected), installs FFmpeg and all dependencies, and adds a <code>stemtube</code> launcher plus a desktop entry. Runs in your browser as a local app window.
+        <p class="section-subtitle fade-in" data-i18n="linux.desc" style="max-width:720px;margin:0 auto 2.5rem;text-align:center;">
+            Same engine, no Tauri, no binary. One command builds a Python environment (PyTorch CPU or CUDA auto-detected), installs FFmpeg and every dependency, and adds a <code>stemtube</code> launcher plus an application-menu entry. Runs in your browser as a local app window.
         </p>
         <div class="fade-in" style="max-width:760px;margin:0 auto;">
-            <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1.1rem 1.3rem;overflow-x:auto;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95rem;">curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/install.sh | bash</code></pre>
-            <p style="color:#999;font-size:.9rem;margin-top:1rem;text-align:center;" data-i18n="linux.req">
-                Requires: a 64-bit Linux distro, Python 3.10+, git. NVIDIA GPU optional (CUDA accelerated), otherwise runs on CPU. Then launch with <code>stemtube</code>.
+            <p style="color:#e8e8f0;font-weight:600;margin-bottom:.5rem;" data-i18n="linux.step1">1. Install the prerequisites — <code>git</code> and <code>python3</code> (3.10+):</p>
+            <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1rem 1.3rem;overflow-x:auto;margin-bottom:.4rem;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;"># Debian / Ubuntu
+sudo apt install git python3 python3-venv
+# Fedora
+sudo dnf install git python3
+# Arch
+sudo pacman -S git python</code></pre>
+
+            <p style="color:#e8e8f0;font-weight:600;margin:1.6rem 0 .5rem;" data-i18n="linux.step2">2. Run the installer (it does everything else):</p>
+            <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1.1rem 1.3rem;overflow-x:auto;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;">curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/install.sh | bash</code></pre>
+
+            <p style="color:#e8e8f0;font-weight:600;margin:1.6rem 0 .5rem;" data-i18n="linux.step3">3. Launch it — type <code>stemtube</code> in a terminal, or click <strong>StemTube Desktop</strong> in your applications menu (the Linux equivalent of the Windows Start menu):</p>
+            <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1.1rem 1.3rem;overflow-x:auto;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;">stemtube</code></pre>
+
+            <p style="color:#999;font-size:.9rem;margin-top:1.4rem;text-align:center;" data-i18n="linux.req">
+                64-bit Linux · NVIDIA GPU optional (CUDA accelerated), otherwise CPU. Run it on real hardware — inside a VM, the emulated CPU can hide the AVX instructions PyTorch needs.
             </p>
             <p style="text-align:center;margin-top:1rem;">
                 <a href="https://github.com/benasterisk/stemtube-desktop-app/blob/main/install.sh" target="_blank" class="btn btn-secondary">
