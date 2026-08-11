@@ -1,0 +1,176 @@
+name: Build Linux AppImage
+
+# Builds self-contained StemTube AppImages (CPU + GPU) and attaches them to a
+# release. Mirrors the Windows Tauri model: a small launcher downloads the right
+# variant. Each AppImage bundles a relocatable CPython 3.12 + all Python deps
+# (torch, demucs, faster-whisper, madmom, librosa…) + ffmpeg, so end users need
+# no Python, no pip, no system CUDA — only the NVIDIA driver for the GPU build.
+#
+# Trigger: push a tag like `linux-v2.0.0`, or run manually (workflow_dispatch).
+
+on:
+  push:
+    tags: ["linux-v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to attach assets to (e.g. linux-v2.0.0)"
+        required: true
+        default: "linux-dev"
+
+permissions:
+  contents: write   # needed to create/upload release assets
+
+env:
+  PY_VERSION: "3.12"
+  # Pin python-build-standalone for reproducibility (astral-sh). Update deliberately.
+  PBS_TAG: "20260807"
+  PBS_PY: "cpython-3.12.13+20260807-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+  APP_NAME: "StemTube"
+
+jobs:
+  build:
+    # Oldest reasonable glibc for broad distro compatibility (glibc 2.35).
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [cpu, gpu]
+    steps:
+      - name: Checkout app source
+        uses: actions/checkout@v4
+
+      - name: Install build tools (appimagetool needs FUSE2; ffmpeg to bundle)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libfuse2 wget xz-utils file ffmpeg
+
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ matrix.variant }}-${{ hashFiles('install.sh') }}
+
+      - name: Fetch relocatable CPython (python-build-standalone)
+        run: |
+          set -euxo pipefail
+          wget -q "https://github.com/astral-sh/python-build-standalone/releases/download/${PBS_TAG}/${PBS_PY}" -O py.tar.gz
+          mkdir -p AppDir/usr
+          tar -xzf py.tar.gz -C AppDir/usr    # creates AppDir/usr/python/{bin,lib,...}
+          AppDir/usr/python/bin/python3 --version
+
+      - name: Install Python dependencies into the bundled interpreter
+        run: |
+          set -euxo pipefail
+          PY=AppDir/usr/python/bin/python3
+          "$PY" -m pip install --upgrade pip wheel setuptools
+
+          if [ "${{ matrix.variant }}" = "gpu" ]; then
+            TORCH_INDEX="https://download.pytorch.org/whl/cu124"
+          else
+            TORCH_INDEX="https://download.pytorch.org/whl/cpu"
+          fi
+          "$PY" -m pip install torch torchaudio --index-url "$TORCH_INDEX"
+
+          # Runtime deps (same set as install.sh, demucs pinned to 4.0.1)
+          "$PY" -m pip install \
+            Flask Flask-Login Flask-Session Flask-SocketIO requests python-dotenv \
+            Pillow librosa soundfile scipy scikit-learn numpy psutil \
+            "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4 \
+            pywebview
+
+          # madmom: try the stable pip release first (fast); if the beat/chord
+          # smoke-test fails we fall back to the git build (numpy-compat fix).
+          "$PY" -m pip install Cython
+          printf 'import numpy, madmom\nfrom madmom.features.downbeats import RNNDownBeatProcessor\nRNNDownBeatProcessor()\nprint("madmom OK with numpy", numpy.__version__)\n' > /tmp/madmom_smoke.py
+          if "$PY" -m pip install "madmom==0.16.1" && "$PY" /tmp/madmom_smoke.py; then
+            echo "madmom 0.16.1 works"
+          else
+            echo "madmom 0.16.1 failed smoke test — building 0.17 from git"
+            "$PY" -m pip uninstall -y madmom || true
+            "$PY" -m pip install "madmom @ git+https://github.com/CPJKU/madmom@main"
+          fi
+          # apply the repo's numpy-compat patch if present (no-op when already fine)
+          [ -f patch_madmom.py ] && "$PY" patch_madmom.py || true
+
+      - name: Copy the application into the AppDir
+        run: |
+          set -euxo pipefail
+          APP=AppDir/usr/src/stemtube
+          mkdir -p "$APP"
+          # ship the runtime app, exclude Windows/dev artifacts and heavy junk
+          rsync -a --delete \
+            --exclude '.git' --exclude 'venv' --exclude '__pycache__' \
+            --exclude 'src-tauri' --exclude 'dist' --exclude 'node_modules' \
+            --exclude '*.bat' --exclude '*.iss' --exclude 'build_*.py' \
+            --exclude 'nuitka_build.py' --exclude '*.spec' --exclude 'tests' \
+            ./ "$APP"/
+          # bundle ffmpeg/ffprobe on the AppImage's internal PATH
+          mkdir -p AppDir/usr/bin
+          cp "$(command -v ffmpeg)"  AppDir/usr/bin/
+          cp "$(command -v ffprobe)" AppDir/usr/bin/
+
+      - name: AppRun, .desktop and icon
+        run: |
+          set -euxo pipefail
+          # icon (reuse repo icon if present, else a 1x1 placeholder)
+          if [ -f src-tauri/icons/icon.png ]; then cp src-tauri/icons/icon.png AppDir/stemtube.png
+          else printf '\x89PNG\r\n\x1a\n' > AppDir/stemtube.png; fi
+
+          cat > AppDir/stemtube.desktop <<'DESK'
+          [Desktop Entry]
+          Type=Application
+          Name=StemTube Desktop
+          Exec=AppRun
+          Icon=stemtube
+          Categories=AudioVideo;Audio;
+          Terminal=false
+          DESK
+
+          cat > AppDir/AppRun <<'RUN'
+          #!/bin/bash
+          # AppRun: launch StemTube from inside the AppImage. Self-contained:
+          # bundled python + ffmpeg on PATH, user data in ~/.stemtube-desktop.
+          HERE="$(dirname "$(readlink -f "$0")")"
+          export PATH="$HERE/usr/bin:$HERE/usr/python/bin:$PATH"
+          export STEMTUBE_DATA_DIR="${STEMTUBE_DATA_DIR:-$HOME/.stemtube-desktop}"
+          mkdir -p "$STEMTUBE_DATA_DIR"
+          # a writable secret key + session dir outside the read-only image
+          export FLASK_SECRET_KEY="${FLASK_SECRET_KEY:-$(cat "$STEMTUBE_DATA_DIR/.secret_key" 2>/dev/null || (head -c 32 /dev/urandom | base64 | tee "$STEMTUBE_DATA_DIR/.secret_key"))}"
+          cd "$HERE/usr/src/stemtube"
+          exec "$HERE/usr/python/bin/python3" launcher.py "$@"
+          RUN
+          chmod +x AppDir/AppRun
+
+      - name: Package with appimagetool
+        run: |
+          set -euxo pipefail
+          wget -q "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool
+          chmod +x appimagetool
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          OUT="${APP_NAME}-x86_64-${{ matrix.variant }}.AppImage"
+          ./appimagetool AppDir "$OUT"
+          ls -lh "$OUT"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+
+      - name: Split if larger than the 2 GB GitHub asset limit
+        run: |
+          set -euxo pipefail
+          SZ=$(stat -c%s "$OUT")
+          LIMIT=$((1900*1024*1024))
+          mkdir -p out
+          if [ "$SZ" -gt "$LIMIT" ]; then
+            echo "$OUT is ${SZ} bytes > 2GB — splitting"
+            split -b 1900M -d -a 1 "$OUT" "out/${OUT}.part"
+            sha256sum "$OUT" > "out/${OUT}.sha256"
+          else
+            mv "$OUT" out/
+          fi
+          ls -lh out/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
+          files: out/*
+          fail_on_unmatched_files: true
