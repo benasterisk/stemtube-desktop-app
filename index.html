@@ -209,27 +209,29 @@
         <div class="section-label fade-in"><i class="fab fa-linux"></i> Linux</div>
         <h2 class="section-title fade-in" data-i18n="linux.title">Install on Linux</h2>
         <p class="section-subtitle fade-in" data-i18n="linux.desc" style="max-width:760px;margin:0 auto 2.5rem;text-align:center;">
-            Just like on Windows: one command detects your hardware, downloads the matching engine (CPU or NVIDIA GPU) and launches the app. Nothing to install by hand.
+            Just like the Windows installer: download one small app, open it, and it detects your hardware, downloads the matching engine (CPU or NVIDIA GPU) and launches StemTube. No terminal, no <code>sudo</code>, nothing to install by hand.
         </p>
         <div class="fade-in" style="max-width:820px;margin:0 auto;">
 
-            <!-- Option A: one-command installer (recommended) -->
-            <div style="border:1px solid rgba(35,197,82,.4);border-radius:14px;padding:1.5rem 1.6rem;margin-bottom:1.5rem;background:rgba(35,197,82,.05);">
-                <h3 style="margin:0 0 .3rem;color:#23c552;" data-i18n="linux.installer.title">Recommended — one command</h3>
-                <p style="color:#cfcfd6;margin:.2rem 0 1rem;" data-i18n="linux.installer.desc">
-                    Paste this in a terminal. It detects your GPU, downloads the right self-contained engine, registers a <code>stemtube</code> command plus an app-menu entry, and starts StemTube.
+            <!-- Option A: downloadable GUI installer (recommended) -->
+            <div style="border:1px solid rgba(35,197,82,.4);border-radius:14px;padding:1.7rem 1.6rem;margin-bottom:1.5rem;background:rgba(35,197,82,.05);text-align:center;">
+                <h3 style="margin:0 0 .4rem;color:#23c552;" data-i18n="linux.installer.title">Recommended — download &amp; open</h3>
+                <p style="color:#cfcfd6;margin:.2rem auto 1.3rem;max-width:560px;" data-i18n="linux.installer.desc">
+                    A tiny 1 MB installer with a graphical setup window — the Linux equivalent of the Windows <code>.exe</code>. It detects your GPU, downloads the right self-contained engine, adds StemTube to your apps menu, and starts it.
                 </p>
-                <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1.1rem 1.3rem;overflow-x:auto;margin:0;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;">curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/stemtube-linux-launcher.sh | bash</code></pre>
-                <p style="color:#999;font-size:.88rem;margin:.8rem 0 0;" data-i18n="linux.installer.note">
-                    After that, just launch <strong>StemTube Desktop</strong> from your applications menu, or run <code>stemtube</code>. The engine is downloaded once (CPU ~560 MB / GPU ~3 GB).
+                <a href="https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-Installer-x86_64.AppImage" class="btn btn-primary" style="font-size:1.05rem;padding:.9rem 1.8rem;">
+                    <i class="fas fa-download"></i> <span data-i18n="linux.installer.btn">Download the StemTube Installer (1 MB)</span>
+                </a>
+                <p style="color:#999;font-size:.88rem;margin:1.2rem auto 0;max-width:600px;" data-i18n="linux.installer.note">
+                    After downloading: right-click the file → <strong>Properties</strong> → <strong>Permissions</strong> → tick <em>Allow executing as program</em>, then double-click it. The engine is downloaded once (CPU ~560 MB / NVIDIA GPU ~3 GB).
                 </p>
             </div>
 
             <!-- Option B: manual AppImage -->
             <div style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:1.5rem 1.6rem;">
-                <h3 style="margin:0 0 .3rem;color:#e8e8f0;" data-i18n="linux.manual.title">Or download the AppImage directly</h3>
+                <h3 style="margin:0 0 .3rem;color:#e8e8f0;" data-i18n="linux.manual.title">Or download an engine directly</h3>
                 <p style="color:#cfcfd6;margin:.2rem 0 1rem;" data-i18n="linux.manual.desc">
-                    Prefer to grab the file yourself? Each AppImage is fully self-contained (Python, PyTorch, FFmpeg bundled).
+                    Prefer to skip the installer and grab an engine yourself? Each AppImage is fully self-contained (Python, PyTorch, FFmpeg bundled).
                 </p>
                 <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem;">
                     <a href="https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-x86_64-cpu.AppImage" class="btn btn-primary">
@@ -240,9 +242,9 @@
                     </a>
                 </div>
                 <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1rem 1.3rem;overflow-x:auto;margin:0;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;">chmod +x StemTube-x86_64-cpu.AppImage
-./StemTube-x86_64-cpu.AppImage</code></pre>
+./StemTube-x86_64-cpu.AppImage --appimage-extract-and-run</code></pre>
                 <p style="color:#999;font-size:.88rem;margin:.8rem 0 0;" data-i18n="linux.manual.note">
-                    Needs <code>libfuse2</code> (<code>sudo apt install libfuse2</code>). The GPU version (~3 GB) comes in two parts — join them with <code>cat StemTube-x86_64-gpu.AppImage.part* &gt; StemTube-x86_64-gpu.AppImage</code>.
+                    <code>--appimage-extract-and-run</code> means no <code>libfuse2</code> is needed. The GPU version (~3 GB) comes in two parts — join them with <code>cat StemTube-x86_64-gpu.AppImage.part* &gt; StemTube-x86_64-gpu.AppImage</code>.
                 </p>
             </div>
 
