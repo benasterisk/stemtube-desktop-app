@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=StemTube Installer
+Comment=Install StemTube Desktop (detects your GPU and downloads the right engine)
+Exec=AppRun
+Icon=stemtube-installer
+Terminal=false
+Categories=AudioVideo;Audio;

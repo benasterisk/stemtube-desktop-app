@@ -27,27 +27,27 @@ On first launch the app detects your hardware and downloads the matching engine 
 
 ## Install on Linux
 
-Two ways, from the [Linux release](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/linux-v2.0.0):
+**Recommended — the graphical installer.** Download **[StemTube-Installer-x86_64.AppImage](https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-Installer-x86_64.AppImage)** (~1 MB) — the Linux equivalent of the Windows `.exe`. Right-click it → Properties → Permissions → *Allow executing as program*, then double-click. A setup window opens, detects your GPU, downloads the matching self-contained engine (CPU ~560 MB / NVIDIA GPU ~3 GB), adds StemTube to your applications menu and launches it. No terminal, no `sudo`, no `libfuse2` — the engine is launched with `--appimage-extract-and-run`.
 
-**Option A — AppImage (recommended).** A single self-contained file bundling Python, PyTorch and FFmpeg. No dependencies, no Python-version concerns.
+**Or download an engine directly**, from the [Linux release](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/linux-v2.0.0):
 
 ```bash
-# CPU (~560 MB) — works on any 64-bit Linux
+# CPU (~560 MB) — works on any 64-bit Linux, no libfuse2 needed
 wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-x86_64-cpu.AppImage
 chmod +x StemTube-x86_64-cpu.AppImage
-./StemTube-x86_64-cpu.AppImage
+./StemTube-x86_64-cpu.AppImage --appimage-extract-and-run
 ```
 
-For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0` + `.part1` (~3 GB, CUDA 12.4) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`. Needs `libfuse2` (`sudo apt install libfuse2` on Debian/Ubuntu).
+For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0` + `.part1` (~3 GB, CUDA 12.4) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`.
 
-**Option B — install script.** Clones the app and builds a Python environment from source (system-wide install). Requires `git` and `python3` **3.10–3.13** (not 3.14 yet — PyTorch has no wheel for it).
+**Developers — from-source script.** Clones the app and builds a Python environment from source. Requires `git` and `python3` **3.10–3.13** (not 3.14 yet — PyTorch has no wheel for it).
 
 ```bash
 sudo apt install git python3 python3-venv      # Debian/Ubuntu prerequisites
 curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/install.sh | bash
 ```
 
-Then launch with `stemtube` or from your applications menu. Requires a 64-bit Linux (glibc ≥ 2.35) with an AVX-capable CPU — PyTorch needs AVX, so it won't run in a VM that masks it (use `--cpu-profile host` on VirtualBox, or WSL2, or bare metal).
+Requires a 64-bit Linux (glibc ≥ 2.35) with an AVX-capable CPU — PyTorch needs AVX, so it won't run in a VM that masks it (use `--cpu-profile host` on VirtualBox, or WSL2, or bare metal).
 
 ## Quick Start (from source)
 

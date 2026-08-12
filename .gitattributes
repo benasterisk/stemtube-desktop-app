@@ -1,0 +1,5 @@
+
+# Linux installer scripts must stay LF and executable
+linux-installer/*.sh text eol=lf
+linux-installer/AppRun text eol=lf
+linux-installer/*.desktop text eol=lf

@@ -47,10 +47,18 @@ python launcher.py
 
 ## Linux distribution (AppImage)
 
-Two self-contained AppImages (CPU + GPU) mirror the Windows model: a small
-launcher (`stemtube-linux-launcher.sh`) detects the GPU and downloads the right
-variant from the `linux-v2.0.0` release. Build is done by
+Mirrors the Windows model. A tiny (~1 MB) **graphical installer**
+(`linux-installer/`, the Linux equivalent of `setup.exe`) is what users
+download: they double-click it, a GTK window (zenity) detects the GPU,
+downloads the matching self-contained engine (CPU or NVIDIA GPU) from the
+`linux-v2.0.0` release, adds an apps-menu entry and launches StemTube. The
+engine is run with `--appimage-extract-and-run` → **no `libfuse2`, no `sudo`**.
+See `linux-installer/README.md` to build the installer.
+
+Two self-contained engine AppImages (CPU + GPU) back it. Build is done by
 `.github/workflows/build-appimage.yml` (or manually — same steps).
+(`stemtube-linux-launcher.sh` is the older curl|bash equivalent, kept as a
+fallback for headless/CLI installs.)
 
 **Build recipe** (per variant):
 1. Fetch a relocatable CPython 3.12 from `python-build-standalone` (astral-sh),
