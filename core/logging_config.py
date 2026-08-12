@@ -90,9 +90,16 @@ def setup_logging(app_name="stemtube", log_level="INFO", log_dir="logs"):
         log_dir: Directory to store log files (relative to app root)
     """
     
-    # Create logs directory
-    log_path = Path(__file__).parent.parent / log_dir
-    log_path.mkdir(exist_ok=True)
+    # Create logs directory in the writable user-data dir. APP_DIR is a
+    # read-only mount when running from an AppImage, so logging next to the
+    # code raises OSError(Errno 30). Fall back to the code dir only if the
+    # user-data location can't be resolved.
+    try:
+        from core.config import USER_DATA_DIR
+        log_path = Path(USER_DATA_DIR) / log_dir
+    except Exception:
+        log_path = Path(__file__).parent.parent / log_dir
+    log_path.mkdir(parents=True, exist_ok=True)
     
     # Convert log level string to logging constant
     numeric_level = getattr(logging, log_level.upper(), logging.INFO)
