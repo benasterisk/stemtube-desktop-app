@@ -40,12 +40,19 @@ jobs:
       - name: Checkout app source
         uses: actions/checkout@v4
 
-      - name: Install build tools (appimagetool needs FUSE2; ffmpeg to bundle; clang for madmom)
+      - name: Install build tools (appimagetool needs FUSE2; ffmpeg to bundle; clang for madmom; GTK/WebKit for the native window)
         run: |
           sudo apt-get update -qq
           # clang is required because python-build-standalone's sysconfig invokes
           # clang (not gcc) to compile C extensions such as madmom.
           sudo apt-get install -y --no-install-recommends libfuse2 wget xz-utils file ffmpeg build-essential clang
+          # GTK3 + WebKit2GTK so pywebview can open a real native window on Linux.
+          # We need the dev headers to build PyGObject against them, plus the
+          # runtime libs, GIR typelibs and gdk-pixbuf loaders to bundle.
+          sudo apt-get install -y --no-install-recommends \
+            libgirepository1.0-dev libcairo2-dev pkg-config gir1.2-gtk-3.0 \
+            gir1.2-webkit2-4.0 libwebkit2gtk-4.0-37 libgtk-3-0 \
+            gir1.2-gdkpixbuf-2.0 librsvg2-common
 
       - name: Cache pip downloads
         uses: actions/cache@v4
@@ -81,6 +88,13 @@ jobs:
             "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4 \
             pywebview
 
+          # PyGObject so pywebview has a GTK backend (the 'gi' module) and opens
+          # a real native window on Linux. pip builds it against the system GTK3
+          # dev headers installed above; the matching libs + typelibs are bundled
+          # into the AppImage in a later step.
+          "$PY" -m pip install pycairo PyGObject
+          "$PY" -c "import gi; gi.require_version('Gtk','3.0'); from gi.repository import Gtk; print('PyGObject/GTK OK')"
+
           # madmom: try the stable pip release first (fast); if the beat/chord
           # smoke-test fails we fall back to the git build (numpy-compat fix).
           "$PY" -m pip install Cython
@@ -112,6 +126,63 @@ jobs:
           cp "$(command -v ffmpeg)"  AppDir/usr/bin/
           cp "$(command -v ffprobe)" AppDir/usr/bin/
 
+      - name: Bundle GTK3 + WebKit2GTK for the native window
+        run: |
+          set -euxo pipefail
+          # pywebview's GTK backend needs, at run time: the GTK/WebKit shared
+          # libraries, their GObject-introspection typelibs, and the gdk-pixbuf
+          # loaders. We copy them into the AppImage and point the AppRun at them.
+          LIBDIR=AppDir/usr/lib
+          TLDIR=AppDir/usr/lib/girepository-1.0
+          mkdir -p "$LIBDIR" "$TLDIR"
+
+          ARCH_TRIPLET=x86_64-linux-gnu
+
+          # 1) GIR typelibs used by pywebview's gtk backend
+          for tl in Gtk-3.0 Gdk-3.0 GdkPixbuf-2.0 Gio-2.0 GObject-2.0 GLib-2.0 \
+                    Pango-1.0 PangoCairo-1.0 cairo-1.0 Atk-1.0 Soup-2.4 \
+                    JavaScriptCore-4.0 WebKit2-4.0 HarfBuzz-0.0 freetype2-2.0 \
+                    GModule-2.0 Gvc-1.0; do
+            f="/usr/lib/${ARCH_TRIPLET}/girepository-1.0/${tl}.typelib"
+            [ -f "$f" ] && cp -v "$f" "$TLDIR/" || true
+          done
+
+          # 2) The WebKit + GTK shared libraries, resolved transitively via ldd
+          #    from libwebkit2gtk (which pulls in gtk, gdk, soup, javascriptcore…).
+          seed_libs=$(ls /usr/lib/${ARCH_TRIPLET}/libwebkit2gtk-4.0.so* \
+                         /usr/lib/${ARCH_TRIPLET}/libjavascriptcoregtk-4.0.so* \
+                         /usr/lib/${ARCH_TRIPLET}/libgtk-3.so* \
+                         /usr/lib/${ARCH_TRIPLET}/libgdk-3.so* 2>/dev/null || true)
+          # Copy the seeds and every non-glibc dependency they resolve to.
+          # Skip the core system libs that must come from the host to avoid
+          # ABI clashes (libc, libstdc++, libGL, X11, and the dynamic loader).
+          SKIP='libc\.so|libm\.so|libdl\.so|libpthread|librt\.so|ld-linux|libstdc\+\+|libgcc_s|libGL\.|libGLX|libX11|libxcb|libXext|libXrender|libXi\.|libXfixes|libXdamage|libXcomposite|libXrandr|libdrm|libgbm|libwayland'
+          {
+            for s in $seed_libs; do echo "$s"; ldd "$s" 2>/dev/null | awk '/=> \//{print $3}'; done
+          } | sort -u | while read -r lib; do
+            [ -f "$lib" ] || continue
+            base=$(basename "$lib")
+            echo "$base" | grep -Eq "$SKIP" && continue
+            cp -Lu "$lib" "$LIBDIR/" 2>/dev/null || true
+          done
+
+          # 3) gdk-pixbuf loaders (needed to render icons/images in the webview)
+          PIX_SRC=$(dirname "$(find /usr/lib/${ARCH_TRIPLET}/gdk-pixbuf-2.0 -name 'loaders.cache' 2>/dev/null | head -1)")
+          if [ -n "$PIX_SRC" ] && [ -d "$PIX_SRC" ]; then
+            mkdir -p AppDir/usr/lib/gdk-pixbuf-2.0
+            cp -r /usr/lib/${ARCH_TRIPLET}/gdk-pixbuf-2.0/* AppDir/usr/lib/gdk-pixbuf-2.0/ 2>/dev/null || true
+          fi
+
+          # 4) WebKit's out-of-process helpers (WebKitNetworkProcess /
+          #    WebKitWebProcess) — without them the webview stays blank.
+          WK_LIBEXEC=$(dirname "$(find /usr/lib/${ARCH_TRIPLET} -name 'WebKitWebProcess' 2>/dev/null | head -1)")
+          if [ -n "$WK_LIBEXEC" ] && [ -d "$WK_LIBEXEC" ]; then
+            mkdir -p AppDir/usr/libexec/webkit2gtk-4.0
+            cp -r "$WK_LIBEXEC"/* AppDir/usr/libexec/webkit2gtk-4.0/ 2>/dev/null || true
+          fi
+
+          echo "Bundled $(ls "$LIBDIR" | wc -l) libs and $(ls "$TLDIR" | wc -l) typelibs."
+
       - name: AppRun, .desktop and icon
         run: |
           set -euxo pipefail
@@ -135,6 +206,22 @@ jobs:
           # bundled python + ffmpeg on PATH, user data in ~/.stemtube-desktop.
           HERE="$(dirname "$(readlink -f "$0")")"
           export PATH="$HERE/usr/bin:$HERE/usr/python/bin:$PATH"
+
+          # --- bundled GTK/WebKit so pywebview opens a real native window ---
+          export LD_LIBRARY_PATH="$HERE/usr/lib:${LD_LIBRARY_PATH:-}"
+          export GI_TYPELIB_PATH="$HERE/usr/lib/girepository-1.0:${GI_TYPELIB_PATH:-}"
+          # gdk-pixbuf loaders (image/icon rendering inside the webview)
+          if [ -f "$HERE/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" ]; then
+            export GDK_PIXBUF_MODULE_FILE="$HERE/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+            export GDK_PIXBUF_MODULEDIR="$HERE/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+          fi
+          # WebKit's out-of-process helpers
+          if [ -d "$HERE/usr/libexec/webkit2gtk-4.0" ]; then
+            export WEBKIT_EXEC_PATH="$HERE/usr/libexec/webkit2gtk-4.0"
+          fi
+          # WebKit's compositing crashes under some VM GL stacks; software GL is safe.
+          export WEBKIT_DISABLE_COMPOSITING_MODE=1
+
           export STEMTUBE_DATA_DIR="${STEMTUBE_DATA_DIR:-$HOME/.stemtube-desktop}"
           mkdir -p "$STEMTUBE_DATA_DIR"
           # a writable secret key + session dir outside the read-only image

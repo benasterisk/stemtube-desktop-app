@@ -89,12 +89,23 @@ def start_flask_server(port):
 
 
 def launch_native_window(port):
-    """Open a native desktop window with pywebview."""
+    """Open a native desktop window with pywebview.
+
+    Falls back to the default browser if pywebview is missing, or if no GUI
+    backend is available (e.g. on a Linux box without the GTK/Qt Python
+    bindings, where webview.start() raises WebViewException at runtime rather
+    than failing to import).
+    """
     try:
         import webview
+    except ImportError:
+        print("[LAUNCHER] pywebview not installed — opening in the browser instead")
+        launch_browser(port)
+        return
 
-        url = f'http://127.0.0.1:{port}'
+    url = f'http://127.0.0.1:{port}'
 
+    try:
         window = webview.create_window(
             title='StemTube Desktop',
             url=url,
@@ -116,16 +127,13 @@ def launch_native_window(port):
         # Start pywebview (blocks until window is closed)
         webview.start(debug=args.debug)
 
-    except ImportError:
-        print("[LAUNCHER] pywebview not installed — opening in default browser instead")
-        print(f"[LAUNCHER] Install it with: pip install pywebview")
-        webbrowser.open(f'http://127.0.0.1:{port}')
-        # Keep the process alive
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            pass
+    except Exception as exc:
+        # No usable GUI backend (no GTK 'gi' / no Qt 'qtpy'), or the window
+        # failed to open. Don't crash — the Flask server is already running,
+        # so just open the app in the browser.
+        print(f"[LAUNCHER] Native window unavailable ({type(exc).__name__}: {exc})")
+        print("[LAUNCHER] Opening StemTube in your default browser instead.")
+        launch_browser(port)
 
 
 def launch_browser(port):
