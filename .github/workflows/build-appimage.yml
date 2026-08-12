@@ -40,10 +40,12 @@ jobs:
       - name: Checkout app source
         uses: actions/checkout@v4
 
-      - name: Install build tools (appimagetool needs FUSE2; ffmpeg to bundle)
+      - name: Install build tools (appimagetool needs FUSE2; ffmpeg to bundle; clang for madmom)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends libfuse2 wget xz-utils file ffmpeg
+          # clang is required because python-build-standalone's sysconfig invokes
+          # clang (not gcc) to compile C extensions such as madmom.
+          sudo apt-get install -y --no-install-recommends libfuse2 wget xz-utils file ffmpeg build-essential clang
 
       - name: Cache pip downloads
         uses: actions/cache@v4
@@ -147,9 +149,13 @@ jobs:
           set -euxo pipefail
           wget -q "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool
           chmod +x appimagetool
+          # Fetch the type2 runtime up front and pass it explicitly. appimagetool
+          # otherwise downloads it mid-build, which fails hard on any network
+          # hiccup ("Failed to download runtime: server returned status code 0").
+          wget -q "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64" -O runtime-x86_64
           export APPIMAGE_EXTRACT_AND_RUN=1
           OUT="${APP_NAME}-x86_64-${{ matrix.variant }}.AppImage"
-          ./appimagetool AppDir "$OUT"
+          ./appimagetool --runtime-file runtime-x86_64 AppDir "$OUT"
           ls -lh "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
 
