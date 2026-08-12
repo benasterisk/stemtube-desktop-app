@@ -209,48 +209,48 @@
         <div class="section-label fade-in"><i class="fab fa-linux"></i> Linux</div>
         <h2 class="section-title fade-in" data-i18n="linux.title">Install on Linux</h2>
         <p class="section-subtitle fade-in" data-i18n="linux.desc" style="max-width:760px;margin:0 auto 2.5rem;text-align:center;">
-            Two ways to install on Linux. The <strong>AppImage</strong> is the easy one — a single self-contained file, nothing to install. The <strong>script</strong> is for those who prefer a system install from source.
+            Just like on Windows: one command detects your hardware, downloads the matching engine (CPU or NVIDIA GPU) and launches the app. Nothing to install by hand.
         </p>
         <div class="fade-in" style="max-width:820px;margin:0 auto;">
 
-            <!-- Option A: AppImage (recommended) -->
+            <!-- Option A: one-command installer (recommended) -->
             <div style="border:1px solid rgba(35,197,82,.4);border-radius:14px;padding:1.5rem 1.6rem;margin-bottom:1.5rem;background:rgba(35,197,82,.05);">
-                <h3 style="margin:0 0 .3rem;color:#23c552;" data-i18n="linux.appimage.title">Option A — AppImage (recommended)</h3>
-                <p style="color:#cfcfd6;margin:.2rem 0 1rem;" data-i18n="linux.appimage.desc">
-                    One self-contained file with everything bundled — Python, PyTorch, FFmpeg. No dependencies, no Python version to worry about. Download, make it executable, run.
+                <h3 style="margin:0 0 .3rem;color:#23c552;" data-i18n="linux.installer.title">Recommended — one command</h3>
+                <p style="color:#cfcfd6;margin:.2rem 0 1rem;" data-i18n="linux.installer.desc">
+                    Paste this in a terminal. It detects your GPU, downloads the right self-contained engine, registers a <code>stemtube</code> command plus an app-menu entry, and starts StemTube.
+                </p>
+                <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1.1rem 1.3rem;overflow-x:auto;margin:0;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;">curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/stemtube-linux-launcher.sh | bash</code></pre>
+                <p style="color:#999;font-size:.88rem;margin:.8rem 0 0;" data-i18n="linux.installer.note">
+                    After that, just launch <strong>StemTube Desktop</strong> from your applications menu, or run <code>stemtube</code>. The engine is downloaded once (CPU ~560 MB / GPU ~3 GB).
+                </p>
+            </div>
+
+            <!-- Option B: manual AppImage -->
+            <div style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:1.5rem 1.6rem;">
+                <h3 style="margin:0 0 .3rem;color:#e8e8f0;" data-i18n="linux.manual.title">Or download the AppImage directly</h3>
+                <p style="color:#cfcfd6;margin:.2rem 0 1rem;" data-i18n="linux.manual.desc">
+                    Prefer to grab the file yourself? Each AppImage is fully self-contained (Python, PyTorch, FFmpeg bundled).
                 </p>
                 <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem;">
                     <a href="https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-x86_64-cpu.AppImage" class="btn btn-primary">
-                        <i class="fas fa-download"></i> <span data-i18n="linux.appimage.cpu">Download (CPU, ~560 MB)</span>
+                        <i class="fas fa-download"></i> <span data-i18n="linux.manual.cpu">CPU (~560 MB)</span>
                     </a>
                     <a href="https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/linux-v2.0.0" target="_blank" class="btn btn-secondary">
-                        <i class="fab fa-nvidia"></i> <span data-i18n="linux.appimage.gpu">GPU version (NVIDIA)</span>
+                        <i class="fab fa-nvidia"></i> <span data-i18n="linux.manual.gpu">GPU version (NVIDIA)</span>
                     </a>
                 </div>
                 <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1rem 1.3rem;overflow-x:auto;margin:0;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;">chmod +x StemTube-x86_64-cpu.AppImage
 ./StemTube-x86_64-cpu.AppImage</code></pre>
-                <p style="color:#999;font-size:.88rem;margin:.8rem 0 0;" data-i18n="linux.appimage.note">
-                    The app opens in your browser. GPU version (~3 GB) comes in two parts — join them with <code>cat StemTube-x86_64-gpu.AppImage.part* &gt; StemTube-x86_64-gpu.AppImage</code>. Needs libfuse2 (<code>sudo apt install libfuse2</code> on Debian/Ubuntu).
-                </p>
-            </div>
-
-            <!-- Option B: install script -->
-            <div style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:1.5rem 1.6rem;">
-                <h3 style="margin:0 0 .3rem;color:#e8e8f0;" data-i18n="linux.script.title">Option B — install script</h3>
-                <p style="color:#cfcfd6;margin:.2rem 0 1rem;" data-i18n="linux.script.desc">
-                    Clones the app and builds a Python environment from source. Prefer this if you want a system-wide install. Requires <code>git</code> and <code>python3</code> (3.10–3.13 — <strong>not 3.14 yet</strong>, PyTorch has no wheel for it).
-                </p>
-                <pre style="background:#0d0d0d;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1rem 1.3rem;overflow-x:auto;margin:0 0 .8rem;"><code style="color:#e8e8f0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;"># prerequisites (Debian/Ubuntu)
-sudo apt install git python3 python3-venv
-# install &amp; run
-curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/install.sh | bash</code></pre>
-                <p style="color:#999;font-size:.88rem;margin:0;" data-i18n="linux.script.note">
-                    Then launch with <code>stemtube</code>, or from your applications menu. The script detects your GPU and installs the matching PyTorch automatically.
+                <p style="color:#999;font-size:.88rem;margin:.8rem 0 0;" data-i18n="linux.manual.note">
+                    Needs <code>libfuse2</code> (<code>sudo apt install libfuse2</code>). The GPU version (~3 GB) comes in two parts — join them with <code>cat StemTube-x86_64-gpu.AppImage.part* &gt; StemTube-x86_64-gpu.AppImage</code>.
                 </p>
             </div>
 
             <p style="color:#999;font-size:.9rem;margin-top:1.6rem;text-align:center;" data-i18n="linux.req">
-                64-bit Linux (glibc 2.35+) · NVIDIA GPU optional (CUDA accelerated), otherwise CPU. Run it on real hardware — inside a VM, the emulated CPU can hide the AVX instructions PyTorch needs.
+                64-bit Linux (glibc 2.35+) · NVIDIA GPU optional (CUDA accelerated), otherwise CPU. Needs an AVX-capable CPU — run it on real hardware; a VM that masks AVX will fail (PyTorch requires it).
+            </p>
+            <p style="color:#777;font-size:.85rem;margin-top:.8rem;text-align:center;" data-i18n="linux.fromsource">
+                Developers: a <a href="https://github.com/benasterisk/stemtube-desktop-app/blob/main/install.sh" target="_blank" style="color:#999;">from-source install script</a> is also available (builds a Python env; requires Python 3.10–3.13).
             </p>
         </div>
     </div>

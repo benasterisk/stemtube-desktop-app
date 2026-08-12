@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube。基于 MIT 许可证开源。",
   "footer.serverLink": "服务器版",
   "linux.title": "在 Linux 上安装",
-  "linux.desc": "在 Linux 上安装有两种方式。AppImage 是最简单的一种——单个自包含文件，无需安装。脚本适合那些偏好从源码进行系统级安装的用户。",
+  "linux.desc": "就像在 Windows 上一样：一条命令即可检测你的硬件、下载匹配的引擎（CPU 或 NVIDIA GPU）并启动应用。无需手动安装任何东西。",
   "linux.appimage.title": "选项 A —— AppImage（推荐）",
   "linux.appimage.desc": "单个自包含文件，打包了所需的一切——Python、PyTorch、FFmpeg。无需依赖，也不用担心 Python 版本。下载后添加可执行权限即可运行。",
   "linux.appimage.cpu": "下载（CPU，约 560 MB）",
@@ -78,5 +78,14 @@
   "linux.script.title": "选项 B —— 安装脚本",
   "linux.script.desc": "克隆应用并从源码构建 Python 环境。如果你想进行系统级安装，建议选择这种方式。需要 git 和 python3（3.10-3.13——暂不支持 3.14，PyTorch 尚未为其提供 wheel）。",
   "linux.script.note": "然后用 stemtube 命令启动，或从应用程序菜单中打开。脚本会检测你的 GPU 并自动安装匹配的 PyTorch。",
-  "linux.req": "64 位 Linux（glibc 2.35+）· 可选 NVIDIA GPU（CUDA 加速），否则使用 CPU。请在真实硬件上运行——在 VM 中，模拟的 CPU 可能会隐藏 PyTorch 所需的 AVX 指令。"
+  "linux.req": "64 位 Linux（glibc 2.35+）· NVIDIA GPU 可选（CUDA 加速），否则使用 CPU。需要支持 AVX 的 CPU - 请在真实硬件上运行；屏蔽 AVX 的 VM 会失败（PyTorch 依赖它）。",
+  "linux.installer.title": "推荐 - 一条命令",
+  "linux.installer.desc": "把这条命令粘贴到 terminal 中。它会检测你的 GPU，下载合适的自包含引擎，注册一个 stemtube 命令以及一个应用菜单项，然后启动 StemTube。",
+  "linux.installer.note": "之后，只需从应用菜单启动 StemTube Desktop，或运行 stemtube。引擎只需下载一次（CPU 约 560 MB / GPU 约 3 GB）。",
+  "linux.manual.title": "或直接下载 AppImage",
+  "linux.manual.desc": "更喜欢自己获取文件？每个 AppImage 都是完全自包含的（内置 Python、PyTorch、FFmpeg）。",
+  "linux.manual.cpu": "CPU（约 560 MB）",
+  "linux.manual.gpu": "GPU 版本（NVIDIA）",
+  "linux.manual.note": "需要 libfuse2（sudo apt install libfuse2）。GPU 版本（约 3 GB）分为两部分 - 用 cat 将它们合并。",
+  "linux.fromsource": "开发者：还提供了从源码安装的脚本（构建一个 Python 环境；需要 Python 3.10-3.13）。"
 }

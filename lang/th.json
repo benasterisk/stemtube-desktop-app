@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube โอเพนซอร์สภายใต้สัญญาอนุญาต MIT",
   "footer.serverLink": "เวอร์ชันเซิร์ฟเวอร์",
   "linux.title": "ติดตั้งบน Linux",
-  "linux.desc": "มีสองวิธีในการติดตั้งบน Linux — AppImage คือวิธีที่ง่าย เป็นไฟล์เดียวที่มีทุกอย่างในตัว ไม่ต้องติดตั้งอะไรเพิ่ม ส่วนสคริปต์เหมาะสำหรับคนที่ชอบติดตั้งลงในระบบจากซอร์สโค้ด",
+  "linux.desc": "เหมือนบน Windows ทุกอย่าง: คำสั่งเดียวตรวจจับฮาร์ดแวร์ของคุณ ดาวน์โหลดเอนจินที่ตรงกัน (CPU หรือ NVIDIA GPU) แล้วเปิดแอป ไม่ต้องติดตั้งอะไรด้วยมือเลย",
   "linux.appimage.title": "Option A — AppImage (แนะนำ)",
   "linux.appimage.desc": "ไฟล์เดียวที่รวมทุกอย่างไว้ในตัว — Python, PyTorch, FFmpeg ไม่ต้องพึ่ง dependency ใด ๆ และไม่ต้องกังวลเรื่องเวอร์ชัน Python เพียงดาวน์โหลด ตั้งให้รันได้ แล้วเปิดใช้งาน",
   "linux.appimage.cpu": "ดาวน์โหลด (CPU, ~560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "Option B — สคริปต์ติดตั้ง",
   "linux.script.desc": "โคลนแอปแล้วสร้างสภาพแวดล้อม Python จากซอร์สโค้ด เลือกวิธีนี้หากต้องการติดตั้งแบบทั้งระบบ ต้องมี git และ python3 (3.10-3.13 — ยังไม่รองรับ 3.14 เพราะ PyTorch ยังไม่มี wheel สำหรับเวอร์ชันนี้)",
   "linux.script.note": "จากนั้นเปิดใช้งานด้วย stemtube หรือจากเมนูแอปพลิเคชันของคุณ สคริปต์จะตรวจจับ GPU ของคุณและติดตั้ง PyTorch ที่ตรงกันให้โดยอัตโนมัติ",
-  "linux.req": "Linux 64-bit (glibc 2.35+) · GPU NVIDIA ไม่บังคับ (เร่งความเร็วด้วย CUDA) ไม่เช่นนั้นจะใช้ CPU ควรรันบนเครื่องจริง — เพราะใน VM นั้น CPU ที่จำลองขึ้นอาจซ่อนชุดคำสั่ง AVX ที่ PyTorch ต้องใช้"
+  "linux.req": "Linux 64-bit (glibc 2.35+) · NVIDIA GPU ตามต้องการ (เร่งความเร็วด้วย CUDA) ไม่มีก็ใช้ CPU ต้องใช้ CPU ที่รองรับ AVX - รันบนฮาร์ดแวร์จริง; VM ที่บดบัง AVX จะล้มเหลว (PyTorch จำเป็นต้องใช้)",
+  "linux.installer.title": "แนะนำ - คำสั่งเดียว",
+  "linux.installer.desc": "วางคำสั่งนี้ลงใน terminal มันจะตรวจจับ GPU ของคุณ ดาวน์โหลดเอนจินแบบ self-contained ที่เหมาะสม ลงทะเบียนคำสั่ง stemtube พร้อมรายการในเมนูแอป แล้วเริ่ม StemTube",
+  "linux.installer.note": "หลังจากนั้น แค่เปิด StemTube Desktop จากเมนูแอปพลิเคชันของคุณ หรือรัน stemtube เอนจินจะถูกดาวน์โหลดเพียงครั้งเดียว (CPU ~560 MB / GPU ~3 GB)",
+  "linux.manual.title": "หรือดาวน์โหลด AppImage โดยตรง",
+  "linux.manual.desc": "อยากดาวน์โหลดไฟล์เองใช่ไหม? แต่ละ AppImage เป็นแบบ self-contained อย่างสมบูรณ์ (รวม Python, PyTorch, FFmpeg มาให้)",
+  "linux.manual.cpu": "CPU (~560 MB)",
+  "linux.manual.gpu": "เวอร์ชัน GPU (NVIDIA)",
+  "linux.manual.note": "ต้องใช้ libfuse2 (sudo apt install libfuse2) เวอร์ชัน GPU (~3 GB) มาเป็นสองส่วน - รวมเข้าด้วยกันด้วย cat",
+  "linux.fromsource": "สำหรับนักพัฒนา: มีสคริปต์ติดตั้งแบบ from-source ให้ด้วย (สร้างสภาพแวดล้อม Python; ต้องใช้ Python 3.10-3.13)"
 }

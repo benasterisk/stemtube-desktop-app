@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube. Open source onder de MIT-licentie.",
   "footer.serverLink": "Server-editie",
   "linux.title": "Installeren op Linux",
-  "linux.desc": "Twee manieren om te installeren op Linux. De AppImage is de makkelijke — één zelfstandig bestand, niets te installeren. Het script is voor wie liever een systeeminstallatie vanaf de bron doet.",
+  "linux.desc": "Net als op Windows: één commando detecteert je hardware, downloadt de bijpassende engine (CPU of NVIDIA GPU) en start de app. Niets handmatig te installeren.",
   "linux.appimage.title": "Optie A — AppImage (aanbevolen)",
   "linux.appimage.desc": "Eén zelfstandig bestand met alles inbegrepen — Python, PyTorch, FFmpeg. Geen afhankelijkheden, geen Python-versie om je zorgen over te maken. Downloaden, uitvoerbaar maken, starten.",
   "linux.appimage.cpu": "Downloaden (CPU, ~560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "Optie B — installatiescript",
   "linux.script.desc": "Kloont de app en bouwt een Python-omgeving vanaf de bron. Kies dit als je een systeembrede installatie wilt. Vereist git en python3 (3.10-3.13 - nog niet 3.14, PyTorch heeft er geen wheel voor).",
   "linux.script.note": "Start daarna met stemtube, of vanuit je toepassingenmenu. Het script detecteert je GPU en installeert automatisch de bijpassende PyTorch.",
-  "linux.req": "64-bit Linux (glibc 2.35+) · NVIDIA GPU optioneel (CUDA-versneld), anders CPU. Draai het op echte hardware - in een VM kan de geëmuleerde CPU de AVX-instructies verbergen die PyTorch nodig heeft."
+  "linux.req": "64-bit Linux (glibc 2.35+) · NVIDIA GPU optioneel (CUDA-versneld), anders CPU. Vereist een CPU met AVX - draai het op echte hardware; een VM die AVX verbergt zal falen (PyTorch vereist het).",
+  "linux.installer.title": "Aanbevolen - één commando",
+  "linux.installer.desc": "Plak dit in een terminal. Het detecteert je GPU, downloadt de juiste zelfstandige engine, registreert een stemtube-commando plus een item in het app-menu, en start StemTube.",
+  "linux.installer.note": "Daarna start je StemTube Desktop gewoon vanuit je programmamenu, of voer je stemtube uit. De engine wordt één keer gedownload (CPU ~560 MB / GPU ~3 GB).",
+  "linux.manual.title": "Of download de AppImage rechtstreeks",
+  "linux.manual.desc": "Wil je het bestand liever zelf ophalen? Elke AppImage is volledig zelfstandig (Python, PyTorch en FFmpeg meegeleverd).",
+  "linux.manual.cpu": "CPU (~560 MB)",
+  "linux.manual.gpu": "GPU-versie (NVIDIA)",
+  "linux.manual.note": "Vereist libfuse2 (sudo apt install libfuse2). De GPU-versie (~3 GB) komt in twee delen - voeg ze samen met cat.",
+  "linux.fromsource": "Ontwikkelaars: een installatiescript vanaf de broncode is ook beschikbaar (bouwt een Python-omgeving; vereist Python 3.10-3.13)."
 }

@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube. MIT 라이선스에 따른 오픈소스.",
   "footer.serverLink": "서버 에디션",
   "linux.title": "Linux에 설치하기",
-  "linux.desc": "Linux에 설치하는 방법은 두 가지입니다. AppImage가 간편한 쪽입니다 — 하나로 완결된 단일 파일이라 따로 설치할 게 없습니다. 스크립트는 소스에서 시스템에 직접 설치하는 방식을 선호하는 분들을 위한 것입니다.",
+  "linux.desc": "Windows에서와 똑같습니다. 명령어 하나로 하드웨어를 감지하고 그에 맞는 엔진(CPU 또는 NVIDIA GPU)을 다운로드해 앱을 실행합니다. 수동으로 설치할 것이 전혀 없습니다.",
   "linux.appimage.title": "옵션 A — AppImage (권장)",
   "linux.appimage.desc": "Python, PyTorch, FFmpeg까지 모든 것이 하나로 묶인 단일 파일입니다. 의존성도 없고 Python 버전을 신경 쓸 필요도 없습니다. 내려받아 실행 권한을 준 뒤 실행하세요.",
   "linux.appimage.cpu": "다운로드 (CPU, 약 560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "옵션 B — 설치 스크립트",
   "linux.script.desc": "앱을 클론하고 소스에서 Python 환경을 빌드합니다. 시스템 전역 설치를 원한다면 이 방식을 선택하세요. git과 python3(3.10-3.13 — PyTorch가 아직 3.14용 휠을 제공하지 않으므로 3.14는 안 됩니다)가 필요합니다.",
   "linux.script.note": "그런 다음 stemtube 명령으로, 또는 애플리케이션 메뉴에서 실행하세요. 스크립트가 GPU를 감지해 알맞은 PyTorch를 자동으로 설치합니다.",
-  "linux.req": "64비트 Linux (glibc 2.35+) · NVIDIA GPU 선택 사항(CUDA 가속), 없으면 CPU 사용. 실제 하드웨어에서 실행하세요 — VM 안에서는 에뮬레이션된 CPU가 PyTorch에 필요한 AVX 명령어를 숨길 수 있습니다."
+  "linux.req": "64비트 Linux (glibc 2.35+) · NVIDIA GPU 선택 사항(CUDA 가속), 없으면 CPU 사용. AVX를 지원하는 CPU가 필요합니다 - 실제 하드웨어에서 실행하세요. AVX를 가리는 VM에서는 실패합니다(PyTorch가 요구함).",
+  "linux.installer.title": "권장 - 명령어 하나",
+  "linux.installer.desc": "이 명령어를 terminal에 붙여넣으세요. GPU를 감지하고 알맞은 독립형 엔진을 다운로드하며, stemtube 명령어와 앱 메뉴 항목을 등록한 뒤 StemTube를 실행합니다.",
+  "linux.installer.note": "그다음부터는 애플리케이션 메뉴에서 StemTube Desktop을 실행하거나 stemtube를 입력하면 됩니다. 엔진은 한 번만 다운로드됩니다(CPU 약 560 MB / GPU 약 3 GB).",
+  "linux.manual.title": "또는 AppImage를 직접 다운로드",
+  "linux.manual.desc": "파일을 직접 받고 싶으신가요? 각 AppImage는 완전한 독립형입니다(Python, PyTorch, FFmpeg 포함).",
+  "linux.manual.cpu": "CPU (약 560 MB)",
+  "linux.manual.gpu": "GPU 버전 (NVIDIA)",
+  "linux.manual.note": "libfuse2가 필요합니다(sudo apt install libfuse2). GPU 버전(약 3 GB)은 두 부분으로 나뉘어 제공됩니다 - cat으로 합치세요.",
+  "linux.fromsource": "개발자용: 소스에서 설치하는 스크립트도 제공됩니다(Python 환경을 빌드하며 Python 3.10-3.13이 필요함)."
 }

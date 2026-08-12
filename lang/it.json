@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube. Open source con licenza MIT.",
   "footer.serverLink": "Edizione Server",
   "linux.title": "Installazione su Linux",
-  "linux.desc": "Due modi per installare su Linux. L'AppImage è quello semplice — un unico file autonomo, niente da installare. Lo script è per chi preferisce un'installazione di sistema dai sorgenti.",
+  "linux.desc": "Proprio come su Windows: un comando rileva il tuo hardware, scarica il motore adatto (CPU o GPU NVIDIA) e avvia l'app. Niente da installare a mano.",
   "linux.appimage.title": "Opzione A — AppImage (consigliata)",
   "linux.appimage.desc": "Un unico file autonomo con tutto incluso — Python, PyTorch, FFmpeg. Nessuna dipendenza, nessuna versione di Python di cui preoccuparsi. Scarica, rendilo eseguibile, avvia.",
   "linux.appimage.cpu": "Scarica (CPU, ~560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "Opzione B — script di installazione",
   "linux.script.desc": "Clona l'app e crea un ambiente Python dai sorgenti. Preferibile se vuoi un'installazione a livello di sistema. Richiede git e python3 (3.10-3.13 - non ancora 3.14, PyTorch non ha una wheel per questa versione).",
   "linux.script.note": "Poi avvia con stemtube, o dal menu delle applicazioni. Lo script rileva la GPU e installa automaticamente il PyTorch corrispondente.",
-  "linux.req": "Linux a 64 bit (glibc 2.35+) · GPU NVIDIA opzionale (accelerazione CUDA), altrimenti CPU. Eseguilo su hardware reale - in una VM la CPU emulata può nascondere le istruzioni AVX di cui PyTorch ha bisogno."
+  "linux.req": "Linux a 64-bit (glibc 2.35+) · GPU NVIDIA opzionale (accelerazione CUDA), altrimenti CPU. Richiede una CPU con supporto AVX - eseguilo su hardware reale; una VM che nasconde AVX fallirà (PyTorch lo richiede).",
+  "linux.installer.title": "Consigliato - un solo comando",
+  "linux.installer.desc": "Incolla questo in un terminal. Rileva la tua GPU, scarica il motore autonomo giusto, registra un comando stemtube e una voce nel menu delle app, e avvia StemTube.",
+  "linux.installer.note": "Dopodiché, avvia semplicemente StemTube Desktop dal menu delle applicazioni, oppure esegui stemtube. Il motore viene scaricato una sola volta (CPU ~560 MB / GPU ~3 GB).",
+  "linux.manual.title": "Oppure scarica direttamente l'AppImage",
+  "linux.manual.desc": "Preferisci prendere il file da solo? Ogni AppImage è completamente autonomo (Python, PyTorch, FFmpeg inclusi).",
+  "linux.manual.cpu": "CPU (~560 MB)",
+  "linux.manual.gpu": "Versione GPU (NVIDIA)",
+  "linux.manual.note": "Richiede libfuse2 (sudo apt install libfuse2). La versione GPU (~3 GB) è divisa in due parti - uniscile con cat.",
+  "linux.fromsource": "Sviluppatori: è disponibile anche uno script di installazione da sorgente (crea un ambiente Python; richiede Python 3.10-3.13)."
 }

@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube. مفتوح المصدر بموجب رخصة MIT.",
   "footer.serverLink": "إصدار الخادم",
   "linux.title": "التثبيت على Linux",
-  "linux.desc": "طريقتان للتثبيت على Linux. الـ AppImage هي الأسهل — ملف واحد مكتفٍ بذاته، لا شيء لتثبيته. أما السكربت فهو لمن يفضّلون تثبيتًا على مستوى النظام من المصدر.",
+  "linux.desc": "تماماً كما في Windows: أمر واحد يكتشف عتادك، ويُنزّل المحرك المطابق (CPU أو NVIDIA GPU) ويُشغّل التطبيق. لا شيء تُثبّته يدوياً.",
   "linux.appimage.title": "الخيار A — AppImage (مُوصى به)",
   "linux.appimage.desc": "ملف واحد مكتفٍ بذاته يضمّ كل شيء — Python وPyTorch وFFmpeg. لا اعتماديات، ولا داعي للقلق بشأن إصدار Python. نزّله، اجعله قابلاً للتنفيذ، وشغّله.",
   "linux.appimage.cpu": "تنزيل (CPU، ‏~560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "الخيار B — سكربت التثبيت",
   "linux.script.desc": "يستنسخ التطبيق ويبني بيئة Python من المصدر. فضّل هذا إن أردت تثبيتًا على مستوى النظام بأكمله. يتطلب git وpython3‏ (3.10-3.13 - وليس 3.14 بعد، إذ لا تتوفر عجلة PyTorch له).",
   "linux.script.note": "ثم شغّله عبر الأمر stemtube، أو من قائمة تطبيقاتك. يكتشف السكربت بطاقة GPU لديك ويثبّت إصدار PyTorch المطابق تلقائيًا.",
-  "linux.req": "‏Linux بنظام 64 بت‏ (glibc 2.35+) · بطاقة NVIDIA GPU اختيارية (تسريع عبر CUDA)، وإلا فالـ CPU. شغّله على عتاد حقيقي - داخل VM قد يُخفي الـ CPU المُحاكى تعليمات AVX التي يحتاجها PyTorch."
+  "linux.req": "Linux 64-bit (glibc 2.35+) · NVIDIA GPU اختياري (مُسرّع بـ CUDA)، وإلا فـ CPU. يتطلب CPU يدعم AVX - شغّله على عتاد حقيقي؛ أي VM يُخفي AVX سيفشل (PyTorch يتطلبه).",
+  "linux.installer.title": "موصى به - أمر واحد",
+  "linux.installer.desc": "الصق هذا في terminal. يكتشف GPU لديك، ويُنزّل المحرك المستقل المناسب، ويُسجّل أمر stemtube بالإضافة إلى مُدخل في قائمة التطبيقات، ويُشغّل StemTube.",
+  "linux.installer.note": "بعد ذلك، ما عليك سوى تشغيل StemTube Desktop من قائمة تطبيقاتك، أو تنفيذ stemtube. يُنزّل المحرك مرة واحدة (CPU ~560 MB / GPU ~3 GB).",
+  "linux.manual.title": "أو نزّل AppImage مباشرةً",
+  "linux.manual.desc": "تفضّل الحصول على الملف بنفسك؟ كل AppImage مستقل تماماً (يتضمن Python وPyTorch وFFmpeg).",
+  "linux.manual.cpu": "CPU (~560 MB)",
+  "linux.manual.gpu": "إصدار GPU (NVIDIA)",
+  "linux.manual.note": "يتطلب libfuse2 (sudo apt install libfuse2). إصدار GPU (~3 GB) يأتي في جزأين - ادمجهما باستخدام cat.",
+  "linux.fromsource": "للمطورين: يتوفر أيضاً سكربت تثبيت من المصدر (يبني بيئة Python؛ يتطلب Python 3.10-3.13)."
 }

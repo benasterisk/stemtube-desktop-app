@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube. Sumber terbuka di bawah Lisensi MIT.",
   "footer.serverLink": "Edisi Server",
   "linux.title": "Instal di Linux",
-  "linux.desc": "Ada dua cara untuk instal di Linux. AppImage adalah yang paling mudah — satu file mandiri, tanpa perlu instalasi apa pun. Skrip cocok untuk Anda yang lebih suka instalasi sistem dari sumber.",
+  "linux.desc": "Sama seperti di Windows: satu perintah mendeteksi perangkat keras Anda, mengunduh engine yang sesuai (CPU atau GPU NVIDIA) dan menjalankan aplikasi. Tidak ada yang perlu diinstal secara manual.",
   "linux.appimage.title": "Opsi A — AppImage (disarankan)",
   "linux.appimage.desc": "Satu file mandiri dengan semuanya sudah tergabung — Python, PyTorch, FFmpeg. Tanpa dependensi, tanpa perlu pusing soal versi Python. Unduh, jadikan dapat dieksekusi, jalankan.",
   "linux.appimage.cpu": "Unduh (CPU, ~560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "Opsi B — skrip instalasi",
   "linux.script.desc": "Meng-clone aplikasi dan membangun lingkungan Python dari sumber. Pilih ini jika Anda menginginkan instalasi tingkat sistem. Membutuhkan git dan python3 (3.10-3.13 - belum 3.14, PyTorch belum punya wheel untuknya).",
   "linux.script.note": "Lalu jalankan dengan stemtube, atau dari menu aplikasi Anda. Skrip mendeteksi GPU Anda dan menginstal PyTorch yang sesuai secara otomatis.",
-  "linux.req": "Linux 64-bit (glibc 2.35+) · GPU NVIDIA opsional (akselerasi CUDA), jika tidak ada memakai CPU. Jalankan di perangkat keras asli - di dalam VM, CPU yang diemulasikan bisa menyembunyikan instruksi AVX yang dibutuhkan PyTorch."
+  "linux.req": "Linux 64-bit (glibc 2.35+) · GPU NVIDIA opsional (akselerasi CUDA), jika tidak CPU. Membutuhkan CPU yang mendukung AVX - jalankan di perangkat keras asli; VM yang menyembunyikan AVX akan gagal (PyTorch membutuhkannya).",
+  "linux.installer.title": "Direkomendasikan - satu perintah",
+  "linux.installer.desc": "Tempel ini di terminal. Ini mendeteksi GPU Anda, mengunduh engine mandiri yang tepat, mendaftarkan perintah stemtube plus entri menu aplikasi, dan menjalankan StemTube.",
+  "linux.installer.note": "Setelah itu, cukup jalankan StemTube Desktop dari menu aplikasi Anda, atau jalankan stemtube. Engine diunduh sekali (CPU ~560 MB / GPU ~3 GB).",
+  "linux.manual.title": "Atau unduh AppImage secara langsung",
+  "linux.manual.desc": "Lebih suka mengambil file sendiri? Setiap AppImage sepenuhnya mandiri (Python, PyTorch, FFmpeg sudah termasuk).",
+  "linux.manual.cpu": "CPU (~560 MB)",
+  "linux.manual.gpu": "Versi GPU (NVIDIA)",
+  "linux.manual.note": "Membutuhkan libfuse2 (sudo apt install libfuse2). Versi GPU (~3 GB) hadir dalam dua bagian - gabungkan dengan cat.",
+  "linux.fromsource": "Pengembang: skrip instalasi dari sumber juga tersedia (membangun env Python; membutuhkan Python 3.10-3.13)."
 }

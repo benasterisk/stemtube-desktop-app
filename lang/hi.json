@@ -69,7 +69,7 @@
   "footer.copy": "© 2025 StemTube. MIT लाइसेंस के तहत ओपन सोर्स।",
   "footer.serverLink": "सर्वर संस्करण",
   "linux.title": "Linux पर इंस्टॉल करें",
-  "linux.desc": "Linux पर इंस्टॉल करने के दो तरीके हैं। AppImage आसान वाला है — एक अकेली, पूरी तरह स्वयं-निहित फ़ाइल, कुछ भी इंस्टॉल करने की ज़रूरत नहीं। स्क्रिप्ट उनके लिए है जो सोर्स से सिस्टम इंस्टॉल पसंद करते हैं।",
+  "linux.desc": "बिल्कुल Windows की तरह: एक ही कमांड आपके हार्डवेयर को पहचानता है, मैचिंग इंजन (CPU या NVIDIA GPU) डाउनलोड करता है और ऐप लॉन्च करता है। हाथ से कुछ भी इंस्टॉल करने की ज़रूरत नहीं।",
   "linux.appimage.title": "Option A — AppImage (अनुशंसित)",
   "linux.appimage.desc": "एक स्वयं-निहित फ़ाइल जिसमें सब कुछ बंडल है — Python, PyTorch, FFmpeg। कोई डिपेंडेंसी नहीं, Python के वर्शन की कोई चिंता नहीं। डाउनलोड करें, एग्ज़िक्यूटेबल बनाएँ, चलाएँ।",
   "linux.appimage.cpu": "डाउनलोड करें (CPU, ~560 MB)",
@@ -78,5 +78,14 @@
   "linux.script.title": "Option B — इंस्टॉल स्क्रिप्ट",
   "linux.script.desc": "ऐप को क्लोन करती है और सोर्स से एक Python एनवायरनमेंट बनाती है। अगर आप सिस्टम-वाइड इंस्टॉल चाहते हैं तो इसे चुनें। इसके लिए git और python3 (3.10-3.13 - अभी 3.14 नहीं, PyTorch के पास इसके लिए कोई wheel नहीं है) चाहिए।",
   "linux.script.note": "फिर stemtube से लॉन्च करें, या अपने एप्लिकेशन मेन्यू से। स्क्रिप्ट आपके GPU का पता लगाकर अपने-आप मिलता-जुलता PyTorch इंस्टॉल कर देती है।",
-  "linux.req": "64-बिट Linux (glibc 2.35+) · NVIDIA GPU वैकल्पिक (CUDA त्वरित), वरना CPU। इसे असली हार्डवेयर पर चलाएँ - VM के अंदर एमुलेटेड CPU उन AVX निर्देशों को छिपा सकता है जिनकी PyTorch को ज़रूरत है।"
+  "linux.req": "64-बिट Linux (glibc 2.35+) · NVIDIA GPU वैकल्पिक (CUDA त्वरित), अन्यथा CPU। AVX-सक्षम CPU की ज़रूरत है - इसे असली हार्डवेयर पर चलाएं; AVX छिपाने वाला VM विफल हो जाएगा (PyTorch को इसकी ज़रूरत है)।",
+  "linux.installer.title": "अनुशंसित - एक कमांड",
+  "linux.installer.desc": "इसे terminal में पेस्ट करें। यह आपके GPU को पहचानता है, सही सेल्फ-कंटेन्ड इंजन डाउनलोड करता है, एक stemtube कमांड और ऐप-मेन्यू एंट्री रजिस्टर करता है, और StemTube शुरू करता है।",
+  "linux.installer.note": "उसके बाद, बस अपने ऐप्लिकेशन मेन्यू से StemTube Desktop लॉन्च करें, या stemtube चलाएं। इंजन एक बार डाउनलोड होता है (CPU ~560 MB / GPU ~3 GB)।",
+  "linux.manual.title": "या AppImage सीधे डाउनलोड करें",
+  "linux.manual.desc": "फ़ाइल खुद लेना पसंद करते हैं? हर AppImage पूरी तरह सेल्फ-कंटेन्ड है (Python, PyTorch, FFmpeg बंडल्ड)।",
+  "linux.manual.cpu": "CPU (~560 MB)",
+  "linux.manual.gpu": "GPU वर्शन (NVIDIA)",
+  "linux.manual.note": "libfuse2 की ज़रूरत है (sudo apt install libfuse2)। GPU वर्शन (~3 GB) दो भागों में आता है - इन्हें cat से जोड़ें।",
+  "linux.fromsource": "डेवलपर्स: एक फ्रॉम-सोर्स इंस्टॉल स्क्रिप्ट भी उपलब्ध है (एक Python एन्वायरनमेंट बनाती है; Python 3.10-3.13 चाहिए)।"
 }
