@@ -143,8 +143,10 @@ app = Flask(__name__)
 # Desktop mode: auto-generate secret key if not set (no .env needed)
 SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
 if not SECRET_KEY:
-    # Generate and persist a secret key for session stability across restarts
-    secret_key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.secret_key')
+    # Generate and persist a secret key for session stability across restarts.
+    # Store it in the writable user-data dir (APP_DIR is read-only in an AppImage).
+    from core.config import USER_DATA_DIR as _UDD
+    secret_key_file = os.path.join(_UDD, '.secret_key')
     if os.path.exists(secret_key_file):
         with open(secret_key_file, 'r') as f:
             SECRET_KEY = f.read().strip()
@@ -161,8 +163,10 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400 * 365  # 1 year for desktop
-app.config['SESSION_FILE_DIR'] = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), 'flask_session')
+# Session files must live in the writable user-data dir, not next to app.py
+# (that path is read-only when running from an AppImage).
+from core.config import USER_DATA_DIR as _USER_DATA_DIR
+app.config['SESSION_FILE_DIR'] = os.path.join(_USER_DATA_DIR, 'flask_session')
 os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'

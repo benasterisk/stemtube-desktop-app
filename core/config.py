@@ -85,13 +85,21 @@ if not os.path.exists(CONFIG_FILE) and os.path.exists(_default_config):
     import shutil as _shutil
     _shutil.copy2(_default_config, CONFIG_FILE)
 
-# Create necessary directories
-os.makedirs(RESOURCES_DIR, exist_ok=True)
+# Create necessary directories.
+# Writable user-data dirs are always created. The bundled read-only dirs
+# (RESOURCES_DIR, FFMPEG_DIR) live inside APP_DIR, which is a read-only mount
+# when running from an AppImage — creating them there raises OSError(Errno 30).
+# Only attempt to create them when their parent is actually writable.
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 os.makedirs(MODELS_DIR, exist_ok=True)
-os.makedirs(FFMPEG_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)
 os.makedirs(DB_DIR, exist_ok=True)
+for _bundled in (RESOURCES_DIR, FFMPEG_DIR):
+    try:
+        if not os.path.isdir(_bundled) and os.access(os.path.dirname(_bundled), os.W_OK):
+            os.makedirs(_bundled, exist_ok=True)
+    except OSError:
+        pass  # read-only bundle (AppImage): the dir is shipped or simply absent
 
 # FFmpeg settings
 if platform.system() == "Windows":
