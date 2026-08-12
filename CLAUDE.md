@@ -44,3 +44,44 @@ python setup_desktop.py
 source venv/bin/activate      # venv\Scripts\activate on Windows
 python launcher.py
 ```
+
+## Linux distribution (AppImage)
+
+Two self-contained AppImages (CPU + GPU) mirror the Windows model: a small
+launcher (`stemtube-linux-launcher.sh`) detects the GPU and downloads the right
+variant from the `linux-v2.0.0` release. Build is done by
+`.github/workflows/build-appimage.yml` (or manually — same steps).
+
+**Build recipe** (per variant):
+1. Fetch a relocatable CPython 3.12 from `python-build-standalone` (astral-sh),
+   pinned tag `20260807`, `install_only_stripped` archive, into `AppDir/usr/`.
+2. `pip install torch torchaudio` from `whl/cpu` (CPU) or `whl/cu124` (GPU),
+   then the rest of the deps. `demucs==4.0.1` (4.1.0 removed
+   `demucs.separate.load_track`, still imported by `stems_extractor.py`).
+3. Copy the app source into `AppDir/usr/src/stemtube`, bundle `ffmpeg`/`ffprobe`
+   under `AppDir/usr/bin`, write `AppRun` (sets PATH, `STEMTUBE_DATA_DIR`,
+   `FLASK_SECRET_KEY`, then `exec python launcher.py`).
+4. Package with `appimagetool --runtime-file runtime-x86_64` (fetch the runtime
+   up front — appimagetool's mid-build download fails on any network hiccup).
+5. GPU AppImage exceeds GitHub's 2 GB asset limit → `split -b 1900M` into
+   `.part0`/`.part1`; the launcher reassembles with `cat`.
+
+**Gotchas learned building this** (don't rediscover them):
+- **clang required** — `python-build-standalone`'s sysconfig invokes `clang`
+  (not gcc) to compile C extensions; without it madmom fails with
+  `No such file: 'clang'`. Install `clang` alongside `build-essential`.
+- **madmom** — the `0.16.1` pip release doesn't build under PEP 517 (its
+  isolated build env can't see Cython). Use the git build
+  (`madmom @ git+https://github.com/CPJKU/madmom@main`, resolves to 0.17.dev0),
+  which works and is fine with numpy 2.x.
+- **Read-only APP_DIR** — a mounted AppImage is read-only squashfs. Never write
+  next to the code (logs, sessions, secret key, bundled dirs); everything
+  writable goes under `USER_DATA_DIR`. Test with the **real mounted AppImage**,
+  not `APPIMAGE_EXTRACT_AND_RUN=1` (which hides the bug).
+- **AVX** — official torch x86_64 wheels require AVX. Won't run in a VM that
+  masks it. Test on bare metal, WSL2, or VirtualBox with `--cpu-profile host`.
+- **Build on ubuntu-22.04** (glibc 2.35) so the AppImage runs on older distros;
+  AppImages run on glibc ≥ their build glibc.
+- **WSL2 is the best test env** — build + test CPU + test GPU with real CUDA.
+  A process started via `wsl.exe -- bash -c '... &'` dies when the wsl.exe call
+  returns; use `systemd-run --unit=X --setenv=HOME=/root ...` for long builds.

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Linux support
+- **Self-contained AppImages (CPU + GPU)** — a Linux distribution mirroring the Windows model. Each AppImage bundles a relocatable CPython 3.12, PyTorch (CPU or CUDA 12.4), Demucs, madmom, faster-whisper and FFmpeg, so end users need no Python, no pip and no system CUDA. Published on the `linux-v2.0.0` release; the GPU build (~3 GB) ships split in two parts under GitHub's 2 GB asset limit. CPU build validated in a VM, GPU build validated with real CUDA on an NVIDIA RTX 4050 via WSL2.
+- **`stemtube-linux-launcher.sh`** — a lightweight launcher that detects the GPU (`nvidia-smi`), downloads the matching AppImage from the release, reassembles + checksum-verifies it, installs a `stemtube` command and a desktop entry, then runs it.
+- **`.github/workflows/build-appimage.yml`** — GitHub Actions workflow that builds both AppImages on `ubuntu-22.04` (glibc 2.35 floor for broad compatibility) using `python-build-standalone` 3.12 + appimagetool, and attaches them to a release.
+
+### Fixed — Linux / AppImage
+- **Read-only filesystem crashes at startup** — when run from a mounted AppImage, `APP_DIR` is a read-only squashfs, so the app crashed with `OSError(Errno 30)` trying to create dirs and write session/secret/log files next to the code. `core/config.py`, `app.py` and `core/logging_config.py` now keep all writes (logs, `flask_session/`, `.secret_key`) in the writable user-data dir (`~/.stemtube-desktop`) and only touch bundled dirs when their parent is writable. Only observable with a real mounted AppImage — not with `APPIMAGE_EXTRACT_AND_RUN`.
+- **`install.sh` rejected too-new Python** — Ubuntu Studio 26.04 ships Python 3.14 as the default, which has no PyTorch wheel yet; the installer now enforces the 3.10–3.13 range with a clear fix message instead of a cryptic pip failure.
+
 ### Removed
 - **YouTube support fully deleted** — the Standard desktop edition no longer imports `yt_dlp` at any point, so the package no longer requires it. Deleted `core/download_manager.py`, `core/aiotube_client.py`, `core/js_runtime.py`, `core/youtube_cookies.txt`, the old YouTube search/download endpoints in `routes/downloads.py`, all cookie management routes in `routes/admin_api.py`, the admin "Reload from YouTube" button, the `HAS_YOUTUBE` edition flag, the per-user `youtube_enabled` column plumbing, and all matching UI (search bar, cookies section, download modal, JS handlers).
 - **`js_runtime` module** — Deno/Node bootstrapping was only needed to solve YouTube JS challenges.

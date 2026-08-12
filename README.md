@@ -25,6 +25,30 @@ Download and run **[StemTube Desktop_2.0.0_x64-setup.exe](https://github.com/ben
 
 On first launch the app detects your hardware and downloads the matching engine automatically — **CPU** (~520 MB) or **NVIDIA GPU** (~2.9 GB, CUDA accelerated) — then repairs its Python runtime if needed. First boot can take a few minutes; later launches are instant. Everything (Python, FFmpeg) is bundled or fetched automatically.
 
+## Install on Linux
+
+Two ways, from the [Linux release](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/linux-v2.0.0):
+
+**Option A — AppImage (recommended).** A single self-contained file bundling Python, PyTorch and FFmpeg. No dependencies, no Python-version concerns.
+
+```bash
+# CPU (~560 MB) — works on any 64-bit Linux
+wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-x86_64-cpu.AppImage
+chmod +x StemTube-x86_64-cpu.AppImage
+./StemTube-x86_64-cpu.AppImage
+```
+
+For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0` + `.part1` (~3 GB, CUDA 12.4) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`. Needs `libfuse2` (`sudo apt install libfuse2` on Debian/Ubuntu).
+
+**Option B — install script.** Clones the app and builds a Python environment from source (system-wide install). Requires `git` and `python3` **3.10–3.13** (not 3.14 yet — PyTorch has no wheel for it).
+
+```bash
+sudo apt install git python3 python3-venv      # Debian/Ubuntu prerequisites
+curl -fsSL https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/main/install.sh | bash
+```
+
+Then launch with `stemtube` or from your applications menu. Requires a 64-bit Linux (glibc ≥ 2.35) with an AVX-capable CPU — PyTorch needs AVX, so it won't run in a VM that masks it (use `--cpu-profile host` on VirtualBox, or WSL2, or bare metal).
+
 ## Quick Start (from source)
 
 ### Option 1: Double-click launcher
