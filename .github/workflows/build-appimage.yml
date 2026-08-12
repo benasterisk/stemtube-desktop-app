@@ -74,12 +74,16 @@ jobs:
           PY=AppDir/usr/python/bin/python3
           "$PY" -m pip install --upgrade pip wheel setuptools
 
+          # GPU: use the cu126 index, NOT cu124 — torch cu124 pins
+          # nvidia-cudnn-cu12==9.1.0.70, which NVIDIA/PyPI removed, making that
+          # build uninstallable. cu126 resolves cleanly (cudnn 9.10.x available).
+          # CPU stays on the cpu index. pip was upgraded above so it can read the
+          # recent nvidia-*-cu12 manylinux wheels.
           if [ "${{ matrix.variant }}" = "gpu" ]; then
-            TORCH_INDEX="https://download.pytorch.org/whl/cu124"
+            "$PY" -m pip install torch torchaudio --index-url "https://download.pytorch.org/whl/cu126"
           else
-            TORCH_INDEX="https://download.pytorch.org/whl/cpu"
+            "$PY" -m pip install torch torchaudio --index-url "https://download.pytorch.org/whl/cpu"
           fi
-          "$PY" -m pip install torch torchaudio --index-url "$TORCH_INDEX"
 
           # Runtime deps (same set as install.sh, demucs pinned to 4.0.1)
           "$PY" -m pip install \
@@ -91,8 +95,10 @@ jobs:
           # PyGObject so pywebview has a GTK backend (the 'gi' module) and opens
           # a real native window on Linux. pip builds it against the system GTK3
           # dev headers installed above; the matching libs + typelibs are bundled
-          # into the AppImage in a later step.
-          "$PY" -m pip install pycairo PyGObject
+          # into the AppImage in a later step. Pin < 3.52: 3.52+ requires
+          # girepository-2.0 (GLib 2.80 / GTK4-era), absent on Ubuntu 22.04 which
+          # ships girepository-1.0; the 3.50.x series builds fine here.
+          "$PY" -m pip install pycairo "PyGObject<3.52"
           "$PY" -c "import gi; gi.require_version('Gtk','3.0'); from gi.repository import Gtk; print('PyGObject/GTK OK')"
 
           # madmom: try the stable pip release first (fast); if the beat/chord
