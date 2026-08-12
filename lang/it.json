@@ -81,12 +81,15 @@
   "linux.req": "Linux a 64-bit (glibc 2.35+) · GPU NVIDIA opzionale (accelerazione CUDA), altrimenti CPU. Richiede una CPU con supporto AVX - eseguilo su hardware reale; una VM che nasconde AVX fallirà (PyTorch lo richiede).",
   "linux.installer.title": "Ubuntu / Debian — scarica e fai doppio clic",
   "linux.installer.desc": "Un pacchetto di installazione — l'equivalente Linux del .exe di Windows. Fai doppio clic per installarlo, poi avvia StemTube Desktop dal menu delle applicazioni. Il primo avvio rileva la tua GPU e scarica il giusto motore autonomo.",
-  "linux.installer.note": "Fai doppio clic sul .deb scaricato per installarlo (tramite il tuo centro software), oppure esegui sudo apt install ./stemtube-desktop_2.0.0_amd64.deb. Il motore viene scaricato una sola volta al primo avvio (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "Nient'altro da installare — il motore include Python, PyTorch e FFmpeg. Risiede nella tua cartella home; nessuna modifica al sistema, nessun accesso root in fase di esecuzione.",
   "linux.manual.title": "Altre distribuzioni (Fedora, Arch, openSUSE…) — esegui il motore direttamente",
   "linux.manual.desc": "Nessun gestore di pacchetti necessario. Ogni motore è un singolo AppImage autonomo (Python, PyTorch, FFmpeg inclusi) che funziona su qualsiasi Linux 64-bit.",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "Versione GPU (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run significa che non serve libfuse2. La versione GPU (~3 GB) è in due parti — uniscile con cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "Sviluppatori: è disponibile anche uno script di installazione da sorgente (crea un ambiente Python; richiede Python 3.10–3.13).",
-  "linux.installer.btn": "Scarica l'installer .deb"
+  "linux.installer.btn": "Scarica l'installer .deb",
+  "linux.installer.step1": "<strong>Installalo:</strong> fai doppio clic sul file <code>stemtube-desktop_2.0.0_amd64.deb</code> scaricato. Si apre nel tuo programma di installazione software (ad es. <em>App Center</em> / <em>Software Install</em>) — fai clic su <strong>Install</strong> e inserisci la password. <span style=\"color:#999;\">(Oppure in un terminale: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>Avvialo:</strong> apri il menu delle applicazioni, digita <em>“stem”</em> e fai clic sull'icona <strong>StemTube Desktop</strong>.",
+  "linux.installer.step3": "<strong>Il primo avvio scarica il motore.</strong> Appare una piccola finestra mentre viene recuperato il motore corrispondente — <strong>CPU ~600 MB</strong> oppure <strong>NVIDIA GPU ~3 GB</strong>. È un download una tantum e può richiedere <strong>diversi minuti</strong> a seconda della connessione; la finestra dell'app si apre non appena termina. Gli avvii successivi partono in pochi secondi."
 }

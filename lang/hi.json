@@ -81,12 +81,15 @@
   "linux.req": "64-बिट Linux (glibc 2.35+) · NVIDIA GPU वैकल्पिक (CUDA त्वरित), अन्यथा CPU। AVX-सक्षम CPU की ज़रूरत है - इसे असली हार्डवेयर पर चलाएं; AVX छिपाने वाला VM विफल हो जाएगा (PyTorch को इसकी ज़रूरत है)।",
   "linux.installer.title": "Ubuntu / Debian — डाउनलोड करें और डबल-क्लिक करें",
   "linux.installer.desc": "एक इंस्टॉलर पैकेज — Windows की .exe का Linux समकक्ष। इसे इंस्टॉल करने के लिए उस पर डबल-क्लिक करें, फिर अपने ऐप्स मेन्यू से StemTube Desktop लॉन्च करें। पहला लॉन्च आपके GPU का पता लगाता है और सही स्व-निहित इंजन डाउनलोड करता है।",
-  "linux.installer.note": "इंस्टॉल करने के लिए डाउनलोड की गई .deb पर डबल-क्लिक करें (अपने सॉफ़्टवेयर सेंटर के ज़रिए), या sudo apt install ./stemtube-desktop_2.0.0_amd64.deb चलाएँ। इंजन पहले लॉन्च पर एक ही बार डाउनलोड होता है (CPU ~560 MB / NVIDIA GPU ~3 GB)।",
+  "linux.installer.note": "और कुछ इंस्टॉल करने की ज़रूरत नहीं — इंजन में Python, PyTorch और FFmpeg शामिल हैं। यह आपके होम फ़ोल्डर में रहता है; कोई सिस्टम बदलाव नहीं, रन टाइम पर कोई रूट नहीं।",
   "linux.manual.title": "अन्य डिस्ट्रो (Fedora, Arch, openSUSE…) — इंजन को सीधे चलाएँ",
   "linux.manual.desc": "किसी पैकेज मैनेजर की जरूरत नहीं। हर इंजन एक अकेली स्व-निहित AppImage है (Python, PyTorch, FFmpeg बंडल किए हुए) जो किसी भी 64-bit Linux पर चलती है।",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "GPU वर्शन (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run का मतलब है कि libfuse2 की जरूरत नहीं। GPU संस्करण (~3 GB) दो हिस्सों में आता है — उन्हें cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage से जोड़ें।",
   "linux.fromsource": "डेवलपर्स के लिए: सोर्स से इंस्टॉल करने वाली स्क्रिप्ट भी उपलब्ध है (एक Python एनवायरनमेंट बनाती है; Python 3.10–3.13 आवश्यक)।",
-  "linux.installer.btn": ".deb इंस्टॉलर डाउनलोड करें"
+  "linux.installer.btn": ".deb इंस्टॉलर डाउनलोड करें",
+  "linux.installer.step1": "<strong>इसे इंस्टॉल करें:</strong> डाउनलोड की गई <code>stemtube-desktop_2.0.0_amd64.deb</code> पर डबल-क्लिक करें। यह आपके सॉफ़्टवेयर इंस्टॉलर में खुलेगी (जैसे <em>App Center</em> / <em>Software Install</em>) — <strong>Install</strong> पर क्लिक करें और अपना पासवर्ड दर्ज करें। <span style=\"color:#999;\">(या टर्मिनल में: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>।)</span>",
+  "linux.installer.step2": "<strong>इसे लॉन्च करें:</strong> अपना ऐप्लिकेशन मेन्यू खोलें, <em>“stem”</em> टाइप करें, और <strong>StemTube Desktop</strong> आइकन पर क्लिक करें।",
+  "linux.installer.step3": "<strong>पहली बार लॉन्च करने पर इंजन डाउनलोड होता है।</strong> मिलान वाला इंजन प्राप्त करते समय एक छोटी विंडो दिखाई देती है — <strong>CPU ~600 MB</strong> या <strong>NVIDIA GPU ~3 GB</strong>। यह एक बार का डाउनलोड है और आपके कनेक्शन के आधार पर <strong>कई मिनट</strong> ले सकता है; पूरा होते ही ऐप विंडो खुल जाती है। बाद के लॉन्च कुछ ही सेकंड में शुरू हो जाते हैं।"
 }

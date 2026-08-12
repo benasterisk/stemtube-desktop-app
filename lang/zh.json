@@ -81,12 +81,15 @@
   "linux.req": "64 位 Linux（glibc 2.35+）· NVIDIA GPU 可选（CUDA 加速），否则使用 CPU。需要支持 AVX 的 CPU - 请在真实硬件上运行；屏蔽 AVX 的 VM 会失败（PyTorch 依赖它）。",
   "linux.installer.title": "Ubuntu / Debian —— 下载并双击",
   "linux.installer.desc": "一个安装包——相当于 Linux 版的 Windows .exe。双击即可安装，然后从应用菜单启动 StemTube Desktop。首次启动时会检测你的 GPU 并下载合适的自包含引擎。",
-  "linux.installer.note": "双击下载好的 .deb 进行安装（通过你的软件中心），或运行 sudo apt install ./stemtube-desktop_2.0.0_amd64.deb。引擎会在首次启动时下载一次（CPU ~560 MB / NVIDIA GPU ~3 GB）。",
+  "linux.installer.note": "无需安装其他任何东西——引擎已内置 Python、PyTorch 和 FFmpeg。它位于你的主文件夹中；不会更改系统，运行时也不需要 root 权限。",
   "linux.manual.title": "其他发行版（Fedora、Arch、openSUSE…）—— 直接运行引擎",
   "linux.manual.desc": "无需包管理器。每个引擎都是单个自包含的 AppImage（已捆绑 Python、PyTorch、FFmpeg），可在任何 64-bit Linux 上运行。",
   "linux.manual.cpu": "CPU（约 560 MB）",
   "linux.manual.gpu": "GPU 版本（NVIDIA）",
   "linux.manual.note": "--appimage-extract-and-run 意味着无需 libfuse2。GPU 版本（~3 GB）分为两部分——用 cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage 将它们合并。",
   "linux.fromsource": "开发者：还提供从源码安装的脚本（构建一个 Python 环境；需要 Python 3.10–3.13）。",
-  "linux.installer.btn": "下载 .deb 安装程序"
+  "linux.installer.btn": "下载 .deb 安装程序",
+  "linux.installer.step1": "<strong>安装：</strong>双击下载好的 <code>stemtube-desktop_2.0.0_amd64.deb</code>。它会在你的软件安装程序中打开（例如 <em>App Center</em> / <em>Software Install</em>）——点击 <strong>Install</strong> 并输入你的密码。<span style=\"color:#999;\">（或在终端中：<code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>。）</span>",
+  "linux.installer.step2": "<strong>启动：</strong>打开你的应用程序菜单，输入 <em>“stem”</em>，然后点击 <strong>StemTube Desktop</strong> 图标。",
+  "linux.installer.step3": "<strong>首次启动会下载引擎。</strong>在获取匹配的引擎时会出现一个小窗口——<strong>CPU ~600 MB</strong> 或 <strong>NVIDIA GPU ~3 GB</strong>。这是一次性下载，视你的网络连接情况可能需要 <strong>几分钟</strong>；下载完成后应用窗口即会打开。之后的启动只需几秒钟。"
 }

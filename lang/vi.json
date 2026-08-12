@@ -81,12 +81,15 @@
   "linux.req": "Linux 64-bit (glibc 2.35+) · NVIDIA GPU tùy chọn (tăng tốc bằng CUDA), nếu không thì dùng CPU. Cần CPU hỗ trợ AVX - hãy chạy trên phần cứng thật; một VM che giấu AVX sẽ thất bại (PyTorch yêu cầu nó).",
   "linux.installer.title": "Ubuntu / Debian — tải xuống và nhấp đúp",
   "linux.installer.desc": "Một gói cài đặt — tương đương với tệp .exe của Windows trên Linux. Nhấp đúp để cài đặt, rồi khởi chạy StemTube Desktop từ menu ứng dụng của bạn. Lần khởi chạy đầu tiên sẽ phát hiện GPU của bạn và tải đúng engine độc lập.",
-  "linux.installer.note": "Nhấp đúp vào tệp .deb đã tải để cài đặt (qua trung tâm phần mềm của bạn), hoặc chạy sudo apt install ./stemtube-desktop_2.0.0_amd64.deb. Engine chỉ được tải một lần trong lần khởi chạy đầu tiên (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "Không cần cài gì thêm — engine đã đóng gói sẵn Python, PyTorch và FFmpeg. Nó nằm trong thư mục home của bạn; không thay đổi hệ thống, không cần quyền root khi chạy.",
   "linux.manual.title": "Các bản phân phối khác (Fedora, Arch, openSUSE…) — chạy engine trực tiếp",
   "linux.manual.desc": "Không cần trình quản lý gói. Mỗi engine là một AppImage độc lập duy nhất (đã đóng gói sẵn Python, PyTorch, FFmpeg) chạy được trên mọi Linux 64-bit.",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "Phiên bản GPU (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run nghĩa là không cần libfuse2. Phiên bản GPU (~3 GB) gồm hai phần — ghép chúng lại bằng cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "Nhà phát triển: cũng có sẵn một script cài đặt từ mã nguồn (dựng một môi trường Python; yêu cầu Python 3.10–3.13).",
-  "linux.installer.btn": "Tải trình cài đặt .deb"
+  "linux.installer.btn": "Tải trình cài đặt .deb",
+  "linux.installer.step1": "<strong>Cài đặt:</strong> nhấp đúp vào tệp <code>stemtube-desktop_2.0.0_amd64.deb</code> đã tải xuống. Tệp sẽ mở trong trình cài đặt phần mềm của bạn (ví dụ <em>App Center</em> / <em>Software Install</em>) — nhấp <strong>Install</strong> và nhập mật khẩu của bạn. <span style=\"color:#999;\">(Hoặc trong terminal: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>Khởi chạy:</strong> mở trình đơn ứng dụng của bạn, gõ <em>“stem”</em>, rồi nhấp vào biểu tượng <strong>StemTube Desktop</strong>.",
+  "linux.installer.step3": "<strong>Lần khởi chạy đầu tiên sẽ tải xuống engine.</strong> Một cửa sổ nhỏ hiện ra trong khi tải engine phù hợp — <strong>CPU ~600 MB</strong> hoặc <strong>NVIDIA GPU ~3 GB</strong>. Đây là lần tải xuống duy nhất và có thể mất <strong>vài phút</strong> tùy theo kết nối của bạn; cửa sổ ứng dụng sẽ mở ngay khi hoàn tất. Những lần khởi chạy sau chỉ mất vài giây."
 }

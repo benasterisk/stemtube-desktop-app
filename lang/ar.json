@@ -81,12 +81,15 @@
   "linux.req": "Linux 64-bit (glibc 2.35+) · NVIDIA GPU اختياري (مُسرّع بـ CUDA)، وإلا فـ CPU. يتطلب CPU يدعم AVX - شغّله على عتاد حقيقي؛ أي VM يُخفي AVX سيفشل (PyTorch يتطلبه).",
   "linux.installer.title": "Ubuntu / Debian — نزّل وانقر نقرًا مزدوجًا",
   "linux.installer.desc": "حزمة تثبيت — نظير الملف .exe في Windows على لينكس. انقر عليها نقرًا مزدوجًا لتثبيتها، ثم شغّل StemTube Desktop من قائمة تطبيقاتك. يكتشف أول تشغيل بطاقة GPU لديك وينزّل المحرّك المكتفي ذاتيًا المناسب.",
-  "linux.installer.note": "انقر نقرًا مزدوجًا على ملف .deb المُنزَّل لتثبيته (عبر مركز البرمجيات لديك)، أو نفّذ sudo apt install ./stemtube-desktop_2.0.0_amd64.deb. يُنزّل المحرّك مرة واحدة عند أول تشغيل (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "لا شيء آخر لتثبيته — يتضمّن المحرّك Python وPyTorch وFFmpeg. يوجد في مجلدك الرئيسي؛ دون أي تغييرات على النظام ودون صلاحيات الجذر أثناء التشغيل.",
   "linux.manual.title": "التوزيعات الأخرى (Fedora وArch وopenSUSE…) — شغّل المحرّك مباشرة",
   "linux.manual.desc": "لا حاجة إلى مدير حزم. كل محرّك عبارة عن AppImage واحد مكتفٍ ذاتيًا (Python وPyTorch وFFmpeg مضمّنة) يعمل على أي نظام Linux‏ 64-bit.",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "إصدار GPU (NVIDIA)",
   "linux.manual.note": "‏--appimage-extract-and-run يعني أنه لا حاجة إلى libfuse2. يأتي إصدار GPU (~3 GB) في جزأين — ادمجهما بـ cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "للمطوّرين: يتوفر أيضًا سكربت تثبيت من المصدر (يبني بيئة Python؛ يتطلب Python 3.10–3.13).",
-  "linux.installer.btn": "نزّل مثبّت .deb"
+  "linux.installer.btn": "نزّل مثبّت .deb",
+  "linux.installer.step1": "<strong>ثبّته:</strong> انقر نقرًا مزدوجًا على ملف <code>stemtube-desktop_2.0.0_amd64.deb</code> الذي نزّلته. سيُفتح في مثبّت البرامج لديك (مثل <em>App Center</em> / <em>Software Install</em>) — انقر على <strong>Install</strong> وأدخل كلمة المرور. <span style=\"color:#999;\">(أو في الطرفية: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>شغّله:</strong> افتح قائمة التطبيقات، واكتب <em>“stem”</em>، ثم انقر على أيقونة <strong>StemTube Desktop</strong>.",
+  "linux.installer.step3": "<strong>يُنزّل التشغيل الأول المحرّك.</strong> تظهر نافذة صغيرة أثناء جلبه للمحرّك المطابق — <strong>CPU ~600 MB</strong> أو <strong>NVIDIA GPU ~3 GB</strong>. هذا تنزيل لمرة واحدة وقد يستغرق <strong>عدة دقائق</strong> حسب سرعة اتصالك؛ تُفتح نافذة التطبيق بمجرد انتهائه. أما عمليات التشغيل اللاحقة فتبدأ خلال ثوانٍ."
 }

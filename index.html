@@ -222,8 +222,16 @@
                 <a href="https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/stemtube-desktop_2.0.0_amd64.deb" class="btn btn-primary" style="font-size:1.05rem;padding:.9rem 1.8rem;">
                     <i class="fas fa-download"></i> <span data-i18n="linux.installer.btn">Download the .deb installer</span>
                 </a>
-                <p style="color:#999;font-size:.88rem;margin:1.2rem auto 0;max-width:600px;" data-i18n="linux.installer.note">
-                    Double-click the downloaded <code>.deb</code> to install it (via your software centre), or run <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>. The engine is downloaded once on first launch (CPU ~560 MB / NVIDIA GPU ~3 GB).
+
+                <!-- step-by-step -->
+                <ol style="text-align:left;max-width:600px;margin:1.4rem auto 0;padding-left:1.2rem;color:#cfcfd6;line-height:1.6;">
+                    <li data-i18n-html="linux.installer.step1"><strong>Install it:</strong> double-click the downloaded <code>stemtube-desktop_2.0.0_amd64.deb</code>. It opens in your software installer (e.g. <em>App Center</em> / <em>Software Install</em>) — click <strong>Install</strong> and enter your password. <span style="color:#999;">(Or in a terminal: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span></li>
+                    <li data-i18n-html="linux.installer.step2"><strong>Launch it:</strong> open your applications menu, type <em>“stem”</em>, and click the <strong>StemTube Desktop</strong> icon.</li>
+                    <li data-i18n-html="linux.installer.step3"><strong>First launch downloads the engine.</strong> A small window appears while it fetches the matching engine — <strong>CPU ~600 MB</strong> or <strong>NVIDIA GPU ~3 GB</strong>. This is a one-time download and can take <strong>several minutes</strong> depending on your connection; the app window opens once it finishes. Later launches start in seconds.</li>
+                </ol>
+
+                <p style="color:#999;font-size:.86rem;margin:1.1rem auto 0;max-width:600px;" data-i18n="linux.installer.note">
+                    Nothing else to install — the engine bundles Python, PyTorch and FFmpeg. It lives in your home folder; no system changes, no root at run time.
                 </p>
             </div>
 

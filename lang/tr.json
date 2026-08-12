@@ -81,12 +81,15 @@
   "linux.req": "64-bit Linux (glibc 2.35+) · NVIDIA GPU isteğe bağlı (CUDA hızlandırmalı), aksi halde CPU. AVX destekli bir CPU gerektirir - gerçek donanımda çalıştırın; AVX'i gizleyen bir VM başarısız olur (PyTorch bunu gerektirir).",
   "linux.installer.title": "Ubuntu / Debian — indir ve çift tıkla",
   "linux.installer.desc": "Bir yükleyici paketi — Windows .exe dosyasının Linux'taki karşılığı. Kurmak için çift tıklayın, ardından StemTube Desktop'u uygulama menünüzden başlatın. İlk başlatma GPU'nuzu algılar ve doğru bağımsız motoru indirir.",
-  "linux.installer.note": "İndirilen .deb dosyasına çift tıklayarak kurun (yazılım merkeziniz aracılığıyla) veya sudo apt install ./stemtube-desktop_2.0.0_amd64.deb komutunu çalıştırın. Motor ilk başlatmada yalnızca bir kez indirilir (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "Başka kurulacak bir şey yok — motor Python, PyTorch ve FFmpeg'i içinde barındırır. Ana klasörünüzde bulunur; sistem değişikliği yok, çalışma sırasında root yok.",
   "linux.manual.title": "Diğer dağıtımlar (Fedora, Arch, openSUSE…) — motoru doğrudan çalıştırın",
   "linux.manual.desc": "Paket yöneticisine gerek yok. Her motor, herhangi bir 64-bit Linux'ta çalışan tek bir bağımsız AppImage'dir (Python, PyTorch, FFmpeg dahildir).",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "GPU sürümü (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run, libfuse2'ye gerek olmadığı anlamına gelir. GPU sürümü (~3 GB) iki parça halinde gelir — bunları cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage ile birleştirin.",
   "linux.fromsource": "Geliştiriciler: kaynaktan kurulum betiği de mevcuttur (bir Python ortamı oluşturur; Python 3.10–3.13 gerektirir).",
-  "linux.installer.btn": ".deb yükleyicisini indir"
+  "linux.installer.btn": ".deb yükleyicisini indir",
+  "linux.installer.step1": "<strong>Kurun:</strong> indirilen <code>stemtube-desktop_2.0.0_amd64.deb</code> dosyasına çift tıklayın. Yazılım yükleyicinizde açılır (ör. <em>App Center</em> / <em>Software Install</em>) — <strong>Install</strong> düğmesine tıklayın ve parolanızı girin. <span style=\"color:#999;\">(Veya bir terminalde: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>Başlatın:</strong> uygulamalar menünüzü açın, <em>“stem”</em> yazın ve <strong>StemTube Desktop</strong> simgesine tıklayın.",
+  "linux.installer.step3": "<strong>İlk açılışta motor indirilir.</strong> Uygun motor alınırken küçük bir pencere görünür — <strong>CPU ~600 MB</strong> veya <strong>NVIDIA GPU ~3 GB</strong>. Bu, tek seferlik bir indirmedir ve bağlantınıza bağlı olarak <strong>birkaç dakika</strong> sürebilir; tamamlandığında uygulama penceresi açılır. Sonraki açılışlar saniyeler içinde başlar."
 }

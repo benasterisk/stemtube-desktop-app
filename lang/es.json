@@ -81,12 +81,15 @@
   "linux.req": "Linux de 64 bits (glibc 2.35+) · GPU NVIDIA opcional (acelerada con CUDA), de lo contrario CPU. Necesita una CPU compatible con AVX - ejecútalo en hardware real; una VM que oculte AVX fallará (PyTorch lo requiere).",
   "linux.installer.title": "Ubuntu / Debian — descarga y haz doble clic",
   "linux.installer.desc": "Un paquete instalador — el equivalente en Linux del .exe de Windows. Haz doble clic para instalarlo, luego inicia StemTube Desktop desde tu menú de aplicaciones. El primer arranque detecta tu GPU y descarga el motor autónomo adecuado.",
-  "linux.installer.note": "Haz doble clic en el .deb descargado para instalarlo (a través de tu centro de software), o ejecuta sudo apt install ./stemtube-desktop_2.0.0_amd64.deb. El motor se descarga una sola vez en el primer arranque (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "Nada más que instalar — el motor incluye Python, PyTorch y FFmpeg. Reside en tu carpeta personal; sin cambios en el sistema, sin root en tiempo de ejecución.",
   "linux.manual.title": "Otras distribuciones (Fedora, Arch, openSUSE…) — ejecuta el motor directamente",
   "linux.manual.desc": "No se necesita gestor de paquetes. Cada motor es un único AppImage autónomo (Python, PyTorch, FFmpeg incluidos) que funciona en cualquier Linux de 64-bit.",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "Versión GPU (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run significa que no se necesita libfuse2. La versión GPU (~3 GB) viene en dos partes — únelas con cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "Desarrolladores: también hay disponible un script de instalación desde el código fuente (crea un entorno Python; requiere Python 3.10–3.13).",
-  "linux.installer.btn": "Descargar el instalador .deb"
+  "linux.installer.btn": "Descargar el instalador .deb",
+  "linux.installer.step1": "<strong>Instálalo:</strong> haz doble clic en el archivo descargado <code>stemtube-desktop_2.0.0_amd64.deb</code>. Se abrirá en tu instalador de software (p. ej. <em>App Center</em> / <em>Software Install</em>) — haz clic en <strong>Install</strong> e introduce tu contraseña. <span style=\"color:#999;\">(O en un terminal: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>Ábrelo:</strong> abre el menú de aplicaciones, escribe <em>“stem”</em> y haz clic en el icono de <strong>StemTube Desktop</strong>.",
+  "linux.installer.step3": "<strong>El primer arranque descarga el motor.</strong> Aparece una pequeña ventana mientras se obtiene el motor correspondiente — <strong>CPU ~600 MB</strong> o <strong>NVIDIA GPU ~3 GB</strong>. Es una descarga única y puede tardar <strong>varios minutos</strong> según tu conexión; la ventana de la aplicación se abre en cuanto termina. Los arranques posteriores tardan solo unos segundos."
 }

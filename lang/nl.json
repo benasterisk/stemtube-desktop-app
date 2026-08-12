@@ -81,12 +81,15 @@
   "linux.req": "64-bit Linux (glibc 2.35+) · NVIDIA GPU optioneel (CUDA-versneld), anders CPU. Vereist een CPU met AVX - draai het op echte hardware; een VM die AVX verbergt zal falen (PyTorch vereist het).",
   "linux.installer.title": "Ubuntu / Debian — downloaden & dubbelklikken",
   "linux.installer.desc": "Een installatiepakket — het Linux-equivalent van de Windows-.exe. Dubbelklik erop om te installeren, start daarna StemTube Desktop vanuit je apps-menu. De eerste start detecteert je GPU en downloadt de juiste zelfstandige engine.",
-  "linux.installer.note": "Dubbelklik op de gedownloade .deb om hem te installeren (via je softwarecentrum), of voer sudo apt install ./stemtube-desktop_2.0.0_amd64.deb uit. De engine wordt bij de eerste start één keer gedownload (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "Verder niets te installeren — de engine bevat Python, PyTorch en FFmpeg. Hij staat in je thuismap; geen systeemwijzigingen, geen root tijdens het uitvoeren.",
   "linux.manual.title": "Andere distributies (Fedora, Arch, openSUSE…) — voer de engine rechtstreeks uit",
   "linux.manual.desc": "Geen pakketbeheerder nodig. Elke engine is één zelfstandig AppImage (Python, PyTorch, FFmpeg meegeleverd) dat op elke 64-bit Linux draait.",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "GPU-versie (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run betekent dat er geen libfuse2 nodig is. De GPU-versie (~3 GB) komt in twee delen — voeg ze samen met cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "Ontwikkelaars: een installatiescript vanaf de broncode is ook beschikbaar (bouwt een Python-omgeving; vereist Python 3.10–3.13).",
-  "linux.installer.btn": "Download de .deb-installer"
+  "linux.installer.btn": "Download de .deb-installer",
+  "linux.installer.step1": "<strong>Installeer het:</strong> dubbelklik op de gedownloade <code>stemtube-desktop_2.0.0_amd64.deb</code>. Deze wordt geopend in je softwareprogramma voor installatie (bijv. <em>App Center</em> / <em>Software Install</em>) — klik op <strong>Install</strong> en voer je wachtwoord in. <span style=\"color:#999;\">(Of in een terminal: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>Start het:</strong> open je toepassingenmenu, typ <em>“stem”</em> en klik op het pictogram <strong>StemTube Desktop</strong>.",
+  "linux.installer.step3": "<strong>Bij de eerste start wordt de engine gedownload.</strong> Er verschijnt een klein venster terwijl de bijpassende engine wordt opgehaald — <strong>CPU ~600 MB</strong> of <strong>NVIDIA GPU ~3 GB</strong>. Dit is een eenmalige download die <strong>enkele minuten</strong> kan duren, afhankelijk van je verbinding; het app-venster opent zodra het klaar is. Latere starts beginnen in enkele seconden."
 }

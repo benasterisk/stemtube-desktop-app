@@ -81,12 +81,15 @@
   "linux.req": "Linux 64-bit (glibc 2.35+) · GPU NVIDIA opsional (akselerasi CUDA), jika tidak CPU. Membutuhkan CPU yang mendukung AVX - jalankan di perangkat keras asli; VM yang menyembunyikan AVX akan gagal (PyTorch membutuhkannya).",
   "linux.installer.title": "Ubuntu / Debian — unduh & klik ganda",
   "linux.installer.desc": "Sebuah paket installer — padanan Linux dari .exe Windows. Klik ganda untuk memasangnya, lalu jalankan StemTube Desktop dari menu aplikasi Anda. Peluncuran pertama mendeteksi GPU Anda dan mengunduh engine mandiri yang tepat.",
-  "linux.installer.note": "Klik ganda .deb yang telah diunduh untuk memasangnya (melalui pusat perangkat lunak Anda), atau jalankan sudo apt install ./stemtube-desktop_2.0.0_amd64.deb. Engine diunduh sekali saja pada peluncuran pertama (CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "Tidak ada lagi yang perlu dipasang — mesin sudah menyertakan Python, PyTorch, dan FFmpeg. Mesin berada di folder beranda Anda; tanpa perubahan sistem, tanpa root saat dijalankan.",
   "linux.manual.title": "Distro lain (Fedora, Arch, openSUSE…) — jalankan engine secara langsung",
   "linux.manual.desc": "Tidak perlu package manager. Setiap engine adalah satu AppImage mandiri (Python, PyTorch, FFmpeg sudah dibundel) yang berjalan di Linux 64-bit mana pun.",
   "linux.manual.cpu": "CPU (~560 MB)",
   "linux.manual.gpu": "Versi GPU (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run berarti libfuse2 tidak diperlukan. Versi GPU (~3 GB) hadir dalam dua bagian — gabungkan dengan cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "Pengembang: skrip instalasi dari sumber juga tersedia (membangun environment Python; memerlukan Python 3.10–3.13).",
-  "linux.installer.btn": "Unduh installer .deb"
+  "linux.installer.btn": "Unduh installer .deb",
+  "linux.installer.step1": "<strong>Pasang:</strong> klik dua kali file <code>stemtube-desktop_2.0.0_amd64.deb</code> yang telah diunduh. File akan terbuka di pemasang perangkat lunak Anda (mis. <em>App Center</em> / <em>Software Install</em>) — klik <strong>Install</strong> dan masukkan kata sandi Anda. <span style=\"color:#999;\">(Atau di terminal: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>Jalankan:</strong> buka menu aplikasi Anda, ketik <em>“stem”</em>, lalu klik ikon <strong>StemTube Desktop</strong>.",
+  "linux.installer.step3": "<strong>Peluncuran pertama mengunduh mesin.</strong> Jendela kecil muncul saat mengambil mesin yang sesuai — <strong>CPU ~600 MB</strong> atau <strong>NVIDIA GPU ~3 GB</strong>. Ini adalah unduhan sekali saja dan dapat memakan waktu <strong>beberapa menit</strong> tergantung koneksi Anda; jendela aplikasi terbuka setelah selesai. Peluncuran berikutnya dimulai dalam hitungan detik."
 }

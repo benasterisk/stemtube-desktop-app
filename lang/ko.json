@@ -81,12 +81,15 @@
   "linux.req": "64비트 Linux (glibc 2.35+) · NVIDIA GPU 선택 사항(CUDA 가속), 없으면 CPU 사용. AVX를 지원하는 CPU가 필요합니다 - 실제 하드웨어에서 실행하세요. AVX를 가리는 VM에서는 실패합니다(PyTorch가 요구함).",
   "linux.installer.title": "Ubuntu / Debian — 내려받아 더블 클릭",
   "linux.installer.desc": "설치 프로그램 패키지로, Windows .exe에 해당하는 Linux 버전입니다. 더블 클릭해 설치한 뒤 앱 메뉴에서 StemTube Desktop을 실행하세요. 첫 실행 시 GPU를 감지해 알맞은 자체 완결형 엔진을 내려받습니다.",
-  "linux.installer.note": "내려받은 .deb를 더블 클릭해 설치하거나(소프트웨어 센터를 통해), sudo apt install ./stemtube-desktop_2.0.0_amd64.deb 를 실행하세요. 엔진은 첫 실행 시 한 번만 내려받습니다(CPU ~560 MB / NVIDIA GPU ~3 GB).",
+  "linux.installer.note": "그 외에 설치할 것은 없습니다 — 엔진에 Python, PyTorch, FFmpeg가 번들로 포함되어 있습니다. 홈 폴더에 위치하며, 시스템 변경도 없고 실행 시 루트 권한도 필요 없습니다.",
   "linux.manual.title": "다른 배포판(Fedora, Arch, openSUSE…) — 엔진을 직접 실행",
   "linux.manual.desc": "패키지 관리자가 필요 없습니다. 각 엔진은 하나의 자체 완결형 AppImage(Python, PyTorch, FFmpeg 포함)로, 모든 64-bit Linux에서 실행됩니다.",
   "linux.manual.cpu": "CPU (약 560 MB)",
   "linux.manual.gpu": "GPU 버전 (NVIDIA)",
   "linux.manual.note": "--appimage-extract-and-run 을 쓰면 libfuse2가 필요 없습니다. GPU 버전(~3 GB)은 두 부분으로 나뉘어 있으니 cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage 로 합치세요.",
   "linux.fromsource": "개발자용: 소스에서 설치하는 스크립트도 제공됩니다(Python 환경을 빌드하며 Python 3.10–3.13이 필요합니다).",
-  "linux.installer.btn": ".deb 설치 프로그램 내려받기"
+  "linux.installer.btn": ".deb 설치 프로그램 내려받기",
+  "linux.installer.step1": "<strong>설치하기:</strong> 다운로드한 <code>stemtube-desktop_2.0.0_amd64.deb</code>를 더블 클릭하세요. 소프트웨어 설치 프로그램(예: <em>App Center</em> / <em>Software Install</em>)에서 열리면 <strong>Install</strong>을 클릭하고 비밀번호를 입력하세요. <span style=\"color:#999;\">(또는 터미널에서: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step2": "<strong>실행하기:</strong> 응용 프로그램 메뉴를 열고 <em>“stem”</em>을 입력한 다음 <strong>StemTube Desktop</strong> 아이콘을 클릭하세요.",
+  "linux.installer.step3": "<strong>첫 실행 시 엔진을 다운로드합니다.</strong> 알맞은 엔진을 가져오는 동안 작은 창이 나타납니다 — <strong>CPU ~600 MB</strong> 또는 <strong>NVIDIA GPU ~3 GB</strong>. 이는 한 번만 이루어지는 다운로드이며 연결 상태에 따라 <strong>몇 분</strong>이 걸릴 수 있습니다. 완료되면 앱 창이 열립니다. 이후 실행은 몇 초 만에 시작됩니다."
 }
