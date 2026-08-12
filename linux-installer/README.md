@@ -1,46 +1,59 @@
-# StemTube — Linux graphical installer
+# StemTube — Linux installers
 
-The Linux equivalent of the Windows `setup.exe`: a tiny (~1 MB) AppImage the
-user downloads and double-clicks. It opens a GTK setup window (zenity), detects
-the GPU, downloads the matching self-contained engine (CPU or NVIDIA GPU) from
-the `linux-v2.0.0` release, adds StemTube to the applications menu and launches
-it. **No terminal, no `sudo`, no `libfuse2`** — the engine is launched with
-`--appimage-extract-and-run`, which self-extracts instead of FUSE-mounting.
+The Linux distribution mirrors the Windows model. What users install depends on
+their distro:
 
-## Files
+## Ubuntu / Debian — `.deb` package (the `.exe` equivalent)
+
+`deb/` builds **`stemtube-desktop_2.0.0_amd64.deb`** — a package the user
+downloads and **double-clicks** (opens in the software centre → Install), or
+installs with `sudo apt install ./stemtube-desktop_2.0.0_amd64.deb`. It adds a
+**StemTube Desktop** apps-menu entry and a `stemtube` command. On the **first
+launch**, `stemtube` opens a small GTK window (zenity), detects the GPU,
+downloads the matching self-contained engine (CPU or NVIDIA GPU) from the
+`linux-v2.0.0` release with a progress bar, then runs it. The engine is launched
+with `--appimage-extract-and-run` → **no `libfuse2`, no root at run time**.
 
 | File | Purpose |
 |------|---------|
-| `install-gui.sh` | The installer logic: GPU detection, download-with-progress, wiring, launch. Falls back to text mode if there's no display/zenity. |
-| `AppRun` | AppImage entry point — sets `APPDIR`/`PATH` and runs `install-gui.sh`. |
-| `stemtube-installer.desktop` / `.png` | Installer's own icon + desktop metadata. |
-| `stemtube.png` | The StemTube icon copied into the user's icon theme at install time. |
-| `build-installer.sh` | Builds `StemTube-Installer-x86_64.AppImage`. |
-
-## Build
+| `deb/stemtube-run.sh` | Installed as `/usr/bin/stemtube`: GPU detection, first-run engine download, launch. Falls back to text mode when headless. |
+| `deb/build-deb.sh` | Builds the `.deb` (control, postinst/postrm, desktop entry, icon). |
+| `deb/stemtube.png` | App icon shipped in the package. |
 
 ```bash
-# On a Linux box / WSL2 (bundles the system zenity if present):
-bash build-installer.sh
-# → StemTube-Installer-x86_64.AppImage  (~1 MB)
+# On a Linux box / WSL2 (Ubuntu 22.04):
+bash deb/build-deb.sh
+# → stemtube-desktop_2.0.0_amd64.deb
 ```
 
-Then upload it to the `linux-v2.0.0` release alongside the engine AppImages:
+`Depends: curl, zenity`. Package files are owned root:root
+(`dpkg-deb --root-owner-group`); the engine and its data install per-user under
+`~/.local/share/stemtube-desktop` and `~/.stemtube-desktop`.
+
+## Other distros (Fedora, Arch, openSUSE…) — engine AppImage directly
+
+No package manager step. Download `StemTube-x86_64-cpu.AppImage` (or the GPU
+parts) from the release and run it with `--appimage-extract-and-run` (no FUSE):
 
 ```bash
-sha256sum StemTube-Installer-x86_64.AppImage > StemTube-Installer-x86_64.AppImage.sha256
+chmod +x StemTube-x86_64-cpu.AppImage
+./StemTube-x86_64-cpu.AppImage --appimage-extract-and-run
+```
+
+## Note — why not a double-clickable installer AppImage?
+
+An earlier attempt shipped the *installer* itself as an AppImage. On a desktop
+without `libfuse2`, double-clicking an `.AppImage` fails ("no application
+installed for AppImage bundles") because the file manager can't mount it — the
+`--appimage-extract-and-run` fallback only applies when launched from a shell.
+The `.deb` is the format Ubuntu/Debian desktops execute natively on double-click,
+so it's the real `.exe` equivalent there.
+
+## Publishing
+
+```bash
+sha256sum stemtube-desktop_2.0.0_amd64.deb > stemtube-desktop_2.0.0_amd64.deb.sha256
 gh release upload linux-v2.0.0 \
-  StemTube-Installer-x86_64.AppImage StemTube-Installer-x86_64.AppImage.sha256 \
+  stemtube-desktop_2.0.0_amd64.deb stemtube-desktop_2.0.0_amd64.deb.sha256 \
   --repo benasterisk/stemtube-desktop-releases --clobber
 ```
-
-## Notes
-
-- The installer is packaged with the AppImage **type2 runtime**, which
-  self-extracts when FUSE is absent, so the installer itself doesn't strictly
-  need `libfuse2` either.
-- `install-gui.sh` handles both the single-file CPU asset and the split GPU
-  asset (`.part0`/`.part1`, reassembled with `cat`, checksum-verified).
-- Engine, `stemtube` command, desktop entry and icon all install under `$HOME`
-  (`~/.local/share/stemtube-desktop`, `~/.local/bin`, `~/.local/share/...`) —
-  no root, nothing system-wide.

@@ -47,18 +47,27 @@ python launcher.py
 
 ## Linux distribution (AppImage)
 
-Mirrors the Windows model. A tiny (~1 MB) **graphical installer**
-(`linux-installer/`, the Linux equivalent of `setup.exe`) is what users
-download: they double-click it, a GTK window (zenity) detects the GPU,
-downloads the matching self-contained engine (CPU or NVIDIA GPU) from the
-`linux-v2.0.0` release, adds an apps-menu entry and launches StemTube. The
-engine is run with `--appimage-extract-and-run` → **no `libfuse2`, no `sudo`**.
-See `linux-installer/README.md` to build the installer.
+Mirrors the Windows model. What the user installs depends on the distro
+(`linux-installer/`):
+- **Ubuntu/Debian → a `.deb` package** (`linux-installer/deb/`), the real `.exe`
+  equivalent: double-click to install → **StemTube Desktop** apps-menu entry +
+  a `stemtube` command. First launch opens a GTK window (zenity), detects the
+  GPU, downloads the matching engine and runs it with
+  `--appimage-extract-and-run` → **no `libfuse2`, no root at run time**.
+- **Other distros → the engine AppImage directly** (run with
+  `--appimage-extract-and-run`).
 
-Two self-contained engine AppImages (CPU + GPU) back it. Build is done by
+**Why not a double-clickable installer AppImage?** On a desktop without
+`libfuse2`, double-clicking an `.AppImage` fails ("no application installed for
+AppImage bundles") — the file manager can't mount it, and the extract-and-run
+fallback only applies from a shell. So the *installer* is a `.deb`; only the
+*engine* is an AppImage (launched from the installed `stemtube` command, which
+always passes `--appimage-extract-and-run`).
+
+Two self-contained engine AppImages (CPU + GPU) back it, built by
 `.github/workflows/build-appimage.yml` (or manually — same steps).
-(`stemtube-linux-launcher.sh` is the older curl|bash equivalent, kept as a
-fallback for headless/CLI installs.)
+(`stemtube-linux-launcher.sh` is an older curl|bash launcher kept as a
+headless/CLI fallback.) See `linux-installer/README.md` to build the `.deb`.
 
 **Build recipe** (per variant):
 1. Fetch a relocatable CPython 3.12 from `python-build-standalone` (astral-sh),

@@ -3,3 +3,4 @@
 linux-installer/*.sh text eol=lf
 linux-installer/AppRun text eol=lf
 linux-installer/*.desktop text eol=lf
+linux-installer/deb/*.sh text eol=lf
