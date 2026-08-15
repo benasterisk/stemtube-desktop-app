@@ -459,7 +459,11 @@
   /* The transport bar, while relocated into a Focus popup, drops its bottom border
      and the mixer-only view controls (zoom/scroll/export) — only the practice-
      relevant controls (Play / From-Start / Stop / Rec / BPM / Key / count-in) stay. */
-  .popup-transport-slot { flex:1 1 auto; min-width:0; }
+  /* The popup dialog is a flex COLUMN (header / transport slot / body). The slot
+     must hug the transport bar's own height (~44px) — flex:1 would make it GROW to
+     fill the column, leaving a big empty gap above the chord grid. Let the body
+     (which already has flex:1) take the remaining space instead. */
+  .popup-transport-slot { flex:0 0 auto; min-width:0; }
   .transport.in-popup { border-bottom:none; padding:8px 12px; }
   .transport.in-popup #viewControls,
   .transport.in-popup #focusBtn,
