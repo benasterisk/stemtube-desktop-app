@@ -24,6 +24,17 @@ if sys.stdout and hasattr(sys.stdout, 'buffer'):
 if sys.stderr and hasattr(sys.stderr, 'buffer'):
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
+# In-app auto-updater: at startup, check the release manifest and hot-patch
+# changed files (see core/updater.py). Runs before the GPU restart and before
+# Flask is built, so a restart-to-apply is clean. Guarded so a missing module or
+# any failure is non-fatal — the app always starts. Skipped during the demucs
+# sub-process (handled above) and throttled to once per day.
+try:
+    from core.updater import check_and_apply as _stemtube_check_updates
+    _stemtube_check_updates()
+except Exception:
+    pass
+
 def configure_gpu_and_restart():
     """
     Configure LD_LIBRARY_PATH for CUDA/cuDNN and restart Python if needed.
