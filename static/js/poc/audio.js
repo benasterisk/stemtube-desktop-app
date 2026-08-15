@@ -83,16 +83,57 @@ class AudioEngine {
     }
   }
 
+  // Decode an ArrayBuffer to an AudioBuffer, cross-engine.
+  // WebKitGTK (the Linux AppImage's webview) does NOT implement the
+  // promise-returning form of decodeAudioData the way Chromium/WebView2 does:
+  // `await ctx.decodeAudioData(buf)` there resolves to `undefined` (or throws),
+  // so every stem silently fails and nothing loads. The legacy callback form
+  // `decodeAudioData(buf, onSuccess, onError)` works on all engines, so we
+  // prefer it and only fall back to the promise form. We also resume() first
+  // because WebKit tends to create the context "suspended".
+  async _decode(arrayBuffer){
+    if(this.ctx.state === "suspended"){ try{ await this.ctx.resume(); }catch(e){} }
+    // Some engines detach the ArrayBuffer on decode; hand decodeAudioData a copy
+    // so a fallback attempt still has valid data.
+    const bytes = arrayBuffer.slice(0);
+    return await new Promise((resolve, reject) => {
+      let settled = false;
+      const ok = (b) => { if(!settled){ settled = true; resolve(b); } };
+      const no = (e) => { if(!settled){ settled = true; reject(e || new Error("decodeAudioData failed")); } };
+      let maybePromise;
+      try {
+        maybePromise = this.ctx.decodeAudioData(bytes, ok, no);
+      } catch(e){ no(e); return; }
+      // Chromium/WebView2 also return a promise from the callback form — honor it.
+      if(maybePromise && typeof maybePromise.then === "function"){
+        maybePromise.then(ok, no);
+      }
+    });
+  }
+
   // names: stem names to load. metroResolutions: optional {"0.5":path,"1":path,"2":path}
   // — when present, the metronome stem holds all 3 buffers and can switch live.
   async setStems(job, names, metroResolutions){
     this.unload();
     this.ensureCtx();
+    if(this.ctx.state === "suspended"){ try{ await this.ctx.resume(); }catch(e){} }
+    const failed = [];
     await Promise.all(names.map(async name=>{
-      const buf = await API.audioBuffer(job, name);
-      const audio = await this.ctx.decodeAudioData(buf);
-      this.stems[name] = { name, buffer:audio, source:null, soundTouch:null, gain:null, panNode:null, muted:false, solo:false, vol:1, pan:0 };
+      try {
+        const buf = await API.audioBuffer(job, name);
+        const audio = await this._decode(buf);
+        this.stems[name] = { name, buffer:audio, source:null, soundTouch:null, gain:null, panNode:null, muted:false, solo:false, vol:1, pan:0 };
+      } catch(e){
+        console.error(`[audio] failed to load stem '${name}':`, e);
+        failed.push(name);
+      }
     }));
+    if(failed.length){
+      console.error(`[audio] ${failed.length}/${names.length} stems failed to decode:`, failed);
+      if(failed.length === names.length){
+        throw new Error("No stems could be decoded (audio engine incompatible?)");
+      }
+    }
     // Load the metronome's other resolution buffers (0.5 / 2); "1" == metronome.wav already loaded.
     if(metroResolutions && this.stems["metronome"]){
       const m=this.stems["metronome"]; m.buffers={ "1": m.buffer };
@@ -101,7 +142,7 @@ class AudioEngine {
         const stemId = "metronome_"+res;            // served as /api/audio/<job>/metronome_0.5
         try{
           const buf=await API.audioBuffer(job, stemId);
-          m.buffers[res]=await this.ctx.decodeAudioData(buf);
+          m.buffers[res]=await this._decode(buf);
         }catch(e){ console.warn("[audio] metronome res", res, "load failed", e); }
       }));
       // apply the selected resolution (default "1")
@@ -143,7 +184,7 @@ class AudioEngine {
       const stemId = (res==="1") ? "metronome" : ("metronome_"+res);
       try{
         const buf=await API.audioBuffer(job, stemId + bust);
-        next[res]=await this.ctx.decodeAudioData(buf);
+        next[res]=await this._decode(buf);
       }catch(e){ console.warn("[audio] reload metro res", res, "failed", e); }
     }));
     if(!Object.keys(next).length) return;
@@ -170,7 +211,7 @@ class AudioEngine {
       const stemId = "metronome_precount_"+res;   // /api/audio/<job>/metronome_precount_0.5 etc.
       try{
         const buf=await API.audioBuffer(job, stemId + bust);
-        m.precountBuffers[res]=await this.ctx.decodeAudioData(buf);
+        m.precountBuffers[res]=await this._decode(buf);
       }catch(e){ console.warn("[audio] precount metro", res, "load failed", e); }
     }));
   }
@@ -200,7 +241,7 @@ class AudioEngine {
       const stemId = "metronome_stop_"+res;   // /api/audio/<job>/metronome_stop_0.5 etc.
       try{
         const buf=await API.audioBuffer(job, stemId + bust);
-        m.stopBuffers[res]=await this.ctx.decodeAudioData(buf);
+        m.stopBuffers[res]=await this._decode(buf);
       }catch(e){ console.warn("[audio] stop metro", res, "load failed", e); }
     }));
   }

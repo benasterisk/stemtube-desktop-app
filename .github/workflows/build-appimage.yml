@@ -86,11 +86,14 @@ jobs:
           fi
 
           # Runtime deps (same set as install.sh, demucs pinned to 4.0.1)
+          # mir_eval is REQUIRED by the BTC chord detector
+          # (external/BTC-ISMIR19/utils/mir_eval_modules.py); without it BTC fails
+          # to import and chord detection returns nothing (HTTP 500 on regenerate).
           "$PY" -m pip install \
             Flask Flask-Login Flask-Session Flask-SocketIO requests python-dotenv \
             Pillow librosa soundfile scipy scikit-learn numpy psutil \
             "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4 \
-            pywebview
+            mir_eval pywebview
 
           # PyGObject so pywebview has a GTK backend (the 'gi' module) and opens
           # a real native window on Linux. pip builds it against the system GTK3
