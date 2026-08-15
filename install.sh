@@ -121,10 +121,13 @@ c "Installing PyTorch for: $GPU_LABEL"
 # demucs is pinned to 4.0.1: 4.1.0 removed `demucs.separate.load_track`, which
 # core/stems_extractor.py still uses.
 c "Installing audio/ML dependencies (this can take a few minutes)…"
+# mir_eval is REQUIRED by the BTC chord detector
+# (external/BTC-ISMIR19/utils/mir_eval_modules.py); without it BTC fails to
+# import and chord detection returns nothing (HTTP 500 on regenerate).
 "$VENV_PY" -m pip install \
   Flask Flask-Login Flask-Session Flask-SocketIO eventlet requests python-dotenv \
   Pillow librosa soundfile scipy scikit-learn numpy psutil \
-  "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4
+  "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4 mir_eval
 
 # madmom (chord/beat detection) — needs Cython + numpy first, builds from source on Linux
 c "Installing madmom (chord & beat detection)…"
