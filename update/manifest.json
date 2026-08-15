@@ -1,0 +1,24 @@
+{
+  "edition": "standard",
+  "min_engine_version": 1,
+  "base_commit": "df4160c",
+  "target_commit": "a58b726",
+  "restart_required": true,
+  "files": [
+    {
+      "path": "static/js/poc/audio.js",
+      "status": "M",
+      "sha256": "8e1eb436c97c088faf3737b316977f4399ab233d7a6732f31dd1452eba63e829",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/a58b726/static/js/poc/audio.js"
+    },
+    {
+      "path": "templates/mixer.html",
+      "status": "M",
+      "sha256": "01e9186bd185768ea5a1f2653241f545d115a636d2ba0576f3c8efe27b19925b",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/a58b726/templates/mixer.html"
+    }
+  ],
+  "pip_installs": [
+    "mir_eval"
+  ]
+}
