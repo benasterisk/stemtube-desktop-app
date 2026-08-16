@@ -124,8 +124,20 @@ def launch_native_window(port):
 
         window.events.closed += on_closed
 
-        # Start pywebview (blocks until window is closed)
-        webview.start(debug=args.debug)
+        # Start pywebview. CRITICAL: private_mode defaults to True, which on the
+        # Linux WebKitGTK backend creates an EPHEMERAL WebContext where
+        # window.localStorage is null. The mixer touches localStorage during init
+        # (e.g. recording-engine calibration), so in private mode a bare
+        # localStorage access throws "null is not an object" and aborts mixer
+        # init — the stems never load. Disable private mode and give WebKit a
+        # persistent, writable storage dir so localStorage works like on Windows.
+        try:
+            from core.config import USER_DATA_DIR as _UDD
+            _storage = os.path.join(_UDD, 'webview')
+            os.makedirs(_storage, exist_ok=True)
+        except Exception:
+            _storage = None
+        webview.start(debug=args.debug, private_mode=False, storage_path=_storage)
 
     except Exception as exc:
         # No usable GUI backend (no GTK 'gi' / no Qt 'qtpy'), or the window

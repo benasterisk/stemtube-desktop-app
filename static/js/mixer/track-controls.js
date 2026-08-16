@@ -474,7 +474,7 @@ class TrackControls {
             if (metronome) {
                 const stem = this.mixer.stems['metronome'];
                 metronome.clickMode = stem.muted ? 'off' : 'all';
-                localStorage.setItem('jam_click_mode', metronome.clickMode);
+                try { window.localStorage && localStorage.setItem('jam_click_mode', metronome.clickMode); } catch(e){}
                 metronome._updateToggleIcons();
             }
         });
@@ -491,7 +491,7 @@ class TrackControls {
             }
             if (metronome) {
                 metronome.clickVolume = val * 3;
-                localStorage.setItem('jam_click_volume', metronome.clickVolume.toString());
+                try { window.localStorage && localStorage.setItem('jam_click_volume', metronome.clickVolume.toString()); } catch(e){}
             }
             const display = trackElement.querySelector('.volume-value');
             if (display) display.textContent = `${Math.round(val * 100)}%`;
