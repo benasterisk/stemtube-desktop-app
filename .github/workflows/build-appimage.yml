@@ -128,10 +128,21 @@ jobs:
             --exclude '*.bat' --exclude '*.iss' --exclude 'build_*.py' \
             --exclude 'nuitka_build.py' --exclude '*.spec' --exclude 'tests' \
             ./ "$APP"/
-          # bundle ffmpeg/ffprobe on the AppImage's internal PATH
+          # Bundle a STATIC ffmpeg/ffprobe on the AppImage's internal PATH.
+          # The apt ffmpeg is dynamically linked to libavcodec/libavformat/… which
+          # are NOT in the AppImage, so it crashes with "libavdevice.so.58: cannot
+          # open shared object file" — breaking beat detection (madmom shells out
+          # to ffmpeg) and any ffmpeg-based decode. A static build has no shared
+          # deps and just works. (BtbN static builds — johnvansickle's server
+          # sometimes returns an empty file to CI wget.)
           mkdir -p AppDir/usr/bin
-          cp "$(command -v ffmpeg)"  AppDir/usr/bin/
-          cp "$(command -v ffprobe)" AppDir/usr/bin/
+          curl -fsSL "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" -o ffmpeg-static.tar.xz
+          mkdir -p ffmpeg-static && tar -xf ffmpeg-static.tar.xz -C ffmpeg-static --strip-components=1
+          cp ffmpeg-static/bin/ffmpeg  AppDir/usr/bin/
+          cp ffmpeg-static/bin/ffprobe AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/ffmpeg AppDir/usr/bin/ffprobe
+          # sanity: the static binary must run with no missing libs
+          AppDir/usr/bin/ffmpeg -version | head -1
           # (No GTK/WebKit bundling: the Linux GUI opens in the user's browser
           #  with a stdlib Tkinter control window; Tk ships inside the bundled
           #  python-build-standalone interpreter.)
