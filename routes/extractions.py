@@ -449,16 +449,125 @@ def delete_extraction(extraction_id):
 @extractions_bp.route('/api/extractions/<extraction_id>/create-zip', methods=['POST'])
 @api_login_required
 def create_zip_for_extraction(extraction_id):
+    """Build (or reuse) a ZIP of a completed extraction's stems.
+
+    Resolution is DB-first (single-user: ownership via current_user.id):
+      1. Strip an optional "download_" prefix.
+      2. Try the id as a user_downloads.id (get_download_by_id).
+      3. If that misses, treat it as a global_download_id: look up its
+         video_id in global_downloads, map to THIS user's user_downloads.id
+         via get_user_download_id_by_video_id, then get_download_by_id.
+    The zip is built from the DB row's stems_paths (JSON of stem_name->path).
+    An existing stems_zip_path is reused when the file is still present.
+    If the DB knows nothing, we fall back to the in-memory extraction
+    (a just-finished job in this process) so nothing that works today breaks.
+
+    Ported from R2 (commit c278daf): the create-zip button in the download
+    list sends the GLOBAL id, but this endpoint used to resolve only the
+    in-memory extraction — so every historical song (not extracted in the
+    current process) 404'd. The GLOBAL-id fallback + DB build fix that.
+    """
     try:
+        # Imported inside the function like the R2 fix.
+        from core.downloads_db import get_download_by_id, get_user_download_id_by_video_id
+        from core.db.connection import _conn
+        import zipfile
+
+        # --- Normalize the incoming id ---
+        raw_id = extraction_id
+        if isinstance(raw_id, str) and raw_id.startswith('download_'):
+            raw_id = raw_id.replace('download_', '', 1)
+
+        # --- DB-first resolution ---
+        download_data = None
+        try:
+            download_data = get_download_by_id(current_user.id, raw_id)
+        except Exception as lookup_err:
+            print(f"[create-zip] get_download_by_id failed for {raw_id}: {lookup_err}")
+            download_data = None
+
+        # Fallback: treat raw_id as a global_download_id -> video_id -> user's row.
+        if not download_data:
+            try:
+                with _conn() as conn:
+                    row = conn.execute(
+                        "SELECT video_id FROM global_downloads WHERE id=?",
+                        (raw_id,)
+                    ).fetchone()
+                video_id = row[0] if row else None
+                if video_id:
+                    user_dl_id = get_user_download_id_by_video_id(current_user.id, video_id)
+                    if user_dl_id:
+                        download_data = get_download_by_id(current_user.id, user_dl_id)
+            except Exception as fallback_err:
+                print(f"[create-zip] global_download fallback failed for {raw_id}: {fallback_err}")
+                download_data = None
+
+        # --- Build from DB row if we resolved one ---
+        if download_data:
+            # Parse stems_paths (JSON string of {stem_name: absolute_path}).
+            stems_paths = download_data.get('stems_paths')
+            if isinstance(stems_paths, str):
+                try:
+                    stems_paths = json.loads(stems_paths)
+                except (json.JSONDecodeError, TypeError):
+                    stems_paths = None
+            if not isinstance(stems_paths, dict):
+                stems_paths = {}
+
+            existing_files = {
+                name: path for name, path in stems_paths.items()
+                if path and os.path.exists(path)
+            }
+            if not existing_files:
+                return jsonify({'error': 'No stem files found', 'success': False}), 404
+
+            # Reuse an existing valid zip if present.
+            existing_zip = download_data.get('stems_zip_path')
+            if existing_zip and os.path.exists(existing_zip):
+                return jsonify({'success': True, 'zip_path': existing_zip})
+
+            # Choose a safe location: the directory where the stems live.
+            first_path = next(iter(existing_files.values()))
+            output_dir = os.path.dirname(first_path)
+
+            # Base name from the track title, falling back to the audio filename.
+            title = download_data.get('title')
+            file_path = download_data.get('file_path')
+            if title and str(title).strip() and str(title) != 'Unknown Track':
+                base_name = str(title).strip()
+            elif file_path:
+                base_name = os.path.splitext(os.path.basename(file_path))[0]
+            else:
+                base_name = os.path.splitext(os.path.basename(first_path))[0]
+            # Sanitize for a filesystem-safe filename.
+            safe_base = "".join(
+                c if (c.isalnum() or c in " -_().") else "_" for c in base_name
+            ).strip() or "stems"
+
+            try:
+                zip_path = os.path.join(output_dir, f"{safe_base}_stems.zip")
+                with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for stem_name, fp in existing_files.items():
+                        zipf.write(fp, os.path.basename(fp))
+            except Exception as zip_error:
+                return jsonify({'error': f'Error creating ZIP: {str(zip_error)}', 'success': False}), 500
+
+            # Best-effort persist of the zip path (helper may not exist desktop-side).
+            try:
+                from core.downloads_db import update_stems_zip_path as _update_zip
+                _update_zip(current_user.id, download_data.get('id'), zip_path)
+            except Exception:
+                pass  # No such helper desktop-side, or persist failed; zip is still returned.
+
+            return jsonify({'success': True, 'zip_path': zip_path})
+
+        # --- In-memory fallback (a just-finished extraction in this process) ---
         se = user_session_manager.get_stems_extractor()
         extraction = se.get_extraction_status(extraction_id)
 
-        if not extraction and extraction_id:
-            # Extraction not found in user records - filesystem scanning disabled for security
-            return jsonify({'error': 'Extraction not found in your records', 'success': False}), 404
-
         if not extraction:
-            return jsonify({'error': 'Extraction not found', 'success': False}), 404
+            return jsonify({'error': 'Extraction not found in your records', 'success': False}), 404
 
         if extraction.status.value != 'completed':
             return jsonify({'error': 'Extraction not completed', 'success': False}), 400
@@ -466,25 +575,15 @@ def create_zip_for_extraction(extraction_id):
         if not extraction.output_paths:
             return jsonify({'error': 'No stem files found', 'success': False}), 404
 
-        # Create ZIP file
         try:
-            import zipfile
-
-            # Create ZIP file path
             base_name = os.path.splitext(os.path.basename(extraction.audio_path))[0]
             zip_path = os.path.join(extraction.output_dir, f"{base_name}_stems.zip")
-
-            # Create ZIP file
             with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 for stem_name, file_path in extraction.output_paths.items():
                     if os.path.exists(file_path):
                         zipf.write(file_path, os.path.basename(file_path))
-
-            # Update extraction with zip path
             extraction.zip_path = zip_path
-
             return jsonify({'success': True, 'zip_path': zip_path})
-
         except Exception as zip_error:
             return jsonify({'error': f'Error creating ZIP: {str(zip_error)}', 'success': False}), 500
 
