@@ -121,6 +121,46 @@ def _log(msg):
     print(f"[UPDATER] {msg}")
 
 
+def _status_path():
+    """USER_DATA_DIR/updater_status.json — live progress, polled by the launcher's
+    Tkinter window so the user sees what the updater is doing at startup."""
+    try:
+        from core.config import USER_DATA_DIR
+        base = USER_DATA_DIR
+    except Exception:
+        base = os.path.join(os.path.expanduser("~"), ".stemtube-desktop")
+    return os.path.join(base, "updater_status.json")
+
+
+def _progress(phase, message, percent=None, extra=None):
+    """Publish the current update phase for the launcher UI.
+
+    phase: one of 'checking' | 'up_to_date' | 'downloading' | 'installing_deps'
+           | 'applying' | 'done' | 'error'
+    percent: 0..100 or None (indeterminate).
+    """
+    payload = {"phase": phase, "message": message, "percent": percent,
+               "ts": _now()}
+    if extra:
+        payload.update(extra)
+    try:
+        p = _status_path()
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        tmp = p + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(payload, f)
+        os.replace(tmp, p)
+    except Exception:
+        pass
+
+
+def _now():
+    try:
+        return time.time()
+    except Exception:
+        return 0
+
+
 def _http_get(url, binary=False):
     req = urllib.request.Request(url, headers={"User-Agent": "StemTube-Updater"})
     with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT) as r:
@@ -175,8 +215,10 @@ def check_and_apply():
         _run(state, now)
     except urllib.error.URLError as e:
         _log(f"offline or unreachable, skipping update check: {e}")
+        _progress("error", "Offline — couldn't check for updates.", None)
     except Exception as e:
         _log(f"update check failed (non-fatal): {e}")
+        _progress("error", f"Update check failed: {e}", None)
 
 
 def _run(state, now):
@@ -186,6 +228,7 @@ def _run(state, now):
         _log(f"no manifest URL for edition '{edition}', skipping")
         return
 
+    _progress("checking", "Checking for updates…", None)
     manifest = json.loads(_http_get(url))
 
     # record that we checked (even if nothing to do) to honor the daily throttle
@@ -209,6 +252,7 @@ def _run(state, now):
         return
 
     if local == target:
+        _progress("up_to_date", "StemTube is up to date.", 100)
         return  # already up to date
 
     # A partial patch is only safe if the manifest's base matches what we have.
@@ -227,6 +271,7 @@ def _run(state, now):
         # nothing but a version bump
         state["applied_commit"] = target
         _save_state(state)
+        _progress("up_to_date", "StemTube is up to date.", 100)
         return
 
     root = _backend_root()
@@ -237,12 +282,18 @@ def _run(state, now):
     staging = tempfile.mkdtemp(prefix="stemtube-update-")
     staged = []  # (rel_path, staged_abs_path, status)
     try:
+        # total work units = files to download + deps to install (rough but even)
+        total_units = max(1, len([f for f in files if f.get("status") != "D"]) + len(pip_installs))
+        done_units = 0
         for f in files:
             path = f["path"]
             status = f.get("status", "M")
             if status == "D":
                 staged.append((path, None, "D"))
                 continue
+            pct = int(done_units * 100 / total_units)
+            _progress("downloading", f"Downloading {os.path.basename(path)}…", pct,
+                      {"file": path})
             data = _http_get(f["url"], binary=True)
             got = _sha256(data)
             want = f.get("sha256", "")
@@ -253,8 +304,10 @@ def _run(state, now):
             with open(dest, "wb") as out:
                 out.write(data)
             staged.append((path, dest, status))
+            done_units += 1
 
         # ── 2. apply atomically into the backend tree, keeping .bak for rollback
+        _progress("applying", "Applying update…", 90)
         backups = []  # (target_abs, backup_abs_or_None)
         try:
             for rel, src, status in staged:
@@ -273,6 +326,8 @@ def _run(state, now):
 
             # ── 3. pip install new pure-Python deps into the bundled interpreter
             if pip_installs:
+                _progress("installing_deps",
+                          f"Installing components ({', '.join(pip_installs)})…", 95)
                 _pip_install(pip_installs)
 
         except Exception as e:
@@ -290,6 +345,8 @@ def _run(state, now):
         state["applied_commit"] = target
         _save_state(state)
         _log(f"update applied: now at {target}")
+        _progress("done", "Update installed.", 100,
+                  {"restart": bool(restart_required or pip_installs)})
 
         # ── 5. restart to load new code
         if restart_required or pip_installs:
@@ -337,14 +394,32 @@ def _pip_install(deps):
         raise RuntimeError(f"pip install failed: {proc.stderr[-500:]}")
 
 
-def _restart():
+# Set True when an applied update needs a process restart. The launcher checks
+# this after check_and_apply() returns and performs the restart from the MAIN
+# thread (doing os.execv from the updater's worker thread crashes Tkinter:
+# "Tcl_AsyncDelete: async handler deleted by the wrong thread").
+RESTART_REQUESTED = False
+
+
+def restart_now():
+    """Replace the current process to load the new code. MUST be called from the
+    main thread (the launcher does this after closing its progress window)."""
     _log("restarting to apply update…")
-    # Same primitive app.py uses for the GPU restart. The sentinel is already set
-    # so the fresh process won't re-check immediately (it will next day / next run).
     try:
         os.execv(sys.executable, [sys.executable] + sys.argv)
     except Exception as e:
         _log(f"restart failed ({e}); the update will take effect on next launch")
+
+
+def _restart():
+    # Don't execv here — we may be on a worker thread with a Tk loop running.
+    # Just request it; the launcher restarts from the main thread. If the app was
+    # started directly (python app.py, no launcher), fall back to execv here since
+    # there is no Tk loop to corrupt and no one else will do it.
+    global RESTART_REQUESTED
+    RESTART_REQUESTED = True
+    if os.environ.get('_STEMTUBE_LAUNCHER') != '1':
+        restart_now()
 
 
 def _rmtree(path):
