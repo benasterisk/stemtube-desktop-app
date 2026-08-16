@@ -501,6 +501,15 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+<!-- TEST UPDATER BANNER — proof the auto-updater delivered a new mixer.html.
+     Remove after the end-to-end test. -->
+<div id="updater-test-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;
+     background:#16a34a;color:#fff;font:600 14px/1.4 system-ui,sans-serif;
+     text-align:center;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.3);">
+  ✅ TEST UPDATER OK — auto-update applied (build 2026-08-16-A) ·
+  <a href="#" onclick="document.getElementById('updater-test-banner').remove();return false;"
+     style="color:#fff;text-decoration:underline;">dismiss</a>
+</div>
 <!-- Safe localStorage for WebView2 iframe (Tracking Prevention may block storage) -->
 <script>
   (function() {
