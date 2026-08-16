@@ -253,8 +253,164 @@ def _use_native_window():
     return not sys.platform.startswith('linux')
 
 
+def run_update_with_progress():
+    """Run the in-app updater at startup, showing a small progress window.
+
+    Architecture note: the updater runs on a WORKER thread while a Tk progress
+    window is pumped MANUALLY from the main thread with root.update() (NOT
+    mainloop). Everything Tk stays on the main thread, and no second Tk instance
+    is created here, which avoids the "Tcl_AsyncDelete: async handler deleted by
+    the wrong thread" crash. The window is only shown when there is real work
+    (download/install); a plain up-to-date check flashes nothing.
+
+    If an update was applied, restart_now() (os.execv) is called from the main
+    thread AFTER the Tk window is fully destroyed — so this may not return.
+    Safe no-op if the updater module is missing.
+    """
+    try:
+        from core import updater
+    except Exception:
+        return
+
+    os.environ['_STEMTUBE_LAUNCHER'] = '1'  # updater requests restart, doesn't execv
+
+    try:
+        sp = updater._status_path()
+        if os.path.exists(sp):
+            os.remove(sp)
+    except Exception:
+        pass
+
+    done = {"flag": False}
+
+    def _work():
+        try:
+            updater.check_and_apply()
+        except Exception as e:
+            print(f"[LAUNCHER] updater error (non-fatal): {e}")
+        finally:
+            done["flag"] = True
+
+    t = threading.Thread(target=_work, daemon=True)
+    t.start()
+
+    # headless: no UI, just wait then maybe restart.
+    if args.no_window:
+        t.join(timeout=300)
+        if getattr(updater, 'RESTART_REQUESTED', False):
+            updater.restart_now()
+        return
+
+    try:
+        import tkinter as tk
+        from tkinter import ttk, font as tkfont
+        import json as _json
+    except Exception:
+        t.join(timeout=300)
+        if getattr(updater, 'RESTART_REQUESTED', False):
+            updater.restart_now()
+        return
+
+    root = None
+    bar = None
+    msg_var = None
+    indeterminate = {"on": True}
+
+    def read_status():
+        try:
+            with open(updater._status_path(), "r", encoding="utf-8") as f:
+                return _json.load(f)
+        except Exception:
+            return None
+
+    def ensure_window():
+        nonlocal root, bar, msg_var
+        if root is not None:
+            return
+        root = tk.Tk()
+        root.title("StemTube")
+        try:
+            root.geometry("380x140"); root.resizable(False, False)
+        except Exception:
+            pass
+        tk.Label(root, text="StemTube Desktop",
+                 font=tkfont.Font(size=13, weight="bold")).pack(pady=(16, 2))
+        msg_var = tk.StringVar(value="Checking for updates…")
+        tk.Label(root, textvariable=msg_var).pack(pady=(0, 8))
+        bar = ttk.Progressbar(root, orient="horizontal", length=320, mode="indeterminate")
+        bar.pack(pady=4)
+        bar.start(12)
+
+    def apply_status(s):
+        if root is None:
+            return
+        msg = s.get("message"); pct = s.get("percent")
+        if msg:
+            msg_var.set(msg)
+        if pct is not None:
+            if indeterminate["on"]:
+                bar.stop(); bar.config(mode="determinate", maximum=100); indeterminate["on"] = False
+            bar["value"] = pct
+        else:
+            if not indeterminate["on"]:
+                bar.config(mode="indeterminate"); bar.start(12); indeterminate["on"] = True
+
+    # ── manual pump loop (main thread) ──────────────────────────────────────
+    import time as _t
+    shown_real_work = False
+    start = _t.time()
+    final_phase = None
+    while True:
+        s = read_status()
+        if s:
+            phase = s.get("phase")
+            # only pop the window up for actual work (download/apply/deps/error)
+            if phase in ("downloading", "applying", "installing_deps", "done", "error"):
+                shown_real_work = True
+                ensure_window()
+            if root is not None:
+                apply_status(s)
+            if phase in ("up_to_date", "done", "error"):
+                final_phase = phase
+        if root is not None:
+            try:
+                root.update()   # pump Tk on the main thread (no mainloop)
+            except Exception:
+                break
+        # exit conditions
+        if done["flag"] and (final_phase is not None or read_status() is None):
+            break
+        if _t.time() - start > 300:   # safety timeout
+            break
+        _t.sleep(0.1)
+
+    # brief glimpse of the final state if we showed a window for real work
+    if root is not None and shown_real_work and final_phase in ("done", "error"):
+        try:
+            end = _t.time() + 1.1
+            while _t.time() < end:
+                root.update(); _t.sleep(0.05)
+        except Exception:
+            pass
+
+    if root is not None:
+        try:
+            root.destroy()
+        except Exception:
+            pass
+
+    # restart from the main thread, after Tk is gone
+    if getattr(updater, 'RESTART_REQUESTED', False):
+        updater.restart_now()
+
+
 def main():
     port = get_port()
+
+    # Check for updates first, with a small progress window. If an update is
+    # applied, run_update_with_progress() restarts the process from the main
+    # thread (and does not return).
+    run_update_with_progress()
 
     # Start Flask in a daemon thread
     server_thread = threading.Thread(target=start_flask_server, args=(port,), daemon=True)

@@ -24,14 +24,15 @@ if sys.stdout and hasattr(sys.stdout, 'buffer'):
 if sys.stderr and hasattr(sys.stderr, 'buffer'):
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-# In-app auto-updater: at startup, check the release manifest and hot-patch
-# changed files (see core/updater.py). Runs before the GPU restart and before
-# Flask is built, so a restart-to-apply is clean. Guarded so a missing module or
-# any failure is non-fatal — the app always starts. Skipped during the demucs
-# sub-process (handled above) and throttled to once per day.
+# In-app auto-updater: normally driven by launcher.py (run_update_with_progress)
+# BEFORE the server starts, so it can show a progress window and restart cleanly.
+# We keep a guarded fallback here for the case where app.py is started directly
+# (e.g. `python app.py`, no launcher): the env sentinel makes this a no-op when
+# the launcher already ran it, and it is skipped during the demucs sub-process.
 try:
-    from core.updater import check_and_apply as _stemtube_check_updates
-    _stemtube_check_updates()
+    if os.environ.get('_STEMTUBE_UPDATE_DONE') != '1':
+        from core.updater import check_and_apply as _stemtube_check_updates
+        _stemtube_check_updates()
 except Exception:
     pass
 
