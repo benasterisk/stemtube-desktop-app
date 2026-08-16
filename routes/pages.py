@@ -34,6 +34,28 @@ def index():
         else:
             return "Desktop user not found. Please restart the application.", 500
 
+    # If the auto-updater just applied an update (updater_status.json phase=done),
+    # surface a one-time "update installed" banner, then consume the status so it
+    # only shows once.
+    update_applied = False
+    update_version = None
+    try:
+        from core.config import USER_DATA_DIR
+        _sp = os.path.join(USER_DATA_DIR, 'updater_status.json')
+        with open(_sp, 'r', encoding='utf-8') as _f:
+            _st = json.load(_f)
+        if _st.get('phase') == 'done':
+            update_applied = True
+            try:
+                _state = os.path.join(USER_DATA_DIR, 'updater_state.json')
+                with open(_state, 'r', encoding='utf-8') as _sf:
+                    update_version = json.load(_sf).get('applied_commit')
+            except Exception:
+                pass
+            os.remove(_sp)  # consume: show only once
+    except Exception:
+        pass
+
     cache_buster = int(time.time())
     return render_template(
         'index.html',
@@ -41,7 +63,9 @@ def index():
         current_user=current_user,
         enable_youtube=False,
         has_license=HAS_LICENSE,
-        cache_buster=cache_buster
+        cache_buster=cache_buster,
+        update_applied=update_applied,
+        update_version=update_version
     )
 
 
