@@ -70,15 +70,22 @@ jobs:
           PY=AppDir/usr/python/bin/python3
           "$PY" -m pip install --upgrade pip wheel setuptools
 
-          # GPU: use the cu126 index, NOT cu124 — torch cu124 pins
-          # nvidia-cudnn-cu12==9.1.0.70, which NVIDIA/PyPI removed, making that
-          # build uninstallable. cu126 resolves cleanly (cudnn 9.10.x available).
-          # CPU stays on the cpu index. pip was upgraded above so it can read the
-          # recent nvidia-*-cu12 manylinux wheels.
+          # GPU: use the cu126 index (NOT cu124 — torch cu124 pins
+          # nvidia-cudnn-cu12==9.1.0.70, which NVIDIA/PyPI removed). PIN
+          # torch==2.7.0: from torch 2.8 torchaudio.load() requires the torchcodec
+          # backend, which needs system FFmpeg shared libs (libavutil/libavcodec)
+          # that the AppImage does not bundle — so demucs crashes at load_track
+          # ("TorchCodec is required") BEFORE it ever reaches the GPU, and no GPU
+          # is used. torch 2.7.0's torchaudio still loads audio via the soundfile
+          # backend, so demucs runs on CUDA correctly (verified: GPU hits ~95%).
+          # CPU stays on the cpu index (older torch there, unaffected).
+          # Both variants pin 2.7.0 for the same reason: torch >= 2.8 makes
+          # torchaudio.load() require the torchcodec backend (needs system FFmpeg
+          # libs the AppImage doesn't bundle), which breaks demucs at load_track.
           if [ "${{ matrix.variant }}" = "gpu" ]; then
-            "$PY" -m pip install torch torchaudio --index-url "https://download.pytorch.org/whl/cu126"
+            "$PY" -m pip install "torch==2.7.0" "torchaudio==2.7.0" --index-url "https://download.pytorch.org/whl/cu126"
           else
-            "$PY" -m pip install torch torchaudio --index-url "https://download.pytorch.org/whl/cpu"
+            "$PY" -m pip install "torch==2.7.0" "torchaudio==2.7.0" --index-url "https://download.pytorch.org/whl/cpu"
           fi
 
           # Runtime deps (same set as install.sh, demucs pinned to 4.0.1)
