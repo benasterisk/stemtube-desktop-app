@@ -401,28 +401,49 @@ class RecordingEngine {
         return Math.max(0, totalLatency);
     }
 
+    /**
+     * Safe localStorage accessor. In the Linux AppImage's WebKitGTK webview
+     * `window.localStorage` can be null (no persistent storage in that context),
+     * so a bare localStorage.getItem() throws "null is not an object" and aborts
+     * mixer init — which silently prevents the stems from loading. Every access
+     * goes through this guard; when storage is unavailable, calibration simply
+     * falls back to auto-detect (returns null / no-op) instead of crashing.
+     */
+    _ls(op, key, value) {
+        try {
+            const s = window.localStorage;
+            if (!s) return null;
+            if (op === 'get') return s.getItem(key);
+            if (op === 'set') { s.setItem(key, value); return null; }
+            if (op === 'remove') { s.removeItem(key); return null; }
+        } catch (e) {
+            // storage disabled/unavailable (WebKit private mode, no-storage webview)
+        }
+        return null;
+    }
+
     /** Load calibrated latency from localStorage (seconds). */
     _loadCalibratedLatency() {
         // v2: invalidate old values computed with the /2 bug
-        const version = localStorage.getItem('stemtube_latency_version');
+        const version = this._ls('get', 'stemtube_latency_version');
         if (version !== '2') {
-            localStorage.removeItem('stemtube_calibrated_latency');
+            this._ls('remove', 'stemtube_calibrated_latency');
             return 0;
         }
-        const val = localStorage.getItem('stemtube_calibrated_latency');
+        const val = this._ls('get', 'stemtube_calibrated_latency');
         return val ? parseFloat(val) : 0;
     }
 
     /** Save calibrated latency to localStorage (seconds). */
     _saveCalibratedLatency(seconds) {
-        localStorage.setItem('stemtube_calibrated_latency', seconds.toString());
-        localStorage.setItem('stemtube_latency_version', '2');
+        this._ls('set', 'stemtube_calibrated_latency', seconds.toString());
+        this._ls('set', 'stemtube_latency_version', '2');
     }
 
     /** Clear calibration and revert to auto-detect. */
     resetCalibration() {
         this.calibratedLatency = 0;
-        localStorage.removeItem('stemtube_calibrated_latency');
+        this._ls('remove', 'stemtube_calibrated_latency');
     }
 
     /**
