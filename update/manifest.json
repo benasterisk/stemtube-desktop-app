@@ -2,20 +2,50 @@
   "edition": "standard",
   "min_engine_version": 1,
   "base_commit": "df4160c",
-  "target_commit": "a58b726",
+  "target_commit": "9e17a70",
   "restart_required": true,
   "files": [
+    {
+      "path": "app.py",
+      "status": "M",
+      "sha256": "03299be84dc4d15d171808103c9350f9c07966aa684f99cd7dcf64bfe240067e",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/app.py"
+    },
+    {
+      "path": "core/updater.py",
+      "status": "A",
+      "sha256": "8e408987b6118a3857205ed1a1163f2f0fff8fec462af257833e869f22588c2b",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/core/updater.py"
+    },
+    {
+      "path": "launcher.py",
+      "status": "M",
+      "sha256": "a30f963cd5200615dc722a100f88342d6d68c2a3a2906a9a4f12ef1d8cc0b644",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/launcher.py"
+    },
+    {
+      "path": "static/js/mixer/recording-engine.js",
+      "status": "M",
+      "sha256": "04de3b2dd8198b5dcf25ba0919cc86e6b0a57bc9d081e08429afb7b166bfc339",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/static/js/mixer/recording-engine.js"
+    },
+    {
+      "path": "static/js/mixer/track-controls.js",
+      "status": "M",
+      "sha256": "fa1b42aab001365aa0365453c78552a368ecb3f05047526eb25a9734ec7c3f4d",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/static/js/mixer/track-controls.js"
+    },
     {
       "path": "static/js/poc/audio.js",
       "status": "M",
       "sha256": "8e1eb436c97c088faf3737b316977f4399ab233d7a6732f31dd1452eba63e829",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/a58b726/static/js/poc/audio.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/static/js/poc/audio.js"
     },
     {
       "path": "templates/mixer.html",
       "status": "M",
-      "sha256": "01e9186bd185768ea5a1f2653241f545d115a636d2ba0576f3c8efe27b19925b",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/a58b726/templates/mixer.html"
+      "sha256": "b14594209c7a2556208ae2e52cb246f68198ffa906999aca36a582e2016f478c",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/9e17a70/templates/mixer.html"
     }
   ],
   "pip_installs": [
