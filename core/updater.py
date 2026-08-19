@@ -412,9 +412,22 @@ RESTART_REQUESTED = False
 
 
 def restart_now():
-    """Replace the current process to load the new code. MUST be called from the
-    main thread (the launcher does this after closing its progress window)."""
+    """Restart the process to load the new code. MUST be called from the main
+    thread (the launcher does this after closing its progress window)."""
     _log("restarting to apply update…")
+    if os.name == "nt":
+        # Windows has no real exec(): os.execv re-serialises argv into a command
+        # line, and an unquoted space splits it. The default install path is
+        # "%LOCALAPPDATA%\StemTube Desktop\...", so execv there relaunches a
+        # truncated path and dies with "can't open file". subprocess takes an
+        # argument LIST and quotes each item itself, so spaces survive.
+        try:
+            import subprocess
+            subprocess.Popen([sys.executable] + sys.argv, close_fds=False)
+            os._exit(0)          # leave at once; the child owns the app now
+        except Exception as e:
+            _log(f"restart failed ({e}); the update will take effect on next launch")
+        return
     try:
         os.execv(sys.executable, [sys.executable] + sys.argv)
     except Exception as e:
