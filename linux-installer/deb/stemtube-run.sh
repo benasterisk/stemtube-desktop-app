@@ -76,5 +76,35 @@ if [ ! -x "$APPIMAGE" ]; then
   { [ "${rc:-1}" = 0 ] && [ -x "$APPIMAGE" ]; } || die "Couldn't download the StemTube engine.\nCheck your internet connection and launch again."
 fi
 
+# ── persistent app tree (this is what makes auto-updates stick) ────────────
+# --appimage-extract-and-run re-extracts to a throwaway /tmp dir on EVERY
+# launch, so anything the in-app updater patches is gone the moment the app
+# closes: an install launched that way could never receive an update. Extract
+# once to a persistent tree and run that instead. Re-extracted automatically
+# when the engine is newer than the tree (i.e. after a fresh engine download).
+APPTREE="$DEST/app"
+extract_tree() {
+  local tmp; tmp="$(mktemp -d)" || return 1
+  ( cd "$tmp" && "$APPIMAGE" --appimage-extract >/dev/null 2>&1 ) || { rm -rf "$tmp"; return 1; }
+  [ -d "$tmp/squashfs-root/usr/src/stemtube" ] || { rm -rf "$tmp"; return 1; }
+  rm -rf "$APPTREE"
+  mv "$tmp/squashfs-root" "$APPTREE" || { rm -rf "$tmp"; return 1; }
+  rm -rf "$tmp"
+  return 0
+}
+
+if [ ! -f "$APPTREE/usr/src/stemtube/app.py" ] || [ "$APPIMAGE" -nt "$APPTREE" ]; then
+  if [ "$GUI" = 1 ]; then
+    ( echo "# Preparing StemTube (one-time)…"; extract_tree; echo "100" )       | "$ZEN" --progress --pulsate --auto-close --no-cancel --width=470                --title="StemTube" --text="Preparing…"
+  else
+    echo "Preparing StemTube (one-time)…"; extract_tree
+  fi
+fi
+
 # ── launch (no FUSE, no root) ──────────────────────────────────────────────
+if [ -f "$APPTREE/usr/src/stemtube/app.py" ] && [ -x "$APPTREE/AppRun" ]; then
+  exec "$APPTREE/AppRun" "$@"
+fi
+# Extraction failed (disk full, unusual layout): still start, just without
+# the ability to keep updates. Better a running app than none.
 exec "$APPIMAGE" --appimage-extract-and-run "$@"

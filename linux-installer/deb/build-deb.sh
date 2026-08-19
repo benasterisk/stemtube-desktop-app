@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# Build stemtube-desktop_2.0.0_amd64.deb — the double-clickable Ubuntu/Debian
+# Build stemtube-desktop_2.1.0_amd64.deb — the double-clickable Ubuntu/Debian
 # installer (the .exe equivalent). Installing it adds a "StemTube Desktop" menu
 # entry; first launch downloads the matching engine (CPU/GPU) and runs it.
 #
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
-VERSION="${VERSION:-2.0.0}"
+VERSION="${VERSION:-2.1.0}"
 PKG="$SRC/pkgroot"
 OUT="${OUT:-$SRC/stemtube-desktop_${VERSION}_amd64.deb}"
 
