@@ -2,20 +2,26 @@
   "edition": "standard",
   "min_engine_version": 1,
   "base_commit": "5b9f3ac",
-  "target_commit": "1abcad6",
+  "target_commit": "13a078d",
   "restart_required": true,
   "files": [
+    {
+      "path": "core/updater.py",
+      "status": "M",
+      "sha256": "259460679963771e922aa61baf3a3c622b6097fb517cf809e52f838d245a1ffa",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/13a078d/core/updater.py"
+    },
     {
       "path": "static/js/mixer/stage-window.js",
       "status": "A",
       "sha256": "b94d0e7705130c292d8a67f740c31fce3fe84dda81e6a18b18ed76665748c2bb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/1abcad6/static/js/mixer/stage-window.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/13a078d/static/js/mixer/stage-window.js"
     },
     {
       "path": "templates/mixer.html",
       "status": "M",
       "sha256": "a4c6d06feccef1d293aaac3984c6b013e41c704f571c893909bc778b64ebe9fd",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/1abcad6/templates/mixer.html"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/13a078d/templates/mixer.html"
     }
   ],
   "pip_installs": []
