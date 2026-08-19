@@ -51,6 +51,10 @@ EXCLUDE_EXACT = (
     "package.json", "package-lock.json",
 )
 
+# Documentation and repo metadata: never read at run time, so shipping them
+# would cost testers bandwidth and muddy the update diff for no effect.
+EXCLUDE_SUFFIXES = (".md", ".txt", ".gitignore", ".gitattributes")
+
 # A touched file forces a restart if it is executable-imported code.
 RESTART_PREFIXES = ("core/", "routes/", "external/", "templates/")
 RESTART_EXACT = ("app.py", "launcher.py", "extensions.py", "edition.py", "mobile_routes.py")
@@ -89,6 +93,8 @@ def edition_at(commit):
 
 
 def is_excluded(path):
+    if path.endswith(EXCLUDE_SUFFIXES):
+        return True
     if path in EXCLUDE_EXACT:
         return True
     return any(path.startswith(p) for p in EXCLUDE_PREFIXES)
