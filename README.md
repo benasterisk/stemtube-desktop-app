@@ -27,12 +27,12 @@ On first launch the app detects your hardware and downloads the matching engine 
 
 ## Install on Linux
 
-**Ubuntu / Debian — the `.deb` installer (the `.exe` equivalent).** Download **[stemtube-desktop_2.0.0_amd64.deb](https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/stemtube-desktop_2.0.0_amd64.deb)** and double-click it (opens in your software centre → Install), or run `sudo apt install ./stemtube-desktop_2.0.0_amd64.deb`. Then launch **StemTube Desktop** from your applications menu. The first launch detects your GPU and downloads the matching self-contained engine (CPU ~560 MB / NVIDIA GPU ~3 GB) — no `libfuse2`, no root at run time (the engine runs with `--appimage-extract-and-run`).
+**Ubuntu / Debian — the `.deb` installer (the `.exe` equivalent).** Download **[stemtube-desktop_2.1.0_amd64.deb](https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.1.0/stemtube-desktop_2.1.0_amd64.deb)** and double-click it (opens in your software centre → Install), or run `sudo apt install ./stemtube-desktop_2.1.0_amd64.deb`. Then launch **StemTube Desktop** from your applications menu. The first launch detects your GPU and downloads the matching self-contained engine (CPU ~620 MB / NVIDIA GPU ~3 GB), unpacks it once, and keeps it up to date automatically — no `libfuse2`, no root at run time.
 
 **Other distros (Fedora, Arch, openSUSE…) — run the engine directly**, from the [Linux release](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/linux-v2.0.0):
 
 ```bash
-# CPU (~560 MB) — works on any 64-bit Linux, no libfuse2 needed
+# CPU (~620 MB) — works on any 64-bit Linux, no libfuse2 needed
 wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-x86_64-cpu.AppImage
 chmod +x StemTube-x86_64-cpu.AppImage
 ./StemTube-x86_64-cpu.AppImage --appimage-extract-and-run
