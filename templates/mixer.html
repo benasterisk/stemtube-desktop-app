@@ -143,6 +143,13 @@
   .transport button.toggle.on { background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600; }
   /* precount/scroll-mode show a tiny value next to the icon */
   #precountBtn .lbl, #scrollModeBtn .lbl { display:inline; font-size:11px; font-weight:600; }
+  /* Stage window (?stage=...): the popup dialog IS the page */
+  body.stage-window #focusBtn, body.stage-window #mixerTabs, body.stage-window > header { display:none !important; }
+  body.stage-window .lyrics-popup-overlay, body.stage-window .chords-grid-popup-overlay { padding:0 !important; background:var(--bg-primary) !important; backdrop-filter:none !important; }
+  body.stage-window .lyrics-popup-dialog, body.stage-window .chords-grid-popup-dialog { width:100vw !important; height:100vh !important; max-width:none !important; max-height:none !important; border-radius:0 !important; box-shadow:none !important; transform:none !important; }
+  /* Stage View: the label IS the affordance (icon alone reads as "fullscreen") */
+  #focusBtn .lbl { display:inline; font-size:12px; font-weight:600; margin-left:6px; }
+  #focusBtn { border-color:var(--accent); }
 
   /* Play beat-pulse: a green glow that beats with the metronome/precount.
      .pulse triggers one flash; .pulse-strong (downbeats) is bigger. */
@@ -612,7 +619,7 @@
 
   <!-- Focus button: opens the enlarged Chords-grid / Lyrics popup. Shown only on
        the Chords and Lyrics tabs (the mixer-only view controls hide there). -->
-  <button id="focusBtn" class="labeled" title="Focus view"><span class="ico">⤢</span><span class="lbl" id="focusBtnLbl">Focus</span></button>
+  <button id="focusBtn" class="labeled" title="Stage View — open the current tab (Chords / Lyrics) full-size in a separate always-on-top window you can drag to your stage screen. Falls back to a full-page view when the browser does not support detached windows."><span class="ico">⤢</span><span class="lbl" id="focusBtnLbl">Stage View</span></button>
   <!-- Hidden trigger so chord-display.js initGridPopup() wires the popup's
        close/overlay/ESC handlers (it keys off this id). #focusBtn opens it. -->
   <button id="chord-grid-view-btn" style="display:none" aria-hidden="true"></button>
@@ -756,6 +763,7 @@
 <script src="{{ url_for('static', filename='js/poc/loop.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/loader.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/main.js') }}?v={{ cache_buster }}"></script>
+<script src="{{ url_for('static', filename='js/mixer/stage-window.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/export.js') }}?v={{ cache_buster }}"></script>
 
 <!-- Practice-tab display components (kept verbatim from friend) + the compat shim
@@ -882,7 +890,7 @@
       document.body.setAttribute("data-tab", tab);
       document.querySelectorAll("#mixerTabs .mtab").forEach(function(x){ x.classList.toggle("on", x.dataset.tab===tab); });
       // Focus button label per tab (hidden on Mixer via CSS)
-      if(focusBtnLbl) focusBtnLbl.textContent = (tab==="chords") ? "Focus Chords" : (tab==="lyrics") ? "Focus Lyrics" : "Focus";
+      if(focusBtnLbl) focusBtnLbl.textContent = (tab==="chords") ? "Stage View: Chords" : (tab==="lyrics") ? "Stage View: Lyrics" : "Stage View";
       // canvases sized to a hidden pane render at 0 width; redraw on return to Mixer
       if(tab === "mixer" && window.View && View.meta) View.redrawAll();
       // (re)sync the practice tab we're entering so its playhead is correct at once
@@ -897,14 +905,25 @@
       applyTab(b.dataset.tab);
     });
 
-    // Focus button → open the popup matching the current tab.
+    // Stage View button → open the current tab (Chords / Lyrics) in a REAL
+    // separate browser window (resizable without limit, maximizable, F11 full
+    // screen on any monitor). That window loads this same page with
+    // ?stage=... as a display mirror synced over a BroadcastChannel; see
+    // stage-window.js. In a stage window itself the button is hidden.
     if(focusBtn){
       focusBtn.addEventListener("click", function(){
         var tab = document.body.getAttribute("data-tab");
-        if(tab === "chords" && window.mixer.chordDisplay && window.mixer.chordDisplay.openGridPopup){
-          window.mixer.chordDisplay.openGridPopup();
-        } else if(tab === "lyrics" && window.lyricsPopupInstance && window.lyricsPopupInstance.open){
-          window.lyricsPopupInstance.open();
+        if(tab !== "chords" && tab !== "lyrics") return;
+        if(window.StageWindow && window.StageWindow.open){
+          if(!window.StageWindow.open(tab)){
+            // popup blocked: fall back to the in-page focus popup
+            if(tab === "chords" && window.mixer.chordDisplay) window.mixer.chordDisplay.openGridPopup();
+            if(tab === "lyrics" && window.lyricsPopupInstance) window.lyricsPopupInstance.open();
+          }
+        } else {
+          // stage-window.js unavailable (very old browser): keep the old popup
+          if(tab === "chords" && window.mixer.chordDisplay) window.mixer.chordDisplay.openGridPopup();
+          if(tab === "lyrics" && window.lyricsPopupInstance) window.lyricsPopupInstance.open();
         }
       });
     }
