@@ -89,7 +89,7 @@
   "linux.manual.note": "‏--appimage-extract-and-run يعني أنه لا حاجة إلى libfuse2. يأتي إصدار GPU (~3 GB) في جزأين — ادمجهما بـ cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage.",
   "linux.fromsource": "للمطوّرين: يتوفر أيضًا سكربت تثبيت من المصدر (يبني بيئة Python؛ يتطلب Python 3.10–3.13).",
   "linux.installer.btn": "نزّل مثبّت .deb",
-  "linux.installer.step1": "<strong>ثبّته:</strong> انقر نقرًا مزدوجًا على ملف <code>stemtube-desktop_2.0.0_amd64.deb</code> الذي نزّلته. سيُفتح في مثبّت البرامج لديك (مثل <em>App Center</em> / <em>Software Install</em>) — انقر على <strong>Install</strong> وأدخل كلمة المرور. <span style=\"color:#999;\">(أو في الطرفية: <code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>.)</span>",
+  "linux.installer.step1": "<strong>ثبّته:</strong> انقر نقرًا مزدوجًا على ملف <code>stemtube-desktop_2.1.0_amd64.deb</code> الذي نزّلته. سيُفتح في مثبّت البرامج لديك (مثل <em>App Center</em> / <em>Software Install</em>) — انقر على <strong>Install</strong> وأدخل كلمة المرور. <span style=\"color:#999;\">(أو في الطرفية: <code>sudo apt install ./stemtube-desktop_2.1.0_amd64.deb</code>.)</span>",
   "linux.installer.step2": "<strong>شغّله:</strong> افتح قائمة التطبيقات، واكتب <em>“stem”</em>، ثم انقر على أيقونة <strong>StemTube Desktop</strong>.",
   "linux.installer.step3": "<strong>يُنزّل التشغيل الأول المحرّك.</strong> تظهر نافذة صغيرة أثناء جلبه للمحرّك المطابق — <strong>CPU ~600 MB</strong> أو <strong>NVIDIA GPU ~3 GB</strong>. هذا تنزيل لمرة واحدة وقد يستغرق <strong>عدة دقائق</strong> حسب سرعة اتصالك؛ تُفتح نافذة التطبيق بمجرد انتهائه. أما عمليات التشغيل اللاحقة فتبدأ خلال ثوانٍ."
 }

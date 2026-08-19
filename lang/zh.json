@@ -89,7 +89,7 @@
   "linux.manual.note": "--appimage-extract-and-run 意味着无需 libfuse2。GPU 版本（~3 GB）分为两部分——用 cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage 将它们合并。",
   "linux.fromsource": "开发者：还提供从源码安装的脚本（构建一个 Python 环境；需要 Python 3.10–3.13）。",
   "linux.installer.btn": "下载 .deb 安装程序",
-  "linux.installer.step1": "<strong>安装：</strong>双击下载好的 <code>stemtube-desktop_2.0.0_amd64.deb</code>。它会在你的软件安装程序中打开（例如 <em>App Center</em> / <em>Software Install</em>）——点击 <strong>Install</strong> 并输入你的密码。<span style=\"color:#999;\">（或在终端中：<code>sudo apt install ./stemtube-desktop_2.0.0_amd64.deb</code>。）</span>",
+  "linux.installer.step1": "<strong>安装：</strong>双击下载好的 <code>stemtube-desktop_2.1.0_amd64.deb</code>。它会在你的软件安装程序中打开（例如 <em>App Center</em> / <em>Software Install</em>）——点击 <strong>Install</strong> 并输入你的密码。<span style=\"color:#999;\">（或在终端中：<code>sudo apt install ./stemtube-desktop_2.1.0_amd64.deb</code>。）</span>",
   "linux.installer.step2": "<strong>启动：</strong>打开你的应用程序菜单，输入 <em>“stem”</em>，然后点击 <strong>StemTube Desktop</strong> 图标。",
   "linux.installer.step3": "<strong>首次启动会下载引擎。</strong>在获取匹配的引擎时会出现一个小窗口——<strong>CPU ~600 MB</strong> 或 <strong>NVIDIA GPU ~3 GB</strong>。这是一次性下载，视你的网络连接情况可能需要 <strong>几分钟</strong>；下载完成后应用窗口即会打开。之后的启动只需几秒钟。"
 }
