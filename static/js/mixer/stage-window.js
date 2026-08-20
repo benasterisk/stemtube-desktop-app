@@ -76,9 +76,32 @@
             setTimeout(() => broadcast(true), 30);
         };
 
-        // Public: open a stage window for the current song
+        // Public: open a stage window for the current song.
+        //
+        // Two hosts, two routes:
+        //   * a real browser (the Linux build opens one) — window.open() gives
+        //     a genuine resizable OS window.
+        //   * a pywebview webview (the Windows build) — window.open() with
+        //     popup=yes does NOT create an OS window there: it returns null or
+        //     navigates the current view, so the button silently fell back to
+        //     the old in-page popup. Only Python can spawn another webview
+        //     window, so ask the launcher's bridge instead.
         window.StageWindow = {
             open(kind) {
+                const api = window.pywebview && window.pywebview.api;
+                if (api && typeof api.open_stage === 'function') {
+                    try {
+                        // Async: report success straight away, otherwise the
+                        // caller's fallback would stack the in-page popup on
+                        // top of the window Python is about to show.
+                        api.open_stage(kind, extractionId);
+                        return true;
+                    } catch (e) {
+                        console.warn('[StageWindow] native window failed:', e);
+                        // fall through to window.open below
+                    }
+                }
+
                 const url = '/mixer?extraction_id=' + encodeURIComponent(extractionId) + '&stage=' + encodeURIComponent(kind);
                 const name = 'stemtube-stage-' + kind + '-' + extractionId;
                 const feats = 'popup=yes,width=' + Math.round(screen.availWidth * 0.9) + ',height=' + Math.round(screen.availHeight * 0.9) + ',left=40,top=40';

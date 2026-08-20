@@ -21,18 +21,35 @@ logger = get_logger(__name__)
 pages_bp = Blueprint('pages', __name__)
 
 
+def _ensure_desktop_login():
+    """Log the single desktop user in if the session has no identity yet.
+
+    Desktop is single-user with auto-login, so there is no login page to send
+    anyone to: `auth.login` does not exist in this edition. A @login_required
+    route that is reached without a session therefore does not redirect — it
+    raises BuildError and returns 500. That is exactly what happened to the
+    Stage View window on Windows: pywebview opens it as a SEPARATE webview
+    that does not inherit the main window's session cookie, so /mixer blew up.
+
+    Returns None on success, or an error response to return as-is.
+    """
+    if current_user.is_authenticated:
+        return None
+    from core.auth_db import get_desktop_user
+    from core.auth_models import User
+    desktop_user = get_desktop_user()
+    if not desktop_user:
+        return "Desktop user not found. Please restart the application.", 500
+    login_user(User(desktop_user), remember=True)
+    return None
+
+
 @pages_bp.route('/')
 def index():
     """Desktop main page with auto-login for single-user mode."""
-    # Auto-login: if not authenticated, log in as the desktop user
-    if not current_user.is_authenticated:
-        from core.auth_db import get_desktop_user
-        from core.auth_models import User
-        desktop_user = get_desktop_user()
-        if desktop_user:
-            login_user(User(desktop_user), remember=True)
-        else:
-            return "Desktop user not found. Please restart the application.", 500
+    _err = _ensure_desktop_login()
+    if _err:
+        return _err
 
     # If the auto-updater just applied an update (updater_status.json phase=done),
     # surface a one-time "update installed" banner, then consume the status so it
@@ -70,8 +87,15 @@ def index():
 
 
 @pages_bp.route('/mixer')
-@login_required
 def mixer():
+    # Auto-login rather than @login_required: a Stage View window opened by the
+    # launcher is a separate webview with no session cookie, and @login_required
+    # would 500 here (no login endpoint exists in this edition). Authentication
+    # is still enforced — we log the desktop user in, we do not skip the check.
+    _err = _ensure_desktop_login()
+    if _err:
+        return _err
+
     extraction_id = request.args.get('extraction_id', '')
 
     extraction_info = None

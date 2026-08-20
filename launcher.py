@@ -17,6 +17,7 @@ import signal
 import threading
 import argparse
 import webbrowser
+from urllib.parse import quote
 
 # Ensure we run from the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -105,10 +106,66 @@ def launch_native_window(port):
 
     url = f'http://127.0.0.1:{port}'
 
+    class _StageApi:
+        """Bridge exposed to JS as window.pywebview.api.
+
+        Stage View needs a SEPARATE resizable window for the Chords / Lyrics
+        view. In a browser the page opens one itself with window.open(), but
+        inside a pywebview webview that call does not create a real OS window:
+        it returns null and the page silently falls back to the old in-page
+        popup. Only Python can spawn another webview window, so the page calls
+        this instead when it detects it is running in a webview.
+        """
+
+        def __init__(self, base_url):
+            self._base = base_url
+            self._windows = {}
+
+        def open_stage(self, kind, extraction_id):
+            """Open (or refocus) a Chords/Lyrics stage window. True on success."""
+            if kind not in ('chords', 'lyrics'):
+                return False
+            try:
+                import webview as _wv
+                key = '%s:%s' % (kind, extraction_id)
+
+                existing = self._windows.get(key)
+                if existing is not None:
+                    try:
+                        existing.show()          # already open: bring it forward
+                        return True
+                    except Exception:
+                        self._windows.pop(key, None)   # stale handle, recreate
+
+                target = '%s/mixer?extraction_id=%s&stage=%s' % (
+                    self._base, quote(str(extraction_id)), kind)
+                win = _wv.create_window(
+                    title=('Lyrics' if kind == 'lyrics' else 'Chords') + ' - StemTube Stage',
+                    url=target,
+                    width=1100,
+                    height=700,
+                    min_size=(640, 400),
+                    resizable=True,
+                    text_select=True,
+                )
+                self._windows[key] = win
+                try:
+                    win.events.closed += lambda: self._windows.pop(key, None)
+                except Exception:
+                    pass                          # older backend: handle goes stale
+                return True
+            except Exception as e:
+                print('[LAUNCHER] stage window failed: %s' % e)
+                return False
+
+    stage_api = _StageApi(url)
+
+
     try:
         window = webview.create_window(
             title='StemTube Desktop',
             url=url,
+            js_api=stage_api,
             width=1400,
             height=900,
             min_size=(1024, 700),
