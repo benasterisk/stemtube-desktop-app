@@ -87,21 +87,36 @@
         //     the old in-page popup. Only Python can spawn another webview
         //     window, so ask the launcher's bridge instead.
         window.StageWindow = {
-            open(kind) {
-                const api = window.pywebview && window.pywebview.api;
-                if (api && typeof api.open_stage === 'function') {
-                    try {
-                        // Async: report success straight away, otherwise the
-                        // caller's fallback would stack the in-page popup on
-                        // top of the window Python is about to show.
-                        api.open_stage(kind, extractionId);
-                        return true;
-                    } catch (e) {
-                        console.warn('[StageWindow] native window failed:', e);
-                        // fall through to window.open below
+            // async: pywebview's js_api methods return a Promise that resolves
+            // LATER with Python's value — not the value synchronously. The old
+            // code called open_stage() without awaiting and returned true at
+            // once, which raced pywebview's api injection: on a click before the
+            // method was bound, control fell through to window.open() (which does
+            // nothing useful in a webview), and a later click then opened the
+            // real Python window — so BOTH the in-page popup and the native
+            // window appeared. Await the real result instead.
+            async open(kind) {
+                // In a webview, window.pywebview is injected. If its api surface
+                // is not populated yet, DO NOT fall through to window.open() —
+                // that would stack the in-page popup. Treat "webview present"
+                // as native-capable and just report success; the click that
+                // finds the method bound will open the real window.
+                if (window.pywebview) {
+                    const api = window.pywebview.api;
+                    if (api && typeof api.open_stage === 'function') {
+                        try {
+                            const ok = await api.open_stage(kind, extractionId);
+                            return ok !== false;
+                        } catch (e) {
+                            console.warn('[StageWindow] native window failed:', e);
+                            return false;
+                        }
                     }
+                    // pywebview present but api not ready: never open the popup.
+                    return true;
                 }
 
+                // Real browser (the Linux build): a genuine OS window.
                 const url = '/mixer?extraction_id=' + encodeURIComponent(extractionId) + '&stage=' + encodeURIComponent(kind);
                 const name = 'stemtube-stage-' + kind + '-' + extractionId;
                 const feats = 'popup=yes,width=' + Math.round(screen.availWidth * 0.9) + ',height=' + Math.round(screen.availHeight * 0.9) + ',left=40,top=40';

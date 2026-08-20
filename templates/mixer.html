@@ -911,12 +911,16 @@
     // ?stage=... as a display mirror synced over a BroadcastChannel; see
     // stage-window.js. In a stage window itself the button is hidden.
     if(focusBtn){
-      focusBtn.addEventListener("click", function(){
+      focusBtn.addEventListener("click", async function(){
         var tab = document.body.getAttribute("data-tab");
         if(tab !== "chords" && tab !== "lyrics") return;
+        // StageWindow.open() is async (it awaits pywebview's bridge). await it
+        // so the popup fallback fires ONLY on a real failure, never merely
+        // because the Promise is truthy.
         if(window.StageWindow && window.StageWindow.open){
-          if(!window.StageWindow.open(tab)){
-            // popup blocked: fall back to the in-page focus popup
+          var opened = await window.StageWindow.open(tab);
+          if(!opened){
+            // genuinely could not open a window: fall back to the in-page popup
             if(tab === "chords" && window.mixer.chordDisplay) window.mixer.chordDisplay.openGridPopup();
             if(tab === "lyrics" && window.lyricsPopupInstance) window.lyricsPopupInstance.open();
           }
