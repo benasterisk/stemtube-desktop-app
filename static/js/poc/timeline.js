@@ -215,4 +215,71 @@ const View = {
   },
   // px (within a lane canvas) → song time (subtract the lead pad; clamp to [0,dur])
   xToTime(x){ return Math.max(0, Math.min(this.meta.duration, x/this.pxPerSec - (this.leadPad||0))); },
+
+  // ── ruler interaction ────────────────────────────────────────────────────
+  // The timeline ruler used to be decorative. Now:
+  //   drag              → scrub: the playhead follows the pointer and you HEAR
+  //                       the mix at each position (Scrub plays short slices).
+  //   Shift + drag      → define the A/B loop, same as dragging a waveform.
+  //   click (no motion) → plain seek.
+  // Waveform drags are untouched: they still define the loop, so both gestures
+  // remain available. Loop bounds obey the shared Snap toggle either way; hold
+  // Alt to ignore the grid for one drag.
+  wireRuler(){
+    const cv = document.getElementById("timeline-canvas");
+    if(!cv || cv._wired) return;      // guard: redrawAll must not stack handlers
+    cv._wired = true;
+    const self = this;
+    const DRAG_PX = 4;                // same threshold as the lanes
+
+    // pointer x → song time, accounting for horizontal scroll like the lanes do
+    const rulerTime = (clientX)=>{
+      const rect = cv.getBoundingClientRect();
+      return self.xToTime(self.scrollX() + (clientX - rect.left));
+    };
+
+    cv.style.cursor = "ew-resize";
+
+    cv.addEventListener("mousedown", e=>{
+      if(e.button !== 0) return;
+      cv._downX = e.clientX;
+      cv._downT = rulerTime(e.clientX);
+      cv._loopMode = e.shiftKey;      // Shift held at press = define a loop
+      cv._dragging = true;
+      cv._moved = false;
+      e.preventDefault();
+    });
+
+    cv.addEventListener("mousemove", e=>{
+      if(!cv._dragging) return;
+      if(!cv._moved && Math.abs(e.clientX - cv._downX) <= DRAG_PX) return;
+      cv._moved = true;
+      const t = rulerTime(e.clientX);
+      if(cv._loopMode){
+        if(window.LoopSel) LoopSel.setRegion(cv._downT, t, e.altKey);
+      } else if(window.Scrub){
+        Scrub.at(t);                  // moves the playhead AND plays a slice
+      } else {
+        self.engine.seek(t); self.drawPlayheads();
+      }
+    });
+
+    const endDrag = e=>{
+      if(!cv._dragging) return;
+      cv._dragging = false;
+      if(window.Scrub) Scrub.stop();  // cut any slice still ringing
+      const t = rulerTime(e.clientX);
+      if(!cv._moved){
+        self.engine.seek(cv._downT);  // click without motion → plain seek
+        self.drawPlayheads();
+      } else if(cv._loopMode && window.LoopSel){
+        LoopSel.setRegion(cv._downT, t, e.altKey);
+      }
+      if(window.Loader) Loader.persist();
+    };
+
+    cv.addEventListener("mouseup", endDrag);
+    // a mouseup outside the ruler must still end the drag
+    window.addEventListener("mouseup", e=>{ if(cv._dragging) endDrag(e); });
+  },
 };

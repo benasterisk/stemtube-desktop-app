@@ -247,7 +247,12 @@ TempoPitch.init(engine, view);
 // Count-in / Start-marker controller.
 PreCount.init(engine, view);
 // A/B loop selection controller.
+// Snap first: LoopSel._snap and the timeline both read Snap.enabled.
+if(window.Snap) Snap.init();
+if(window.Scrub) Scrub.init(engine, view);
 if(window.LoopSel) LoopSel.init(engine, view);
+// Ruler drags (scrub / Shift+loop). Safe to call again: wireRuler self-guards.
+if(view.wireRuler) view.wireRuler();
 // Load the SoundTouch worklet up front so stems get their node on first play.
 // (Needs a secure context: localhost is fine; remote needs HTTPS.)
 engine.loadWorklet().then(ok=>{ if(!ok) UI.status("Tempo/pitch disabled (insecure context — use localhost or HTTPS)."); });

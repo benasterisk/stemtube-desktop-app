@@ -142,7 +142,14 @@
   /* active toggle (Detect Intro, Precount, Scroll mode) */
   .transport button.toggle.on { background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600; }
   /* precount/scroll-mode show a tiny value next to the icon */
-  #precountBtn .lbl, #scrollModeBtn .lbl { display:inline; font-size:11px; font-weight:600; }
+  #precountBtn .lbl, #scrollModeBtn .lbl, #snapBtn .lbl { display:inline; font-size:11px; font-weight:600; }
+  /* Manual loop bounds: narrow fields that sit next to the Loop button. */
+  .loop-fields { display:inline-flex; align-items:center; gap:3px; margin-left:4px; }
+  .loop-input { width:66px; padding:2px 4px; font-size:11px; text-align:center;
+                background:var(--bg-2, #1b1e24); color:var(--text, #e6e6e6);
+                border:1px solid var(--line, #333); border-radius:4px; }
+  .loop-input:focus { outline:none; border-color:var(--accent, #4a9eff); }
+  .loop-sep { font-size:11px; opacity:.6; }
   /* Stage window (?stage=...): the popup dialog IS the page */
   body.stage-window #focusBtn, body.stage-window #mixerTabs, body.stage-window > header { display:none !important; }
   body.stage-window .lyrics-popup-overlay, body.stage-window .chords-grid-popup-overlay { padding:0 !important; background:var(--bg-primary) !important; backdrop-filter:none !important; }
@@ -578,6 +585,13 @@
   <button id="fromStartBtn" disabled title="Play from the Start marker (with count-in)"><span class="ico">⚑</span></button>
   <button id="stopBtn" disabled title="Stop and rewind to start"><span class="ico">■</span></button>
   <button id="loopBtn" class="toggle" disabled title="Loop — glisse sur une piste pour définir une zone à boucler, puis active le bouclage"><span class="ico">🔁</span></button>
+  <span class="loop-fields">
+    <input id="loopAInput" class="loop-input" type="text" inputmode="text" placeholder="A"
+           title="Loop start — timecode (1:23.45) or bar (b17)">
+    <span class="loop-sep">→</span>
+    <input id="loopBInput" class="loop-input" type="text" inputmode="text" placeholder="B"
+           title="Loop end — timecode (1:23.45) or bar (b17)">
+  </span>
   <button id="recordBtn" disabled title="Enregistrer (armer une piste d'abord)"><span class="dot"></span></button>
   <button id="addTrackBtn" disabled title="Ajouter une piste d'enregistrement"><span class="ico">＋</span></button>
   <span class="time" id="latency-value" title="Latence d'enregistrement compensée" style="min-width:auto"></span>
@@ -627,6 +641,7 @@
   <!-- View controls (scroll mode + zoom + export) — Mixer tab only. -->
   <div class="trgroup right" id="viewControls">
     <!-- View: scroll mode + zoom -->
+    <button id="snapBtn" class="toggle on" title="Snap to beat: ON — loop bounds and markers land on the nearest beat (hold Alt to ignore for one drag)"><span class="ico">🧲</span><span class="lbl">Snap</span></button>
     <button id="scrollModeBtn" class="toggle on" title="Scroll mode: Manual → Page → Center"><span class="ico">⏭</span><span class="lbl">Page</span></button>
     <span class="zoomctl">
       <span class="zlab">H</span>
@@ -760,6 +775,8 @@
 <script src="{{ url_for('static', filename='js/poc/mixer.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/tempo.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/precount.js') }}?v={{ cache_buster }}"></script>
+<script src="{{ url_for('static', filename='js/poc/snap.js') }}?v={{ cache_buster }}"></script>
+<script src="{{ url_for('static', filename='js/poc/scrub.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/loop.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/loader.js') }}?v={{ cache_buster }}"></script>
 <script src="{{ url_for('static', filename='js/poc/main.js') }}?v={{ cache_buster }}"></script>

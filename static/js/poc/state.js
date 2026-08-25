@@ -20,6 +20,7 @@ const SessionState = {
       pxPerSec: view.pxPerSec,
       zoomV: view.zoomV,
       scrollMode: view.scrollMode || "page",
+      snapEnabled: window.Snap ? Snap.enabled : undefined,   // shared snap-to-beat toggle
       pos: engine.pos(),            // playhead position (seconds)
       // tempo/pitch (BPM time-stretch + Key pitch-shift)
       bpmTarget: window.TempoPitch ? TempoPitch.bpmTarget : undefined,
@@ -51,6 +52,8 @@ const SessionState = {
     if(typeof st.pxPerSec === "number") view.pxPerSec = st.pxPerSec;
     if(typeof st.zoomV === "number") view.zoomV = st.zoomV;
     view.scrollMode = st.scrollMode || "page";
+    // snapEnabled may legitimately be false, so test for undefined
+    if(window.Snap && st.snapEnabled !== undefined) Snap.set(st.snapEnabled);
     // per-track controls
     if(st.tracks){
       Object.entries(st.tracks).forEach(([name, t])=>{
