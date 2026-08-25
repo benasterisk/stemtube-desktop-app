@@ -143,13 +143,25 @@
   .transport button.toggle.on { background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600; }
   /* precount/scroll-mode show a tiny value next to the icon */
   #precountBtn .lbl, #scrollModeBtn .lbl, #snapBtn .lbl { display:inline; font-size:11px; font-weight:600; }
-  /* Manual loop bounds: narrow fields that sit next to the Loop button. */
-  .loop-fields { display:inline-flex; align-items:center; gap:3px; margin-left:4px; }
-  .loop-input { width:66px; padding:2px 4px; font-size:11px; text-align:center;
+  /* Manual loop bounds: a compact labelled group next to the Loop button. */
+  .loop-fields { display:inline-flex; align-items:center; gap:2px; margin-left:6px;
+                 padding:1px 4px; border:1px solid var(--line, #333); border-radius:5px; }
+  .loop-label { font-size:10px; font-weight:600; opacity:.7; margin-right:2px;
+                text-transform:uppercase; letter-spacing:.04em; }
+  /* Selector must beat the global `input[type="text"] { min-width:260px }`
+     (meant for the wide search/path fields). An attribute selector (0,0,1,1)
+     outranks a bare class (0,0,1,0), so `.loop-input` alone lost and these
+     came out 260px each; matching on input[type] too wins on source order. */
+  input[type="text"].loop-input { width:52px; min-width:52px; padding:1px 3px; font-size:10px; text-align:center;
                 background:var(--bg-2, #1b1e24); color:var(--text, #e6e6e6);
-                border:1px solid var(--line, #333); border-radius:4px; }
-  .loop-input:focus { outline:none; border-color:var(--accent, #4a9eff); }
-  .loop-sep { font-size:11px; opacity:.6; }
+                border:1px solid var(--line, #333); border-radius:3px; }
+  input[type="text"].loop-input::placeholder { opacity:.45; font-size:9px; }
+  input[type="text"].loop-input:focus { outline:none; border-color:var(--accent, #4a9eff); }
+  .loop-sep { font-size:10px; opacity:.5; }
+  .loop-clear { margin-left:2px; padding:0 4px; font-size:11px; line-height:1.4;
+                background:none; border:none; color:var(--text, #e6e6e6); opacity:.5;
+                cursor:pointer; border-radius:3px; }
+  .loop-clear:hover { opacity:1; color:#e05555; background:rgba(224,85,85,.12); }
   /* Stage window (?stage=...): the popup dialog IS the page */
   body.stage-window #focusBtn, body.stage-window #mixerTabs, body.stage-window > header { display:none !important; }
   body.stage-window .lyrics-popup-overlay, body.stage-window .chords-grid-popup-overlay { padding:0 !important; background:var(--bg-primary) !important; backdrop-filter:none !important; }
@@ -348,9 +360,18 @@
     color:#08210f; background:#ffb02e; padding:1px 3px 2px; border-radius:4px 0 0 4px; }
   /* A/B loop region — a translucent band from A to B across timeline + all lanes.
      Defined by dragging on a waveform; spans every track. Brighter borders when looping. */
+  /* The band itself stays click-through so it never blocks the waveforms; only
+     its two edge handles capture the pointer, so the loop bounds can be dragged. */
   #loop-region { position:absolute; top:0; left:0; pointer-events:none; z-index:2;
     background:rgba(90,141,239,.12); border-left:2px solid rgba(90,141,239,.7); border-right:2px solid rgba(90,141,239,.7); }
   #loop-region.on { background:rgba(90,141,239,.22); border-left-color:#5a8def; border-right-color:#5a8def; }
+  .loop-handle { position:absolute; top:0; width:9px; height:100%; cursor:ew-resize;
+    pointer-events:auto; z-index:3; background:transparent; }
+  .loop-handle::before { content:""; position:absolute; top:0; bottom:0; left:3px; width:3px;
+    background:rgba(90,141,239,.55); border-radius:2px; }
+  .loop-handle:hover::before, .loop-handle.dragging::before { background:#5a8def; box-shadow:0 0 6px rgba(90,141,239,.8); }
+  .loop-handle-a { left:-5px; }
+  .loop-handle-b { right:-5px; }
   /* count-in overlay number — fixed, centered on the whole viewport */
   #countdown { position:fixed; inset:0; display:none; align-items:center; justify-content:center;
     font-size:160px; font-weight:800; color:var(--accent); opacity:.92; text-shadow:0 4px 28px rgba(0,0,0,.7);
@@ -586,11 +607,13 @@
   <button id="stopBtn" disabled title="Stop and rewind to start"><span class="ico">■</span></button>
   <button id="loopBtn" class="toggle" disabled title="Loop — glisse sur une piste pour définir une zone à boucler, puis active le bouclage"><span class="ico">🔁</span></button>
   <span class="loop-fields">
-    <input id="loopAInput" class="loop-input" type="text" inputmode="text" placeholder="A"
-           title="Loop start — timecode (1:23.45) or bar (b17)">
+    <span class="loop-label">Loop</span>
+    <input id="loopAInput" class="loop-input" type="text" inputmode="text" placeholder="début"
+           title="Début de la loop — timecode (1:23.45) ou mesure (b17, b17.3)">
     <span class="loop-sep">→</span>
-    <input id="loopBInput" class="loop-input" type="text" inputmode="text" placeholder="B"
-           title="Loop end — timecode (1:23.45) or bar (b17)">
+    <input id="loopBInput" class="loop-input" type="text" inputmode="text" placeholder="fin"
+           title="Fin de la loop — timecode (1:23.45) ou mesure (b17, b17.3)">
+    <button id="loopClearBtn" class="loop-clear" title="Effacer la loop">✕</button>
   </span>
   <button id="recordBtn" disabled title="Enregistrer (armer une piste d'abord)"><span class="dot"></span></button>
   <button id="addTrackBtn" disabled title="Ajouter une piste d'enregistrement"><span class="ico">＋</span></button>

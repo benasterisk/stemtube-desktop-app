@@ -65,7 +65,23 @@ const LoopSel = {
     if(!this.view.meta) return;
     let el=document.getElementById("loop-region");
     if(!this.hasRegion()){ if(el) el.style.display="none"; return; }
-    if(!el){ el=document.createElement("div"); el.id="loop-region"; document.getElementById("rightpane").appendChild(el); }
+    if(!el){
+      el=document.createElement("div"); el.id="loop-region";
+      document.getElementById("rightpane").appendChild(el);
+      // Two edge handles so both bounds can be dragged. The band stays
+      // pointer-events:none (it must not swallow waveform clicks); only these
+      // capture the pointer.
+      const mk=(cls,which)=>{
+        const h=document.createElement("div");
+        h.className="loop-handle "+cls;
+        h.dataset.which=which;
+        el.appendChild(h);
+        this._wireHandle(h, which);
+        return h;
+      };
+      mk("loop-handle-a","a");
+      mk("loop-handle-b","b");
+    }
     el.style.display="block";
     const x0=this.view.timeToX(this.a), x1=this.view.timeToX(this.b);
     el.style.left=x0+"px";
@@ -154,6 +170,55 @@ const LoopSel = {
     return true;
   },
 
+  /**
+   * Make one edge handle draggable. Moving it re-defines that bound only, so
+   * the loop can be trimmed from either side without redrawing the whole
+   * region. Honours the shared Snap toggle, with Alt as the usual per-drag
+   * override.
+   */
+  _wireHandle(el, which){
+    if(el._wired) return;
+    el._wired = true;
+    const self=this;
+    let dragging=false;
+
+    const timeAt=(clientX)=>{
+      const pane=document.getElementById("rightpane");
+      const rect=pane.getBoundingClientRect();
+      return self.view.xToTime(pane.scrollLeft + (clientX - rect.left));
+    };
+
+    el.addEventListener("mousedown", e=>{
+      if(e.button!==0) return;
+      dragging=true;
+      el.classList.add("dragging");
+      // stop the lane handlers underneath from also reacting
+      e.preventDefault(); e.stopPropagation();
+    });
+
+    const move=e=>{
+      if(!dragging) return;
+      const t=self._snap(timeAt(e.clientX), e.altKey);
+      // Keep a and b ordered: dragging one past the other swaps roles rather
+      // than producing an inverted region.
+      const other = which==="a" ? self.b : self.a;
+      if(other===null) return;
+      self.a=Math.min(t,other); self.b=Math.max(t,other);
+      self._applyToEngine(); self.draw(); self.updateUI();
+    };
+
+    const up=()=>{
+      if(!dragging) return;
+      dragging=false;
+      el.classList.remove("dragging");
+      self._persist();
+      if(window.Loader) Loader.persist();
+    };
+
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  },
+
   _wireInputs(){
     const bind=(id, which)=>{
       const el=document.getElementById(id);
@@ -204,6 +269,9 @@ const LoopSel = {
   _wire(){
     const btn=document.getElementById("loopBtn");
     if(btn) btn.onclick=()=>this.toggle();
+    // onclick, not addEventListener: _wire may run again and must not stack.
+    const clr=document.getElementById("loopClearBtn");
+    if(clr) clr.onclick=()=>this.clear();
     this._wireInputs();
   },
 };
