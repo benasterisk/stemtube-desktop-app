@@ -199,6 +199,32 @@
                     </div>
                 </div>
 
+                <!-- Updates -->
+                <div class="settings-section" id="updatesSection">
+                    <h3><i class="fas fa-cloud-download-alt"></i> Updates</h3>
+                    <div id="updateStatusLine" style="margin-bottom:10px; font-size:0.85rem; color:var(--text-secondary);">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                    <div class="setting-item">
+                        <label>Installed version</label>
+                        <span id="updateInstalledVersion" style="font-family:monospace; font-size:0.85rem;">-</span>
+                    </div>
+                    <div class="setting-item">
+                        <label>Last checked</label>
+                        <span id="updateLastCheck" style="font-size:0.85rem; color:var(--text-secondary);">-</span>
+                    </div>
+                    <div class="setting-item">
+                        <label>Platform</label>
+                        <span id="updatePlatform" style="font-size:0.85rem; color:var(--text-secondary);">-</span>
+                    </div>
+                    <div class="setting-item">
+                        <button class="btn btn-primary" id="checkUpdatesBtn">
+                            <i class="fas fa-sync"></i> Check for updates
+                        </button>
+                    </div>
+                    <div id="updateResult" style="margin-top:10px; font-size:0.85rem; display:none;"></div>
+                </div>
+
                 <!-- System Settings -->
                 <div class="settings-section" id="systemSettingsInline">
                     <h3><i class="fas fa-cogs"></i> Extraction</h3>

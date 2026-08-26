@@ -184,32 +184,73 @@ def _bundled_python():
 
 # ── the entry point called from app.py ─────────────────────────────────────
 
-def check_and_apply():
-    """Run one update check. Safe to call unconditionally at startup."""
+def get_status():
+    """Read-only snapshot for the Settings panel. Never touches the network.
+
+    Returns the installed commit, when we last checked, and whatever phase the
+    last run published — enough to tell the user where they stand without
+    starting anything.
+    """
+    state = _load_state()
+    last = state.get("last_check_ts") or 0
+    info = {
+        "edition": _edition(),
+        "installed_commit": _local_commit(state),
+        "last_check_ts": last or None,
+        "auto_check": True,
+        "platform": "windows" if os.name == "nt" else "linux",
+    }
+    try:
+        from core.config import get_setting
+        info["auto_check"] = get_setting("auto_check_updates", True) is not False
+    except Exception:
+        pass
+    # The last run's phase/message, if it left one behind.
+    try:
+        with open(_status_path(), "r", encoding="utf-8") as f:
+            st = json.load(f)
+        info["last_phase"] = st.get("phase")
+        info["last_message"] = st.get("message")
+    except Exception:
+        info["last_phase"] = None
+        info["last_message"] = None
+    return info
+
+
+def check_and_apply(force=False):
+    """Run one update check. Safe to call unconditionally at startup.
+
+    force=True is the Settings panel's "Check now": it skips the once-per-run
+    sentinel, the daily throttle and the auto_check_updates preference, because
+    the user asked explicitly. The demucs guard always holds — patching files
+    underneath a running separation would be unsafe.
+    """
     # 0. guards — never during a demucs child, never twice, honor the setting
     if "--demucs-separate" in sys.argv:
         return
-    if os.environ.get(_ENV_SENTINEL) == "1":
-        return
-    try:
-        from core.config import get_setting
-        if get_setting("auto_check_updates", True) is False:
+    if not force:
+        if os.environ.get(_ENV_SENTINEL) == "1":
             return
-    except Exception:
-        pass  # setting unavailable -> default to checking
+        try:
+            from core.config import get_setting
+            if get_setting("auto_check_updates", True) is False:
+                return
+        except Exception:
+            pass  # setting unavailable -> default to checking
 
     os.environ[_ENV_SENTINEL] = "1"
 
     state = _load_state()
 
     # daily throttle: skip the network round-trip if we checked < 24h ago
-    last = state.get("last_check_ts", 0)
-    try:
-        now = time.time()
-        if last and (now - last) < _DAILY_SECONDS:
-            return
-    except Exception:
-        now = None
+    now = time.time()
+    if not force:
+        last = state.get("last_check_ts", 0)
+        try:
+            if last and (now - last) < _DAILY_SECONDS:
+                return
+        except Exception:
+            now = None
 
     try:
         _run(state, now)

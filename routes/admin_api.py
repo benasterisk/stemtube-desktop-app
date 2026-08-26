@@ -697,3 +697,46 @@ def restart_server():
         'message': 'Server is restarting...'
     })
 
+
+
+# ── Updates ──────────────────────────────────────────────────────────────────
+# The desktop app patches itself from update/manifest.json on the repo. These
+# two endpoints back the Settings > Updates section: one reports where the
+# install stands, the other lets the user check on demand instead of waiting
+# for the once-a-day startup check.
+
+@admin_api_bp.route('/api/admin/update-status', methods=['GET'])
+@api_login_required
+def get_update_status():
+    """Installed commit, last check time and the last run's outcome."""
+    try:
+        from core.updater import get_status
+        return jsonify({'success': True, 'status': get_status()})
+    except Exception as e:
+        logger.error(f"update status failed: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_api_bp.route('/api/admin/check-updates', methods=['POST'])
+@api_login_required
+def check_updates_now():
+    """Run an update check right now, ignoring the daily throttle.
+
+    Runs synchronously: the check is a small HTTP fetch plus, at most, a few
+    file writes, and the caller wants the outcome to display. If an update was
+    applied the app must restart to load it — we report that rather than
+    restarting under the user, so they choose when.
+    """
+    try:
+        from core.updater import check_and_apply, get_status, RESTART_REQUESTED
+        check_and_apply(force=True)
+        # Re-read module state: check_and_apply may have set the restart flag.
+        import core.updater as _u
+        return jsonify({
+            'success': True,
+            'status': get_status(),
+            'restart_required': bool(getattr(_u, 'RESTART_REQUESTED', False)),
+        })
+    except Exception as e:
+        logger.error(f"manual update check failed: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500

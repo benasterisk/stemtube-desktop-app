@@ -127,6 +127,116 @@ function saveSettings() {
     });
 }
 
+// ── Updates (inline in settings modal) ──────────────────────────────
+// The app patches itself from a manifest on startup, at most once a day. This
+// section shows where the install stands and lets the user check on demand.
+
+// Server messages are interpolated into innerHTML below, so escape them.
+// There is no global escapeHtml in this bundle (karaoke-display.js keeps its
+// own private copy), hence this local one.
+function escapeUpdateText(str) {
+    const d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
+}
+
+function fmtUpdateDate(ts) {
+    if (!ts) return 'never';
+    try {
+        const d = new Date(ts * 1000);
+        // Local format: the user only needs "is this recent?"
+        return d.toLocaleString();
+    } catch (e) { return 'unknown'; }
+}
+
+function renderUpdateStatus(st) {
+    const line = document.getElementById('updateStatusLine');
+    const ver = document.getElementById('updateInstalledVersion');
+    const last = document.getElementById('updateLastCheck');
+    const plat = document.getElementById('updatePlatform');
+    if (ver) ver.textContent = st.installed_commit || 'unknown';
+    if (last) last.textContent = fmtUpdateDate(st.last_check_ts);
+    if (plat) {
+        // Show what actually matters for support: OS + edition.
+        const os = st.platform === 'windows' ? 'Windows' : 'Linux';
+        plat.textContent = os + ' — ' + (st.edition || 'standard');
+    }
+    if (line) {
+        if (st.last_phase === 'done') {
+            line.innerHTML = '<i class="fas fa-check-circle" style="color:#4caf7d;"></i> Up to date (update applied).';
+        } else if (st.last_phase === 'error') {
+            line.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#e8943a;"></i> ' +
+                (st.last_message || 'Last check reported a problem.');
+        } else if (!st.auto_check) {
+            line.innerHTML = '<i class="fas fa-pause-circle"></i> Automatic checks are disabled.';
+        } else {
+            line.innerHTML = '<i class="fas fa-check-circle" style="color:#4caf7d;"></i> Automatic updates enabled.';
+        }
+    }
+}
+
+function loadUpdateStatus() {
+    const line = document.getElementById('updateStatusLine');
+    fetch('/api/admin/update-status')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                if (line) line.textContent = 'Could not read update status.';
+                return;
+            }
+            renderUpdateStatus(data.status);
+        })
+        .catch(() => { if (line) line.textContent = 'Could not read update status.'; });
+}
+
+function wireUpdateCheck() {
+    const btn = document.getElementById('checkUpdatesBtn');
+    if (!btn || btn._wired) return;   // guard: this may run on every modal open
+    btn._wired = true;
+    btn.addEventListener('click', () => {
+        const result = document.getElementById('updateResult');
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        if (result) { result.style.display = 'none'; }
+
+        fetch('/api/admin/check-updates', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = original;
+                if (!data.success) {
+                    if (result) {
+                        result.style.display = 'block';
+                        result.innerHTML = '<span style="color:#e05555;">Check failed: ' +
+                            escapeUpdateText(data.error || 'unknown error') + '</span>';
+                    }
+                    return;
+                }
+                renderUpdateStatus(data.status);
+                if (result) {
+                    result.style.display = 'block';
+                    if (data.restart_required) {
+                        result.innerHTML = '<span style="color:#4caf7d;">Update installed — restart StemTube to load it.</span>';
+                    } else if (data.status && data.status.last_phase === 'error') {
+                        result.innerHTML = '<span style="color:#e8943a;">' +
+                            escapeUpdateText(data.status.last_message || 'The update was not applied.') + '</span>';
+                    } else {
+                        result.innerHTML = '<span style="color:var(--text-secondary);">Already up to date.</span>';
+                    }
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = original;
+                if (result) {
+                    result.style.display = 'block';
+                    result.innerHTML = '<span style="color:#e05555;">Check failed — are you online?</span>';
+                }
+            });
+    });
+}
+
 // ── System Settings (inline in settings modal) ──────────────────────
 function loadSystemSettings() {
     const statusEl = document.getElementById('sysSettingsStatus');
@@ -191,6 +301,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (settingsBtn) {
         settingsBtn.addEventListener('click', function() {
             loadSystemSettings();
+            // Refresh the Updates section every time the modal opens, so the
+            // "last checked" line is never stale. wireUpdateCheck self-guards.
+            loadUpdateStatus();
+            wireUpdateCheck();
         });
     }
 });
