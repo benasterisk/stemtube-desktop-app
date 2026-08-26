@@ -285,8 +285,19 @@ def _run(state, now):
         return
 
     target = manifest.get("target_commit")
-    base = manifest.get("base_commit")
     local = _local_commit(state)
+
+    # Accepted starting points. A manifest carries `base_commit` (the engines it
+    # was built against) and may list further `also_from` commits — earlier
+    # targets that this manifest can still upgrade. Without that, publishing a
+    # second manifest stranded everyone who took the first: their recorded
+    # commit was the previous target, which no longer equalled the single base.
+    bases = []
+    if manifest.get("base_commit"):
+        bases.append(manifest["base_commit"])
+    for extra in (manifest.get("also_from") or []):
+        if extra and extra not in bases:
+            bases.append(extra)
 
     if not target:
         _log("manifest has no target_commit; skipping")
@@ -296,22 +307,23 @@ def _run(state, now):
         _progress("up_to_date", "StemTube is up to date.", 100)
         return  # already up to date
 
-    # A partial patch is only safe if the manifest's base matches what we have.
+    # A partial patch is only safe if we recognise where the install stands.
     # First-run installs have no recorded commit: accept and trust the manifest
-    # base (the patcher should have stamped it, but we allow bootstrap).
-    if local is not None and base is not None and local != base:
+    # (the patcher should have stamped it, but we allow bootstrap).
+    if local is not None and bases and local not in bases:
         # Surface this: _log() is a bare print(), invisible under a detached
         # GUI launch, so a refused patch used to look exactly like an updater
         # that never ran. Emit an "error" phase too — the launcher pops its
         # progress window for that phase and shows the message.
+        expected = " or ".join(bases)
         msg = (f"Update skipped: this install reports commit {local}, but the "
-               f"update expects {base}. Reinstall StemTube to get the latest "
-               f"version.")
-        _log(f"local commit {local} != manifest base {base}; refusing partial "
-             f"patch. A full reinstall is recommended.")
+               f"update expects {expected}. Reinstall StemTube to get the "
+               f"latest version.")
+        _log(f"local commit {local} not in accepted bases {bases}; refusing "
+             f"partial patch. A full reinstall is recommended.")
         _progress("error", msg, None,
-                  {"reason": "base_mismatch", "local": local, "base": base,
-                   "target": target})
+                  {"reason": "base_mismatch", "local": local,
+                   "base": bases[0], "accepted": bases, "target": target})
         return
 
     files = manifest.get("files", [])

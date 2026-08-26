@@ -126,10 +126,21 @@ def main():
     ap.add_argument("base_commit")
     ap.add_argument("target_commit")
     ap.add_argument("--out", default="update/manifest.json")
+    ap.add_argument(
+        "--also-from", action="append", default=[], metavar="COMMIT",
+        help="Another commit this manifest can upgrade from — normally the "
+             "target of a manifest already published. Repeatable. Without it, "
+             "installs that took the previous update are stranded: their "
+             "recorded commit is that previous target, not this base.")
     args = ap.parse_args()
 
     base = git("rev-parse", "--short", args.base_commit)
     target = git("rev-parse", "--short", args.target_commit)
+    also_from = []
+    for extra in args.also_from:
+        h = git("rev-parse", "--short", extra)
+        if h != base and h not in also_from:
+            also_from.append(h)
     edition = edition_at(args.target_commit)
     raw_base = repo_raw_base(edition)
 
@@ -160,6 +171,7 @@ def main():
         "edition": edition,
         "min_engine_version": MIN_ENGINE_VERSION,
         "base_commit": base,
+        "also_from": also_from,
         "target_commit": target,
         "restart_required": bool(any_restart or added_deps),
         "files": files,
@@ -170,8 +182,9 @@ def main():
         json.dump(manifest, f, indent=2)
         f.write("\n")
 
+    accepted = " or ".join([base] + also_from)
     print(f"Wrote {args.out}: {len(files)} file(s), {len(added_deps)} new dep(s), "
-          f"{base} -> {target}, restart={manifest['restart_required']}")
+          f"{accepted} -> {target}, restart={manifest['restart_required']}")
     if added_deps:
         print(f"  new deps: {added_deps}")
     for e in files:
