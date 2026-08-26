@@ -240,6 +240,15 @@ def check_and_apply(force=False):
 
     os.environ[_ENV_SENTINEL] = "1"
 
+    # Drop any status left by an earlier run. Without this a stale "error" was
+    # re-read by the Settings panel and shown as if it were this run's result —
+    # a refusal message survived a successful update.
+    if force:
+        try:
+            os.remove(_status_path())
+        except Exception:
+            pass
+
     state = _load_state()
 
     # daily throttle: skip the network round-trip if we checked < 24h ago
