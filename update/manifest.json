@@ -2,26 +2,104 @@
   "edition": "standard",
   "min_engine_version": 1,
   "base_commit": "5b9f3ac",
-  "target_commit": "2e6656b",
+  "target_commit": "c27ed18",
   "restart_required": true,
   "files": [
     {
       "path": "core/updater.py",
       "status": "M",
-      "sha256": "3a649ab021d37c04bbe834ebbd1deacff87ed112e8bb9d1fe6c1d774d42bf159",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/2e6656b/core/updater.py"
+      "sha256": "ff28955c92e588791a9ff6f1d070e93d9fd22c91880e0f17b0a89d1baae00756",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/core/updater.py"
+    },
+    {
+      "path": "launcher.py",
+      "status": "M",
+      "sha256": "2eb6f05b98e0ed9e548d9aba72f25e331d5ea05b417199d1c54fee49c3f35757",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/launcher.py"
+    },
+    {
+      "path": "routes/admin_api.py",
+      "status": "M",
+      "sha256": "3c77e90f443ed9789c8cd1bfc7dbef14124b3a538e980dd7a69f288d73290f2d",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/routes/admin_api.py"
+    },
+    {
+      "path": "routes/pages.py",
+      "status": "M",
+      "sha256": "5ed0b32576ab0471b25e0a24fd8c8c631fe5249cdcc97ed4e8b9059432c2750c",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/routes/pages.py"
+    },
+    {
+      "path": "static/js/app-utils.js",
+      "status": "M",
+      "sha256": "c62b0631d1280bf826c4aa5cb49412787586e2f40cdb567daa2e0081be8a1303",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/app-utils.js"
     },
     {
       "path": "static/js/mixer/stage-window.js",
       "status": "A",
-      "sha256": "b94d0e7705130c292d8a67f740c31fce3fe84dda81e6a18b18ed76665748c2bb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/2e6656b/static/js/mixer/stage-window.js"
+      "sha256": "7ab42cb978690c569bfb5206a9346f01f4df1b8e7d332fabd2022a8be720e6bb",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/mixer/stage-window.js"
+    },
+    {
+      "path": "static/js/poc/loop.js",
+      "status": "M",
+      "sha256": "ccece11a9f69231b5a910d40c9420cb20a556431be3551e6c4f0ebd70d892c3c",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/loop.js"
+    },
+    {
+      "path": "static/js/poc/main.js",
+      "status": "M",
+      "sha256": "d2149f57e97d9b439676038a4c41db3c47309993ae07063bb1023f9f9e65272d",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/main.js"
+    },
+    {
+      "path": "static/js/poc/mixer.js",
+      "status": "M",
+      "sha256": "bd22aaff69703e8f60fa41a245fc1b901a033ef6778422b2afe0b4daaaf834bd",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/mixer.js"
+    },
+    {
+      "path": "static/js/poc/precount.js",
+      "status": "M",
+      "sha256": "23699f5a3312dd05c2dda729aef7587c72ae0ad236cc19e6991f0ee850c7f762",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/precount.js"
+    },
+    {
+      "path": "static/js/poc/scrub.js",
+      "status": "A",
+      "sha256": "f319903bc1be55ccd9e3adb5f230903754ddc1ea18cd3b1f9321906c6f7170b3",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/scrub.js"
+    },
+    {
+      "path": "static/js/poc/snap.js",
+      "status": "A",
+      "sha256": "6b9e6124ba2f84207601c40fed9f33f1ebc2f8455dfe58dfe0b304b567725b6b",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/snap.js"
+    },
+    {
+      "path": "static/js/poc/state.js",
+      "status": "M",
+      "sha256": "2ee375a28f3a40013666cfa66b70771daf3bbf41f8fe5aafe9215e274b40fb92",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/state.js"
+    },
+    {
+      "path": "static/js/poc/timeline.js",
+      "status": "M",
+      "sha256": "a912578bf449d429af6a1838a4d94ab6cb25f8a269080f541c64b254d10b003c",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/static/js/poc/timeline.js"
+    },
+    {
+      "path": "templates/index.html",
+      "status": "M",
+      "sha256": "e0094e35e52fe25e707a512b3dc5b982438237f9f7192e5b4f6485916d0e019f",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/templates/index.html"
     },
     {
       "path": "templates/mixer.html",
       "status": "M",
-      "sha256": "a4c6d06feccef1d293aaac3984c6b013e41c704f571c893909bc778b64ebe9fd",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/2e6656b/templates/mixer.html"
+      "sha256": "4530329ad4e176b7457289f45065c0b2f89b70da9722b93f46a721789370710c",
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c27ed18/templates/mixer.html"
     }
   ],
   "pip_installs": []
