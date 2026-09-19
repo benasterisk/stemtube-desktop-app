@@ -118,11 +118,17 @@ class TestMainRs(unittest.TestCase):
             content = f.read()
         self.assertIn("5011", content)
 
-    def test_contains_sidecar_detection(self):
+    def test_contains_backend_detection(self):
+        """The shell locates the downloaded backend and runs app.py from its venv.
+
+        It has never spawned a stemtube-backend.exe sidecar: the release ships a
+        zipped Python backend, so the shell resolves the extracted directory and
+        starts app.py with that venv's interpreter.
+        """
         with open(PROJECT_ROOT / "src-tauri" / "src" / "main.rs") as f:
             content = f.read()
         self.assertIn("stemtube-backend", content)
-        self.assertIn("stemtube-backend.exe", content)
+        self.assertIn("app.py", content)
 
     def test_contains_dev_mode_fallback(self):
         with open(PROJECT_ROOT / "src-tauri" / "src" / "main.rs") as f:
