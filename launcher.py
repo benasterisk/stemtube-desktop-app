@@ -139,6 +139,9 @@ def launch_native_window(port):
 
                 target = '%s/mixer?extraction_id=%s&stage=%s' % (
                     self._base, quote(str(extraction_id)), kind)
+                # Opens maximized, like the browser route which uses 90% of the
+                # available screen: the stage view is meant to be read from a
+                # distance (music stand), not squeezed into a 1100x700 box.
                 win = _wv.create_window(
                     title=('Lyrics' if kind == 'lyrics' else 'Chords') + ' - StemTube Stage',
                     url=target,
@@ -146,6 +149,7 @@ def launch_native_window(port):
                     height=700,
                     min_size=(640, 400),
                     resizable=True,
+                    maximized=True,
                     text_select=True,
                 )
                 self._windows[key] = win
