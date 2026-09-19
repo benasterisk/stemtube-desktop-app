@@ -168,6 +168,28 @@ function formatDuration(duration) {
 
 // Download Modal Functions
 // Extraction Modal Functions
+// Small button next to "Open Mixer": re-extract with another model. The new
+// extraction replaces the current stems once it completes. Sets force_reextract
+// on the pending item so the server runs again even when the chosen model
+// already produced stems for this song.
+function addReextractButton(mixerButton) {
+    const parent = mixerButton.parentNode;
+    if (!parent || parent.querySelector('.reextract-button')) return;
+    const ds = mixerButton.dataset;
+    if (!ds.downloadId) return;
+    const btn = document.createElement('button');
+    btn.className = 'item-button reextract-button';
+    btn.title = 'Ré-extraire avec un autre modèle (remplace les stems actuels)';
+    btn.innerHTML = '<i class="fas fa-redo"></i>';
+    btn.addEventListener('click', () => {
+        openExtractionModal(ds.downloadId, ds.title, ds.filePath, ds.videoId);
+        if (typeof currentExtractionItem !== 'undefined' && currentExtractionItem) {
+            currentExtractionItem.force_reextract = true;
+        }
+    });
+    mixerButton.insertAdjacentElement('afterend', btn);
+}
+
 function openExtractionModal(downloadId, title, filePath, videoId) {
     console.log('[EXTRACTION MODAL] Opening modal with:', {
         downloadId,
@@ -318,7 +340,8 @@ function startExtraction() {
         two_stem_mode: twoStemMode,
         primary_stem: primaryStem,
         video_id: video_id,  // Add video_id for deduplication
-        title: currentExtractionItem.title  // Add title for database storage
+        title: currentExtractionItem.title,  // Add title for database storage
+        force_reextract: Boolean(currentExtractionItem.force_reextract)
     };
 
     console.log('[START EXTRACTION] Sending POST to /api/extractions with:', extractionItem);
@@ -556,6 +579,7 @@ async function grantExtractionAccess(videoId, button) {
             switchToTab('mixer');
             loadExtractionInMixer(`download_${button.dataset.downloadId}`);
         });
+        addReextractButton(button);
         
         showToast('Access granted! You can now use the mixer.', 'success');
         
@@ -620,6 +644,7 @@ async function updateExtractButton(button, extractionStatus, downloadElement) {
             switchToTab('mixer');
             loadExtractionInMixer(`download_${newButton.dataset.downloadId}`);
         });
+        addReextractButton(newButton);
 
         // Populate download dropdown with stems if available
         if (downloadElement && extractionStatus.stems_available) {
@@ -1680,6 +1705,7 @@ function updateExtractionComplete(data) {
             switchToTab('mixer');
             loadExtractionInMixer(`download_${newButton.dataset.downloadId}`);
         });
+        addReextractButton(newButton);
 
         console.log('[EXTRACTION COMPLETE] Updated Extract button to Open Mixer for video_id:', data.video_id);
     }
@@ -1717,6 +1743,7 @@ function updateDownloadsTabExtractButton(videoId, extractionId) {
                 switchToTab('mixer');
                 loadExtractionInMixer(extractionId);
             });
+            addReextractButton(newButton);
             
             console.log(`Updated Extract Stems button to Open Mixer for video_id: ${videoId}`);
         }
