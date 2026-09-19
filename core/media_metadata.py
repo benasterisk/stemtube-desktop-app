@@ -1,13 +1,11 @@
 """
 Media metadata for lyrics lookup: artist, track and sung language.
 
-YouTube (through yt-dlp) gives music metadata (`artist`, `track`) only for some videos,
-but usually the declared audio `language`, the uploader and the tags. The metadata is
-captured at download time and stored as JSON in `global_downloads.media_metadata`.
-
-Desktop editions have no shared cookie broker, so the lazy re-fetch of missing metadata
-is unavailable: fetch_youtube_metadata() returns {} and the lyrics pipeline falls back to
-the song title and its ID3 tags (resolve_artist_track).
+Metadata (`artist`, `track`, `language`, tags...) is stored as JSON in
+`global_downloads.media_metadata` when a song is added to the library. This edition
+imports local files only and has no metadata provider, so nothing is fetched here:
+load_media_metadata() reads whatever the database holds, and when it holds nothing the
+lyrics pipeline falls back to the song title and its ID3 tags (resolve_artist_track).
 """
 
 import logging
@@ -18,72 +16,18 @@ from core.metadata_extractor import get_id3_tags, parse_artist_title
 
 logger = logging.getLogger(__name__)
 
-YOUTUBE_ID = re.compile(r'^[A-Za-z0-9_-]{11}$')
-
-# "(Musical Artist)" tags come from YouTube's knowledge graph and name the performer.
+# Some stored metadata carries "(Musical Artist)" tags that name the performer.
 MUSICAL_ARTIST_TAG = re.compile(r'^(.+?)\s*\(Musical Artist\)$', re.IGNORECASE)
 
 
-def from_ytdlp_info(info: Dict) -> Dict:
-    """The subset of a yt-dlp info dict the lyrics pipeline uses."""
-    if not info:
-        return {}
-    artists = info.get('artists') or []
-    creators = info.get('creators') or []
-    return {
-        'source': 'youtube',
-        'artist': info.get('artist') or (artists[0] if artists else None) or info.get('creator')
-                  or (creators[0] if creators else None),
-        'track': info.get('track') or info.get('alt_title'),
-        'language': (info.get('language') or '').split('-')[0].lower() or None,
-        'uploader': info.get('uploader') or info.get('channel'),
-        'tags': (info.get('tags') or [])[:40],
-        'duration': info.get('duration'),
-    }
-
-
-def fetch_youtube_metadata(video_id: str) -> Dict:
-    """
-    One metadata-only yt-dlp request (no download). {} on failure.
-
-    Desktop editions ship no cookie broker, so this degrades to {} rather than raising:
-    the caller then relies on the title and the ID3 tags.
-    """
-    if not video_id or not YOUTUBE_ID.match(video_id):
-        return {}
+def load_media_metadata(video_id: str) -> Dict:
+    """Stored metadata for a song, or {} when none was recorded."""
     try:
-        from core.cookie_broker import youtube_dl
-    except ImportError:
-        logger.debug("[METADATA] No cookie broker in this edition, skipping yt-dlp metadata fetch")
-        return {}
-    try:
-        opts = {'quiet': True, 'no_warnings': True, 'skip_download': True,
-                'js_runtimes': {'deno': {}, 'node': {}}}
-        with youtube_dl(opts) as ydl:
-            info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-        meta = from_ytdlp_info(info)
-        logger.info(f"[METADATA] YouTube {video_id}: artist={meta.get('artist')!r} "
-                    f"track={meta.get('track')!r} language={meta.get('language')!r}")
-        return meta
-    except Exception as e:
-        logger.warning(f"[METADATA] yt-dlp metadata fetch failed for {video_id}: {e}")
-        return {}
-
-
-def load_media_metadata(video_id: str, fetch_if_missing: bool = True) -> Dict:
-    """Stored metadata for a song; fetched from YouTube and stored when missing."""
-    try:
-        from core.downloads_db import get_media_metadata, update_media_metadata
+        from core.downloads_db import get_media_metadata
     except ImportError:
         logger.debug("[METADATA] Media metadata storage unavailable")
         return {}
-    meta = get_media_metadata(video_id) or {}
-    if meta or not fetch_if_missing:
-        return meta
-    meta = fetch_youtube_metadata(video_id)
-    if meta:
-        update_media_metadata(video_id, meta)
-    return meta
+    return get_media_metadata(video_id) or {}
 
 
 def _clean_uploader(name: str) -> str:
@@ -96,7 +40,7 @@ def resolve_artist_track(title: str = None, file_path: str = None, meta: Optiona
                          override_artist: str = None, override_track: str = None) -> Tuple[str, str]:
     """
     (artist, track) for a lyrics search, best source first:
-    user override > YouTube music metadata > "Artist - Track" title > ID3 tags
+    user override > stored music metadata > "Artist - Track" title > ID3 tags
     > "(Musical Artist)" tag > uploader name.
     """
     meta = meta or {}
@@ -112,8 +56,8 @@ def resolve_artist_track(title: str = None, file_path: str = None, meta: Optiona
 
     if file_path:
         tags = get_id3_tags(file_path) or {}
-        # yt-dlp writes the uploader as ID3 artist for plain videos: only trust it for uploads.
-        if tags.get('artist') and meta.get('source') != 'youtube':
+        # Local imports carry the user's own tags, so the ID3 artist is trustworthy here.
+        if tags.get('artist'):
             id3_track = parse_artist_title(tags.get('title') or '')[1] or track
             if id3_track:
                 return tags['artist'].strip(), id3_track.strip()

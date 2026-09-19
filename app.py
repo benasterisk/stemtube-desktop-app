@@ -1,7 +1,7 @@
 """
 StemTube Desktop — Desktop application for music analysis and stem extraction.
-Local-files-only edition: no YouTube, no licensing, no server deployment,
-no mobile, no jam sessions.
+Local-files-only edition: the library is built from audio files the user imports.
+No licensing, no server deployment, no mobile, no jam sessions.
 """
 # CRITICAL: Handle demucs subprocess mode BEFORE anything else
 # When PyInstaller calls this exe with --demucs-separate, run demucs and exit

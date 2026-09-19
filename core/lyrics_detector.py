@@ -3,7 +3,7 @@ Lyrics detection for karaoke display.
 
 detect_lyrics_unified() is the single pipeline (download analysis, post-extraction and the
 Regenerate button):
-  1. artist/track from YouTube metadata, the title or the file tags (core/media_metadata.py)
+  1. artist/track from the stored metadata, the title or the file tags (core/media_metadata.py)
   2. LRCLIB lookup (core/lrclib_client.py): line-synced or plain lyrics text
   3. faster-whisper on the vocals stem, in the language actually sung
   4. lyrics found  -> LRCLIB text aligned on Whisper word timings (core/lyrics_merger.py)
@@ -154,7 +154,7 @@ class LyricsDetector:
             audio_path: Path to audio file (preferably the vocals stem)
             language: Force this language code
             word_timestamps: Include word-level timestamps
-            language_hint: Language declared by the source (YouTube), used when the
+            language_hint: Language declared by the stored metadata, used when the
                 audio detection is not confident
 
         Returns:
@@ -309,7 +309,7 @@ def detect_lyrics_unified(
 
     Args:
         audio_path: Audio to transcribe (the vocals stem when available)
-        title: Song title (YouTube title) for the artist/track lookup
+        title: Song title for the artist/track lookup
         model_size: Whisper model size
         use_gpu: Run Whisper on the GPU
         duration: Song duration in seconds, ranks LRCLIB candidates
@@ -318,7 +318,7 @@ def detect_lyrics_unified(
         force_whisper: skip LRCLIB
         lrclib_id: use this LRCLIB record instead of searching
         sync_with_whisper: False keeps LRCLIB's own line timing (synced records only)
-        media_metadata: stored YouTube metadata (artist, track, language, tags...)
+        media_metadata: stored song metadata (artist, track, language, tags...)
         file_path: original download, for its ID3 tags
 
     Returns:
@@ -425,13 +425,14 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
     if len(sys.argv) < 2:
-        print("Usage: python -m core.lyrics_detector <vocals.mp3> ['Artist - Title'] [youtube_video_id]")
+        print("Usage: python -m core.lyrics_detector <vocals.mp3> ['Artist - Title'] [song_id]")
         sys.exit(1)
 
+    # A song id, when given, pulls the metadata already stored for that library entry.
     meta = {}
     if len(sys.argv) > 3:
-        from core.media_metadata import fetch_youtube_metadata
-        meta = fetch_youtube_metadata(sys.argv[3])
+        from core.media_metadata import load_media_metadata
+        meta = load_media_metadata(sys.argv[3])
     res = detect_lyrics_unified(audio_path=sys.argv[1], title=sys.argv[2] if len(sys.argv) > 2 else None,
                                 model_size="large-v3", use_gpu=True, media_metadata=meta,
                                 progress_callback=lambda step, msg: print(f"  [{step}] {msg}"))

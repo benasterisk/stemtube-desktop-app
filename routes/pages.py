@@ -1,7 +1,7 @@
 """
 Core page routes for StemTube Desktop.
 Desktop-only: no mobile redirect, no service worker, auto-login.
-Local files only — no YouTube.
+The library is built from local files the user imports.
 """
 
 import os
@@ -78,7 +78,6 @@ def index():
         'index.html',
         current_username=current_user.username,
         current_user=current_user,
-        enable_youtube=False,
         has_license=HAS_LICENSE,
         cache_buster=cache_buster,
         update_applied=update_applied,

@@ -325,14 +325,14 @@ class KaraokeDisplay {
 
     /**
      * Parse title to extract artist and track
-     * Handles "Artist - Track" format and various YouTube suffixes
+     * Handles "Artist - Track" format and the usual release-title decoration
      */
     parseTitle(title) {
         if (!title) return { artist: '', track: '' };
 
         let cleanTitle = title;
 
-        // Remove common YouTube suffixes
+        // Remove common release-title suffixes ("(Official Video)", "(HD)", a year...)
         const patterns = [
             /\s*[\(\[]\s*(Official\s*)?(Music\s*)?(Video|Audio|Lyrics?|Visualizer|Clip)\s*[\)\]]/gi,
             /\s*[\(\[]\s*(HD|HQ|4K|1080p|720p)\s*[\)\]]/gi,
