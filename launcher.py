@@ -99,6 +99,15 @@ def launch_native_window(port):
     """
     try:
         import webview
+
+        # WebView2 routes every NewWindowRequested (a window.open, a target=_blank)
+        # to the SYSTEM BROWSER while OPEN_EXTERNAL_LINKS_IN_BROWSER is true, which
+        # is pywebview's default. That is why a Stage View click produced a webview
+        # window AND a browser window: the native one came from open_stage(), the
+        # browser one from WebView2 handing the request to webbrowser.open(). Keep
+        # everything inside the app; the user only gets a browser when they open
+        # the GUI in one themselves.
+        webview.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = False
     except ImportError:
         print("[LAUNCHER] pywebview not installed — opening in the browser instead")
         launch_browser(port)
