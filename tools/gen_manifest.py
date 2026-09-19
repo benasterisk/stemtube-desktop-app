@@ -29,6 +29,7 @@ import hashlib
 import json
 import subprocess
 import sys
+from urllib.parse import quote
 
 # Repo → raw URL base. Filled from `git remote get-url origin` if not overridden.
 RAW_BASE_FALLBACK = {
@@ -53,7 +54,9 @@ EXCLUDE_EXACT = (
 
 # Documentation and repo metadata: never read at run time, so shipping them
 # would cost testers bandwidth and muddy the update diff for no effect.
-EXCLUDE_SUFFIXES = (".md", ".txt", ".gitignore", ".gitattributes")
+# .bat: developer launchers. They must never reach an installed app, and their
+# names contain spaces, which also produced an unusable raw URL.
+EXCLUDE_SUFFIXES = (".md", ".txt", ".gitignore", ".gitattributes", ".bat")
 
 # A touched file forces a restart if it is executable-imported code.
 RESTART_PREFIXES = ("core/", "routes/", "external/", "templates/")
@@ -159,7 +162,10 @@ def main():
         entry = {"path": path, "status": status}
         if status != "D":
             entry["sha256"] = sha256_at(args.target_commit, path)
-            entry["url"] = f"{raw_base}/{target}/{path}"
+            # quote the path: a space (or any reserved char) in a filename
+            # otherwise yields a URL urllib refuses with "URL can't contain
+            # control characters". "/" stays a separator.
+            entry["url"] = f"{raw_base}/{target}/{quote(path)}"
         files.append(entry)
         if forces_restart(path):
             any_restart = True

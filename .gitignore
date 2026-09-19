@@ -39,3 +39,6 @@ StemTube_Desktop_GPU_portable/
 StemTube_Desktop_GPU_portable.zip
 StemTube_Desktop_portable.zip
 .dev
+
+# Local dev launchers (never shipped, never in an update manifest)
+TEST backport (GPU).bat
