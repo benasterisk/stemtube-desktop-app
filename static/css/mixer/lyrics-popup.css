@@ -70,17 +70,58 @@
     overflow-y: auto;
 }
 
+/* Stage prompter: big centered lyrics that reflow with the size slider
+   (--lyrics-scale, 0.8x-3x, set by lyrics-popup.js). Base 2rem = twice the
+   old size; the active line is parked mid-screen by karaoke-display's
+   popup scroll so upcoming lines fill the lower half. */
 .lyrics-popup-overlay .karaoke-lyrics {
+    --lyrics-scale: 1.25;
     background: transparent;
-    padding: 0;
-    padding-top: 10%;
-    padding-bottom: 70%;
+    padding: 0 3vw;
+    padding-top: 40vh;
+    padding-bottom: 60vh;
     max-height: none;
-    font-size: 1.4rem;
-    line-height: 2rem;
+    font-size: calc(2rem * var(--lyrics-scale));
+    line-height: 1.5;
     height: auto;
     overflow-y: visible;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.005em;
 }
+
+.lyrics-popup-overlay .karaoke-line {
+    margin: 0.55em 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.lyrics-popup-overlay .karaoke-line.past { opacity: 0.35; }
+.lyrics-popup-overlay .karaoke-line.active {
+    transform: scale(1.04);
+    text-shadow: 0 0 24px rgba(29, 185, 84, 0.25);
+}
+
+/* The size slider must scale the CHARACTERS. karaoke.css sizes words in
+   absolute rem (1.2rem / 1.4rem for the current word), which ignores the
+   scaled parent - so the slider only grew the line boxes (spacing), not the
+   text. In the stage popup, words inherit the scaled size instead. */
+.lyrics-popup-overlay .karaoke-text { font-size: inherit; }   /* karaoke.css: 1rem */
+.lyrics-popup-overlay .karaoke-word {
+    font-size: inherit;                     /* karaoke.css: 1.2rem */
+    /* karaoke.css animates ALL properties on words (transition: all .3s):
+       with hundreds of words that made every Size-slider step a 300ms
+       font-size tween per word - sluggish, and frozen entirely in a
+       background tab. Only color/opacity may animate in the stage view. */
+    transition-property: color, opacity, text-shadow;
+}
+.lyrics-popup-overlay .karaoke-word.word-current { font-size: 1.08em; }
+
+/* Stage view: no per-line timecodes (noise when performing) */
+.lyrics-popup-overlay .karaoke-time { display: none; }
+
+.lyrics-popup-content {
+    padding: 0 !important;                /* the lyrics block manages its own stage padding */
+}
+
 
 .lyrics-popup-overlay .karaoke-lyrics.section-hidden {
     display: block !important;
