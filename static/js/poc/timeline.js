@@ -20,7 +20,10 @@ const View = {
   meta: null,
   engine: null,         // AudioEngine
   canvases: {},         // name -> canvas
-  scrollMode: "page", // "manual" | "page" | "center" — default is page
+  scrollMode: "center", // "manual" | "page" | "center" — default is center
+  // The mode chosen with the toolbar button. scrollMode itself drops to "manual"
+  // on any hand scroll, which must not be what gets saved.
+  scrollModePref: "center",
   _suppressScrollHandler: false, // guard so our own auto-scrolls aren't mistaken for manual ones
   // Lead-in pad (seconds): when a count-in is armed and the intro is too short to
   // fit it, this much SILENCE is inserted in front of the whole song. Everything —
