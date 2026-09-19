@@ -20,6 +20,24 @@ logger = get_logger(__name__)
 
 media_bp = Blueprint('media', __name__)
 
+def _find_download_for(extraction_id):
+    """Resolve an extraction id (download_<id>, video id or filename prefix) to a row."""
+    from core.downloads_db import get_download_by_id, list_extractions_for
+    download = None
+    if extraction_id.startswith('download_'):
+        download = get_download_by_id(current_user.id, extraction_id.replace('download_', ''))
+    if not download:
+        for db_extraction in list_extractions_for(current_user.id):
+            video_id = db_extraction.get('video_id', '')
+            file_path = db_extraction.get('file_path', '')
+            filename = os.path.basename(file_path).replace('.mp3', '') if file_path else ''
+            if video_id == extraction_id or (filename and extraction_id.startswith(filename)):
+                download = db_extraction
+                break
+    if not download:
+        download = db_find_any_global_extraction(extraction_id)
+    return download
+
 
 # ------------------------------------------------------------------
 # Lyrics retrieval
@@ -540,3 +558,41 @@ def fetch_lrclib_lyrics(extraction_id):
     """DEPRECATED: Use /lyrics/regenerate instead. Redirects to unified endpoint."""
     logger.warning(f"[LYRICS] Deprecated /lrclib endpoint called, redirecting to /regenerate")
     return regenerate_extraction_lyrics(extraction_id)
+
+
+# ------------------------------------------------------------------
+# Structure analysis
+# ------------------------------------------------------------------
+
+@media_bp.route('/api/extractions/<extraction_id>/analyze-structure', methods=['POST'])
+@api_login_required
+def analyze_extraction_structure(extraction_id):
+    """Detect song sections with MSAF and store them as structure_data."""
+    try:
+        from core.downloads_db import update_download_analysis
+        from core.msaf_structure_detector import detect_song_structure_msaf
+
+        download = _find_download_for(extraction_id)
+        if not download:
+            return jsonify({'error': 'Extraction not found'}), 404
+        audio_path = download.get('file_path')
+        if not audio_path or not os.path.exists(audio_path):
+            return jsonify({'error': 'Audio file not found'}), 404
+        video_id = download.get('video_id')
+        if not video_id:
+            return jsonify({'error': 'Video ID not found'}), 400
+
+        sections = detect_song_structure_msaf(audio_path)
+        if not sections:
+            return jsonify({'error': 'Structure detection failed'}), 500
+
+        # Everything else is None, so COALESCE keeps the stored analysis untouched.
+        update_download_analysis(video_id, None, None, None, structure_data=sections)
+        return jsonify({
+            'success': True,
+            'structure': {'sections': sections},
+            'sections_count': len(sections)
+        })
+    except Exception as e:
+        logger.error(f"Error analyzing structure: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
