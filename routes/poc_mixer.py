@@ -476,6 +476,20 @@ def _prepare_worker(extraction_id, user_id):
         _set_prep(extraction_id, "error", 0, done=True, error=str(e))
 
 
+def warm_prepare(extraction_id, user_id):
+    """Build the mixer artifacts (metronome, waveforms, meta.json) right after an extraction.
+
+    Called from the extraction callback so the first mixer open is a cache hit instead of
+    the usual wait. Runs synchronously in the caller's thread and never raises: a failure
+    here only means the mixer prepares on demand, as it did before.
+    """
+    try:
+        _prepare_worker(extraction_id, user_id)
+        return True
+    except Exception as e:
+        logger.warning(f"[poc-mixer] warm prepare failed for {extraction_id}: {e}")
+        return False
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Routes
 # ─────────────────────────────────────────────────────────────────────────────
