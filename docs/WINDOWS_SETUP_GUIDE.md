@@ -77,7 +77,7 @@ pip install flask flask-login flask-session flask-socketio eventlet
 pip install requests python-dotenv Pillow
 pip install librosa soundfile scipy scikit-learn
 pip install yt-dlp[default] aiotube beautifulsoup4
-pip install faster-whisper msaf syncedlyrics pychord
+pip install faster-whisper msaf pychord
 pip install pywebview werkzeug
 
 :: Install demucs (needs torch first)

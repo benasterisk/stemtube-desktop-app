@@ -250,13 +250,6 @@ Record yourself playing along with stems. Recordings are positioned on the timel
 - Plays a test click through speakers, records it via mic, measures round-trip delay
 - Result is saved per device — only needs to be done once
 
-**Speaker Bleed Removal** (De-bleed):
-- Per-track setting in expanded recording controls (dropdown)
-- Uses server-side Demucs AI to isolate the selected instrument/voice from mic bleed
-- Options: Off, Vocals, Bass, Drums, Other (Guitar/Keys)
-- Set to match what you are recording — Demucs will remove everything else
-- Leave "Off" when using headphones for fastest workflow
-
 ### Playback Controls
 
 **Play/Pause**:
@@ -269,6 +262,20 @@ Record yourself playing along with stems. Recordings are positioned on the timel
 - Use keyboard:
   - `←` Left arrow: -5 seconds
   - `→` Right arrow: +5 seconds
+
+**Scrubbing**:
+- Drag along the timeline ruler to move the playhead and hear short slices as
+  you go, so a passage can be found by ear
+
+**Looping**:
+- **Shift+drag** on the ruler or on any waveform to define the loop — the same
+  gesture everywhere. A plain drag no longer creates one, and a plain click is
+  a seek
+- Drag either edge handle to trim a bound; dragging one past the other swaps them
+- The two fields next to the Loop button accept a timecode (`1:23.45`) or a bar
+  (`b17`, or `b17.3` for bar 17 beat 3); `✕` clears the loop
+- **Snap** (toolbar) makes loop bounds and the Start/Stop markers land on the
+  nearest beat. Hold `Alt` to ignore it for a single drag
 
 **Time Display**:
 - Shows current time / total duration
