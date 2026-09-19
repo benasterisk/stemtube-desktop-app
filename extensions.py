@@ -504,6 +504,23 @@ class UserSessionManager:
                         'extraction_id': item_id, 'progress': 97,
                         'message': 'Beat detection skipped', 'video_id': video_id
                     }, room=_room)
+
+                # Build the mixer artifacts now, so the first mixer open is a cache
+                # hit instead of a wait. Never fatal: without it the mixer prepares
+                # on demand exactly as it did before.
+                try:
+                    socketio.emit('extraction_progress', {
+                        'extraction_id': item_id, 'progress': 98,
+                        'message': 'Preparing mixer...', 'video_id': video_id
+                    }, room=_room)
+                    row_id = next((str(r['id']) for r in db_list_extractions(user_id)
+                                   if r.get('video_id') == video_id), None)
+                    if row_id:
+                        from routes.poc_mixer import warm_prepare
+                        if warm_prepare(f"download_{row_id}", user_id):
+                            logger.info(f"[MIXER] Pre-built mixer artifacts for download_{row_id}")
+                except Exception as prep_error:
+                    logger.warning(f"[MIXER] Mixer pre-build skipped (non-fatal): {prep_error}")
         else:
             print(f"[CALLBACK DEBUG] Missing user_id, video_id, or item data")
 
