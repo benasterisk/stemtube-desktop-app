@@ -10,6 +10,20 @@ const STEM_COLORS = {
   other:     "#c9a227",  // gold
   guitar:    "#9b6dff",  // purple
   piano:     "#2dd4bf",  // teal
+  // MVSep Mega fine stems: shades of the parent family colour
+  kick:            "#ff5a36",
+  snare:           "#ff8f6b",
+  toms:            "#e8743b",
+  hihat:           "#ffb38a",
+  cymbals:         "#ffc9a8",
+  backing_vocals:  "#f08cbf",
+  electric_guitar: "#9b6dff",
+  acoustic_guitar: "#b99aff",
+  organ:           "#14b8a6",
+  synth:           "#5eead4",
+  brass:           "#f59e0b",
+  winds:           "#a3e635",
+  strings:         "#60a5fa",
 };
 function stemColor(name){ return STEM_COLORS[name] || "#8a93a0"; }
 
@@ -20,9 +34,10 @@ const View = {
   meta: null,
   engine: null,         // AudioEngine
   canvases: {},         // name -> canvas
-  scrollMode: "center", // "manual" | "page" | "center" — default is center
-  // The mode chosen with the toolbar button. scrollMode itself drops to "manual"
-  // on any hand scroll, which must not be what gets saved.
+  scrollMode: "center", // "manual" | "page" | "center" — the mode in effect right now
+  // The mode the USER picked with the toolbar button. A manual scroll drops
+  // scrollMode to "manual" for convenience, but that is a transient reaction, not a
+  // choice: only this one is saved, so a reload comes back to what was chosen.
   scrollModePref: "center",
   _suppressScrollHandler: false, // guard so our own auto-scrolls aren't mistaken for manual ones
   // Lead-in pad (seconds): when a count-in is armed and the intro is too short to
@@ -316,5 +331,4 @@ const View = {
     cv.addEventListener("mouseup", endDrag);
     // a mouseup outside the ruler must still end the drag
     window.addEventListener("mouseup", e=>{ if(cv._dragging) endDrag(e); });
-  },
-};
+  },};
