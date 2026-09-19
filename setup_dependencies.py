@@ -304,7 +304,6 @@ def install_requirements(venv_python):
         "scikit-learn",         # Machine learning
         "faster-whisper",       # Speech recognition (GPU)
         "msaf",                 # Music structure analysis
-        "syncedlyrics",         # Synchronized lyrics (Musixmatch)
         "pychord",              # Chord notation
     ]
 

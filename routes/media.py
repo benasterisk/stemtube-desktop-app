@@ -1,8 +1,8 @@
 """
-Blueprint for lyrics, chords, beats, and Musixmatch API routes.
+Blueprint for lyrics, chords, beats, and lyrics search routes.
 
 Covers lyrics retrieval/regeneration, chord/beat regeneration,
-and Musixmatch search integration.
+and LRCLIB lyrics search.
 """
 
 import os
@@ -367,55 +367,30 @@ def update_metronome_offset(video_id):
 @api_login_required
 def regenerate_extraction_lyrics(extraction_id):
     """
-    Unified lyrics regeneration: Musixmatch first, then Whisper fallback.
-
-    This is the single endpoint for all lyrics regeneration requests.
-    Flow: Musixmatch (word-level) -> Whisper fallback (if Musixmatch fails)
+    Regenerate lyrics (core.lyrics_detector.detect_lyrics_unified): LRCLIB text aligned on
+    Whisper word timings, Whisper alone when LRCLIB has nothing.
     Emits SocketIO 'lyrics_progress' events for real-time UI updates.
 
     Request JSON (optional):
-        - artist: Override artist name for Musixmatch search
-        - track: Override track name for Musixmatch search
-        - force_whisper: Skip Musixmatch and use Whisper directly
+        - artist / track: search terms (default: stored metadata, then the title)
+        - force_whisper: skip LRCLIB, transcribe with Whisper only
+        - lrclib_id: LRCLIB record picked in the search dialog
+        - sync_with_whisper: false keeps the record's own line timing (default true)
     """
     try:
-        from core.downloads_db import get_download_by_id, update_download_lyrics, list_extractions_for
+        from core.downloads_db import update_download_lyrics, resolve_file_path
         from core.lyrics_detector import detect_lyrics_unified
+        from core.media_metadata import load_media_metadata
 
         # Get request parameters
         req_data = request.get_json(silent=True) or {}
         override_artist = req_data.get('artist', '').strip()
         override_track = req_data.get('track', '').strip()
-        force_whisper = req_data.get('force_whisper', False)
-        skip_onset_sync = req_data.get('skip_onset_sync', False)
-        musixmatch_track_id = req_data.get('musixmatch_track_id')
+        force_whisper = bool(req_data.get('force_whisper', False))
+        lrclib_id = req_data.get('lrclib_id')
+        sync_with_whisper = req_data.get('sync_with_whisper', True) is not False
 
-        # Find download
-        download = None
-        if extraction_id.startswith('download_'):
-            download_id = extraction_id.replace('download_', '')
-            download = get_download_by_id(current_user.id, download_id)
-        else:
-            db_extractions = list_extractions_for(current_user.id)
-            for db_extraction in db_extractions:
-                video_id = db_extraction.get('video_id', '')
-                file_path = db_extraction.get('file_path', '')
-                filename = os.path.basename(file_path) if file_path else ''
-
-                normalized_extraction_id = extraction_id.rsplit('_', 1)[0] if '_' in extraction_id else extraction_id
-                normalized_extraction_id = normalized_extraction_id.replace('.mp3', '')
-                normalized_filename = filename.replace('.mp3', '')
-
-                matches = (
-                    video_id == extraction_id or
-                    filename == extraction_id or
-                    (normalized_filename and normalized_extraction_id.startswith(normalized_filename))
-                )
-
-                if matches:
-                    download = db_extraction
-                    break
-
+        download = _find_download_for(extraction_id)
         if not download:
             return jsonify({'error': 'Extraction not found'}), 404
 
@@ -429,11 +404,20 @@ def regenerate_extraction_lyrics(extraction_id):
 
         # Use vocals stem if available for better quality
         audio_path = file_path
-        if file_path:
+        stems_paths = download.get('stems_paths') or {}
+        if isinstance(stems_paths, str):
+            try:
+                stems_paths = json.loads(stems_paths)
+            except ValueError:
+                stems_paths = {}
+        vocals_stem_path = stems_paths.get('vocals') if isinstance(stems_paths, dict) else None
+        if vocals_stem_path:
+            vocals_stem_path = resolve_file_path(vocals_stem_path) or vocals_stem_path
+        elif file_path:
             vocals_stem_path = os.path.join(os.path.dirname(file_path), "stems", "vocals.mp3")
-            if os.path.exists(vocals_stem_path):
-                audio_path = vocals_stem_path
-                logger.info(f"[LYRICS] Using vocals stem: {vocals_stem_path}")
+        if vocals_stem_path and os.path.exists(vocals_stem_path):
+            audio_path = vocals_stem_path
+            logger.info(f"[LYRICS] Using vocals stem: {vocals_stem_path}")
 
         if not audio_path or not os.path.exists(audio_path):
             return jsonify({'error': 'Audio file not found'}), 404
@@ -447,9 +431,8 @@ def regenerate_extraction_lyrics(extraction_id):
             logger.info(f"[LYRICS] User override: artist='{override_artist}', track='{override_track}'")
         if force_whisper:
             logger.info(f"[LYRICS] Force Whisper mode enabled")
-        if skip_onset_sync:
-            logger.info(f"[LYRICS] Skip onset sync mode enabled")
-        logger.info(f"[LYRICS] Model: {model_size}, GPU: {use_gpu}")
+        logger.info(f"[LYRICS] Model: {model_size}, GPU: {use_gpu}, LRCLIB id: {lrclib_id}, "
+                    f"sync with Whisper: {sync_with_whisper}")
 
         # Progress callback to emit SocketIO events
         def progress_callback(step, message):
@@ -464,7 +447,6 @@ def regenerate_extraction_lyrics(extraction_id):
             except Exception as e:
                 logger.warning(f"[LYRICS] Failed to emit progress: {e}")
 
-        # Unified detection: Musixmatch -> Whisper fallback
         result = detect_lyrics_unified(
             audio_path=audio_path,
             title=db_title,
@@ -474,8 +456,10 @@ def regenerate_extraction_lyrics(extraction_id):
             override_artist=override_artist if override_artist else None,
             override_track=override_track if override_track else None,
             force_whisper=force_whisper,
-            skip_onset_sync=skip_onset_sync,
-            musixmatch_track_id=musixmatch_track_id
+            lrclib_id=int(lrclib_id) if lrclib_id else None,
+            sync_with_whisper=sync_with_whisper,
+            media_metadata=load_media_metadata(video_id),
+            file_path=resolve_file_path(file_path) or file_path
         )
 
         lyrics_data = result.get('lyrics')
@@ -484,7 +468,7 @@ def regenerate_extraction_lyrics(extraction_id):
 
         if not lyrics_data:
             return jsonify({
-                'error': 'Failed to detect lyrics (LrcLib and Whisper both failed)',
+                'error': 'Failed to detect lyrics (LRCLIB and Whisper both failed)',
                 'artist': result.get('artist'),
                 'track': result.get('track')
             }), 500
@@ -500,6 +484,8 @@ def regenerate_extraction_lyrics(extraction_id):
             'source': source,
             'artist': result.get('artist'),
             'track': result.get('track'),
+            'language': result.get('language'),
+            'lrclib_id': result.get('lrclib_id'),
             'segments_count': len(lyrics_data),
             'has_word_timestamps': any('words' in seg for seg in lyrics_data),
             'alignment_stats': alignment_stats
@@ -511,15 +497,15 @@ def regenerate_extraction_lyrics(extraction_id):
 
 
 # ------------------------------------------------------------------
-# Musixmatch search
+# Lyrics search (LRCLIB)
 # ------------------------------------------------------------------
 
-@media_bp.route('/api/musixmatch/search', methods=['POST'])
+@media_bp.route('/api/lyrics/search', methods=['POST'])
 @api_login_required
-def musixmatch_search():
-    """Search Musixmatch for tracks matching artist/track query."""
+def lyrics_search():
+    """Search LRCLIB for lyrics matching an artist/track query."""
     try:
-        from core.musixmatch_client import search_tracks
+        from core.lrclib_client import search_tracks
 
         req_data = request.get_json(silent=True) or {}
         artist = req_data.get('artist', '').strip()
@@ -528,7 +514,7 @@ def musixmatch_search():
         if not artist and not track:
             return jsonify({'error': 'Artist or track name required'}), 400
 
-        results = search_tracks(artist=artist, track=track, page_size=10)
+        results = search_tracks(artist=artist, track=track, limit=10)
 
         return jsonify({
             'results': results,
@@ -536,7 +522,7 @@ def musixmatch_search():
         })
 
     except Exception as e:
-        logger.error(f"Error searching Musixmatch: {e}", exc_info=True)
+        logger.error(f"Error searching LRCLIB: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 

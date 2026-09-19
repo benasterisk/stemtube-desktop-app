@@ -75,7 +75,6 @@ hidden_imports = [
     'madmom',
     'msaf',
     'pychord',
-    'syncedlyrics',
     'webview',
 ]
 

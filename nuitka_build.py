@@ -86,7 +86,6 @@ INCLUDE_PACKAGES = [
 
     # ── Downloaders / metadata ───────────────────────────────────────
     "pychord",                       # Chord name parsing
-    "syncedlyrics",                  # Synced lyrics fetcher
 
     # ── Desktop GUI ──────────────────────────────────────────────────
     # "webview" is handled by Nuitka's built-in pywebview plugin — do not include here

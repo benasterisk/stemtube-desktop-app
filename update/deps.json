@@ -15,7 +15,6 @@
     "scikit-learn",
     "numpy",
     "psutil",
-    "syncedlyrics",
     "pychord",
     "beautifulsoup4",
     "mir_eval",

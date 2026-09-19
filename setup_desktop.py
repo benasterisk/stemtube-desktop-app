@@ -49,7 +49,6 @@ ESSENTIAL_PACKAGES = [
     "scipy",
     "scikit-learn",
     "faster-whisper",
-    "syncedlyrics",
     "pychord",
     "mir_eval",           # Required by BTC chord detector
     "beautifulsoup4",

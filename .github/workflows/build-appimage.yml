@@ -97,7 +97,7 @@ jobs:
           "$PY" -m pip install \
             Flask Flask-Login Flask-Session Flask-SocketIO requests python-dotenv \
             Pillow librosa soundfile scipy scikit-learn numpy psutil \
-            "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4 \
+            "demucs==4.0.1" faster-whisper pychord beautifulsoup4 \
             mir_eval
           # Sanity-check that the bundled interpreter has Tkinter (the Linux GUI).
           "$PY" -c "import tkinter; print('Tkinter OK', tkinter.TkVersion)"
