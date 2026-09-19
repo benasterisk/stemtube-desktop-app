@@ -40,10 +40,10 @@ python setup_desktop.py
 :: Activate virtual environment
 venv\Scripts\activate
 
-:: Launch with native window
+:: Launch (opens your default browser + a small control window)
 python launcher.py
 
-:: OR launch in browser
+:: OR server + browser only, without the control window
 python launcher.py --no-window
 ```
 
@@ -111,10 +111,10 @@ python launcher.py
 
 ### Running the App
 ```cmd
-:: Native window (recommended for testing)
+:: Normal launch: default browser + small Tk control window
 python launcher.py
 
-:: Browser mode (useful for DevTools)
+:: Server + browser only, no control window
 python launcher.py --no-window
 
 :: Debug mode (verbose Flask logging; use the browser's own DevTools)
@@ -198,7 +198,7 @@ Stemtube_Desktop/
 
 | File | What it does |
 |------|-------------|
-| `launcher.py` | Opens native window, starts Flask in background thread |
+| `launcher.py` | Starts Flask in a background thread, opens the default browser at http://127.0.0.1:5011 and a small Tk control window |
 | `app.py` | Flask app with auto-login, auto-generated secret key |
 | `extensions.py` | UserSessionManager, WebSocket progress, download/extraction managers |
 | `core/config.py` | All paths, defaults, settings management |

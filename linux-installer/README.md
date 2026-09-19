@@ -5,13 +5,14 @@ their distro:
 
 ## Ubuntu / Debian — `.deb` package (the `.exe` equivalent)
 
-`deb/` builds **`stemtube-desktop_2.1.0_amd64.deb`** — a package the user
+`deb/` builds **`stemtube-desktop_2.2.0_amd64.deb`** — a *light* installer
+(~1 MB, it carries no AI engine) that the user
 downloads and **double-clicks** (opens in the software centre → Install), or
-installs with `sudo apt install ./stemtube-desktop_2.1.0_amd64.deb`. It adds a
+installs with `sudo apt install ./stemtube-desktop_2.2.0_amd64.deb`. It adds a
 **StemTube Desktop** apps-menu entry and a `stemtube` command. On the **first
 launch**, `stemtube` opens a small GTK window (zenity), detects the GPU,
 downloads the matching self-contained engine (CPU or NVIDIA GPU) from the
-`linux-v2.1.0` release with a progress bar, then runs it. The engine is launched
+`v2.2.0` release with a progress bar, then runs it. The engine is launched
 with `--appimage-extract-and-run` → **no `libfuse2`, no root at run time**.
 
 | File | Purpose |
@@ -22,8 +23,8 @@ with `--appimage-extract-and-run` → **no `libfuse2`, no root at run time**.
 
 ```bash
 # On a Linux box / WSL2 (Ubuntu 22.04):
-bash deb/build-deb.sh
-# → stemtube-desktop_2.1.0_amd64.deb
+VERSION=2.2.0 bash deb/build-deb.sh
+# → stemtube-desktop_2.2.0_amd64.deb
 ```
 
 `Depends: curl, zenity`. Package files are owned root:root
@@ -52,8 +53,8 @@ so it's the real `.exe` equivalent there.
 ## Publishing
 
 ```bash
-sha256sum stemtube-desktop_2.1.0_amd64.deb > stemtube-desktop_2.1.0_amd64.deb.sha256
-gh release upload linux-v2.1.0 \
-  stemtube-desktop_2.1.0_amd64.deb stemtube-desktop_2.1.0_amd64.deb.sha256 \
+sha256sum stemtube-desktop_2.2.0_amd64.deb > stemtube-desktop_2.2.0_amd64.deb.sha256
+gh release upload v2.2.0 \
+  stemtube-desktop_2.2.0_amd64.deb stemtube-desktop_2.2.0_amd64.deb.sha256 \
   --repo benasterisk/stemtube-desktop-releases --clobber
 ```

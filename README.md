@@ -1,44 +1,59 @@
 # StemTube Desktop
 
-Standalone Windows desktop application for AI-powered music analysis of your own audio files. Extracts stems, detects chords and transcribes lyrics — all locally on your machine.
+Version **2.2.0**. Desktop application (Windows and Linux) for AI-powered music analysis of your own audio files. Extracts stems, detects chords and transcribes lyrics — all locally on your machine.
+
+The app runs a local server and opens in your **default browser** at `http://127.0.0.1:5011`; a small control window stays behind it to show the URL, reopen the browser and quit cleanly. There is no embedded webview.
 
 ## Features
 
 - **File Upload** — Import local audio files (MP3, WAV, FLAC, M4A, AAC, OGG, WMA)
 - **Stem Extraction** — AI-powered source separation using Demucs (vocals, drums, bass, other, piano, guitar)
+- **Fine separation, up to 17 stems** — `mvsep_mega_fine`: `htdemucs_6s` + DrumSep + MVSep Mega BS-RoFormer. Lead/backing vocals, kit split into kick/snare/toms/cymbals, electric and acoustic guitar, piano, organ, synth, brass, winds, strings. **Requires an NVIDIA CUDA GPU** with ≥ 4.5 GiB of usable VRAM; the standard 4- and 6-stem models run on CPU.
 - **Chord Detection** — Real-time chord display with BTC Transformer (170 chords) + madmom fallback
-- **Lyrics Transcription** — Word-level timestamps via faster-whisper + LrcLib synced lyrics
+- **Lyrics Transcription** — Synced lyrics from LRCLIB, placed on word timings from faster-whisper
 - **Mixer** — Full-featured audio mixer with pitch/tempo control, karaoke display, waveform visualization
 - **Multi-track Recording** — Record over stems with timeline positioning
 - **GPU Acceleration** — Automatic NVIDIA CUDA detection (falls back to CPU)
 
 ## Requirements
 
-- **Windows 10/11** (64-bit)
+- **Windows 10/11** (64-bit) or a 64-bit Linux (glibc ≥ 2.35)
 - **Python 3.12+** — [Download from python.org](https://www.python.org/downloads/) (NOT Windows Store; only for source installs — the packaged app ships its own)
 - **~4 GB disk space** (CPU mode) or **~8 GB** (GPU + pre-downloaded models)
 - **NVIDIA GPU** (optional) — For faster stem extraction and lyrics transcription
 
-## Install (recommended)
+## Install
 
-Download and run **[StemTube Desktop_2.0.0_x64-setup.exe](https://github.com/benasterisk/stemtube-desktop-releases/releases/latest)** (1.4 MB).
+Every platform ships on a single release: **[v2.2.0](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/v2.2.0)**.
 
-On first launch the app detects your hardware and downloads the matching engine automatically — **CPU** (~520 MB) or **NVIDIA GPU** (~2.9 GB, CUDA accelerated) — then repairs its Python runtime if needed. First boot can take a few minutes; later launches are instant. Everything (Python, FFmpeg) is bundled or fetched automatically.
+Both the `.exe` and the `.deb` are **light installers** (~1–2 MB). They contain no AI engine: on first launch they detect your hardware and download the matching self-contained engine — **CPU** or **NVIDIA GPU** (CUDA) — assemble it and start the app. You never handle the split download parts yourself; the installer does. First boot takes a few minutes, later launches are immediate. Python and FFmpeg are bundled in the engine, so nothing else is needed.
 
-## Install on Linux
+### Windows
 
-**Ubuntu / Debian — the `.deb` installer (the `.exe` equivalent).** Download **[stemtube-desktop_2.1.0_amd64.deb](https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.1.0/stemtube-desktop_2.1.0_amd64.deb)** and double-click it (opens in your software centre → Install), or run `sudo apt install ./stemtube-desktop_2.1.0_amd64.deb`. Then launch **StemTube Desktop** from your applications menu. The first launch detects your GPU and downloads the matching self-contained engine (CPU ~620 MB / NVIDIA GPU ~3 GB), unpacks it once, and keeps it up to date automatically — no `libfuse2`, no root at run time.
+Download and run **`StemTube_Desktop_2.2.0_x64-setup.exe`** from the release. The engine is ~570 MB (CPU) or ~2.8 GB (GPU).
 
-**Other distros (Fedora, Arch, openSUSE…) — run the engine directly**, from the [Linux release](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/linux-v2.0.0):
+### Ubuntu / Debian
+
+Download **`stemtube-desktop_2.2.0_amd64.deb`** and double-click it (opens in your software centre → Install), or:
+
+```bash
+sudo apt install ./stemtube-desktop_2.2.0_amd64.deb
+```
+
+Then launch **StemTube Desktop** from your applications menu. The first launch opens a small progress window, detects your GPU and downloads the matching engine (CPU ~620 MB / NVIDIA GPU ~3 GB), unpacking it once — no `libfuse2`, no root at run time.
+
+### Other distros (Fedora, Arch, openSUSE…)
+
+No package manager step — run the engine AppImage directly:
 
 ```bash
 # CPU (~620 MB) — works on any 64-bit Linux, no libfuse2 needed
-wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/linux-v2.0.0/StemTube-x86_64-cpu.AppImage
+wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.2.0/StemTube-x86_64-cpu.AppImage
 chmod +x StemTube-x86_64-cpu.AppImage
 ./StemTube-x86_64-cpu.AppImage --appimage-extract-and-run
 ```
 
-For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0` + `.part1` (~3 GB, CUDA 12.6) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`.
+For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0` + `.part1` (~3 GB, CUDA 12.6) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`. (This manual step applies only to this direct-AppImage route; the `.deb` and `.exe` do it for you.)
 
 **Developers — from-source script.** Clones the app and builds a Python environment from source. Requires `git` and `python3` **3.10–3.13** (not 3.14 yet — PyTorch has no wheel for it).
 
@@ -64,7 +79,7 @@ venv\Scripts\activate
 python launcher.py
 ```
 
-### Option 3: Browser mode (no native window)
+### Option 3: Server only (no control window)
 ```cmd
 venv\Scripts\activate
 python launcher.py --no-window
@@ -88,9 +103,9 @@ python setup_desktop.py --skip-models    # Skip AI model downloads (downloaded o
 ## Launcher Options
 
 ```cmd
-python launcher.py                 # Normal launch (native window)
-python launcher.py --no-window     # Open in default browser instead
-python launcher.py --debug         # Enable debug mode + browser DevTools
+python launcher.py                 # Normal launch (default browser + Tk control window)
+python launcher.py --no-window     # Server + browser only, no control window
+python launcher.py --debug         # Enable debug mode
 python launcher.py --no-gpu        # Force CPU mode for this session
 python launcher.py --port 8080     # Use custom port
 ```
@@ -133,7 +148,9 @@ Stemtube_Desktop/
 │   ├── madmom_chord_detector.py  # madmom CRF fallback
 │   ├── hybrid_chord_detector.py  # Multi-backend fallback
 │   ├── lyrics_detector.py   # faster-whisper transcription
-│   ├── lyrics_aligner.py    # LrcLib + Whisper alignment
+│   ├── lrclib_client.py     # LRCLIB lyrics lookup
+│   ├── lyrics_merger.py     # LRCLIB words placed on Whisper word timings
+│   ├── msst/                # 17-stem fine separation (GPU-only subprocess)
 │   ├── db/                  # SQLite database layer
 │   └── downloads/           # Processed audio files
 │
@@ -189,6 +206,10 @@ Download FFmpeg from [ffmpeg.org](https://ffmpeg.org/download.html) and place `f
 - CPU mode: 3-8 minutes per song is normal
 - GPU mode: 20-60 seconds per song
 - Use `htdemucs` (4 stems) instead of `htdemucs_6s` (6 stems) for faster extraction
+- The 17-stem `mvsep_mega_fine` model is GPU-only and takes roughly 1–2 minutes per song
+
+### The 17-stem model is missing or refuses to run
+It requires an NVIDIA CUDA GPU. It is hidden entirely when no CUDA device is present, and refused at launch when free VRAM is below 4.5 GiB (`min_usable_vram_gb` in `core/config.py`). Closing other GPU applications usually frees enough.
 
 ## License
 

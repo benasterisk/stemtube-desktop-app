@@ -1,15 +1,31 @@
 # Rebuilding the Windows backend archives
 
-How the `stemtube-backend-standard-{cpu,gpu}.zip` assets on the **v2.0.0**
-release are produced. Written after the 2026-08-20 rebuild, which brought the
-Windows engines back in line with `main` after seven weeks of drift.
+How the `stemtube-backend-standard-{cpu,gpu}.zip` assets are produced.
+Written after the 2026-08-20 rebuild, which brought the Windows engines back in
+line with `main` after seven weeks of drift.
 
-## Why they must go on the `v2.0.0` tag
+## Which tag the engines go on
 
-`src-tauri/src/main.rs` hard-codes `releases/download/v2.0.0`. Every installer
-already in users' hands fetches its backend from that tag, so refreshed engines
-**must replace the assets in place** — publishing them under a new tag would
-leave existing installers downloading the old ones.
+`src-tauri/src/main.rs` hard-codes the tag it downloads its backend from, in
+`RELEASE_BASE`. **Read that constant before uploading anything** — it, not this
+document, decides where the engines must live:
+
+```bash
+grep -n 'RELEASE_BASE' src-tauri/src/main.rs
+```
+
+Every installer already in users' hands fetches its backend from whatever tag
+*its own build* was compiled with. So:
+
+- **Refreshing the engines for installers already distributed** means replacing
+  the assets in place on that old tag (`v2.0.0` for every `.exe` built before
+  2.2.0). Publishing them under a new tag would leave those installers
+  downloading the old ones.
+- **Shipping a new `.exe`** means bumping `RELEASE_BASE` to the new tag *before*
+  building, then uploading the engines to that new tag as well.
+
+Both can be true at once: an engine refresh that also ships a new installer has
+to land on both tags.
 
 ## What goes in an archive
 
@@ -102,11 +118,13 @@ produces an archive that fails only at the user's end.
 ## Uploading
 
 ```bash
-gh release upload v2.0.0 <asset> \
+gh release upload <tag> <asset> \
   --repo benasterisk/stemtube-desktop-releases --clobber
 ```
 
 Upload the GPU parts and the `.sha256`, never the 2.7 GB archive itself.
+`<tag>` is the tag `RELEASE_BASE` points at for the installer being shipped,
+plus `v2.0.0` if you are also refreshing the engines for older installers.
 
 ## Existing installs
 

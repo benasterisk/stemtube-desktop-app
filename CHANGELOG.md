@@ -7,7 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [2.2.0] - 2026-09-20
+
+First release published as a **single tag carrying every platform** — the
+Windows `.exe`, the Ubuntu/Debian `.deb` and the Linux AppImages now ship
+together under `v2.2.0` instead of the three separate tags used before.
+
+### Added — fine separation and the chords chart
+
+- **17-stem fine model (`mvsep_mega_fine`), NVIDIA GPU only.** A three-stage
+  pipeline: `htdemucs_6s` for the coarse split, DrumSep on the drum stem
+  (kick / snare / toms / cymbals), then MVSep Mega BS-RoFormer heads splitting
+  what is left through Wiener masks. Output: lead and backing vocals, the kit
+  split four ways, bass, electric and acoustic guitar, piano, organ, synth,
+  brass, winds, strings, other. Weights (~1.5 GB) download on first use, and
+  the job runs as a subprocess so all VRAM is returned when it exits. The
+  standard 4- and 6-stem Demucs models are unchanged and still run on CPU.
+- **A real VRAM check instead of a total-memory gate.** The server edition
+  gated the model on total VRAM ≥ 6 GiB, which rejects a 6 GB card reporting
+  5.997 GiB. The model now stays visible whenever a CUDA GPU is present, and
+  at launch the check looks at *free* memory (`torch.cuda.mem_get_info`)
+  against a 4.5 GiB usable floor (`min_usable_vram_gb`), dropping cached
+  models to reclaim memory before giving up. Fine jobs are serialized so two
+  cannot contend for the card.
+- **Chords view rebuilt as a stage chart**, taken verbatim from the server
+  edition: four bars per system (two on mobile) instead of one thin row per
+  bar, lyrics under every beat, chord names scaled to their cell so longer
+  spellings like `C#maj7` fit instead of spilling, a clearer "now" cue on the
+  active bar and beat, and auto-scroll that parks the active system at 28%
+  from the top for look-ahead.
+
+### Changed — the app opens in your browser
+
+- **The embedded webview is gone on every platform.** Both the Python launcher
+  and the Tauri shell now start the server and open your **default browser** at
+  `http://127.0.0.1:5011`, which is what the Linux build already did. The
+  embedded window cost more than it gave: Stage View opened twice, and a
+  browser window appeared beside the native one anyway, because WebView2 hands
+  every new-window request to the system browser. What remains is a small
+  control window (Tk for the Python launcher, a Tauri panel for the installed
+  app) showing the URL, a button to reopen the browser and one to quit — so
+  closing a tab leaves no orphaned process. `pywebview` is dropped from the
+  dependency and packaging lists; `--no-window` and the headless fallback
+  behave as before.
+- **Every version declaration aligned on 2.2.0** — `core/config.py`,
+  `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `package.json`
+  previously declared three different numbers, and the published tags added a
+  fourth reading. The auto-updater is unaffected: it tracks commits, not these
+  numbers.
 
 ### Added — backported from the server edition
 
@@ -100,7 +147,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Inherits every Friend 1.0.1 fix: madmom 0.17.dev0 (mixer beat analysis), seamless A/B loop, metronome instruments, count-in, chord-tab word-level lyrics
 
 
-## [2.2.0] - 2026-01-25
+## [Web 2.2.0] - 2026-01-25
+
+> Everything from here down belongs to the earlier **StemTube Web** lineage,
+> before the desktop editions were split off. Its version numbers are that
+> project's, not the desktop app's — this `2.2.0` is unrelated to the desktop
+> `2.2.0` at the top of the file.
 
 ### Added
 - **Deno JavaScript runtime** - Integration for YouTube challenge solving (replaces aiotube dependency)
