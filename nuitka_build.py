@@ -88,7 +88,9 @@ INCLUDE_PACKAGES = [
     "pychord",                       # Chord name parsing
 
     # ── Desktop GUI ──────────────────────────────────────────────────
-    # "webview" is handled by Nuitka's built-in pywebview plugin — do not include here
+    # None: the app has no embedded GUI toolkit. The launcher serves Flask
+    # and opens the user's default browser; only Tkinter (stdlib) draws the
+    # small control window.
 ]
 
 # Individual modules that must be explicitly included because they are loaded
@@ -149,7 +151,7 @@ CUDA_PACKAGES = [
 # Packages to exclude — saves space and avoids pulling in GUI toolkits,
 # test frameworks, and notebook infrastructure that the app never uses.
 EXCLUDE_PACKAGES = [
-    "webview",                       # pywebview — Tauri provides the GUI
+    "webview",                       # pywebview — unused: the GUI is the default browser
     "tkinter",                       # Tk GUI toolkit — not used
     "matplotlib",                    # Plotting library — not used at runtime
     "matplotlib.backends",

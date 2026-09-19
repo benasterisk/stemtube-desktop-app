@@ -179,9 +179,10 @@ const MixExport = {
     }
   },
   // Trigger the browser download via a REAL navigation to the streaming endpoint.
-  // WebView2 silently ignores programmatic blob: downloads, but it handles a genuine
-  // same-origin navigation to a Content-Disposition:attachment URL natively. The
-  // anchor is placed in the TOP document (not this iframe) so the click isn't blocked.
+  // Programmatic blob: downloads from an iframe are unreliable, but every browser
+  // handles a genuine same-origin navigation to a Content-Disposition:attachment
+  // URL. The anchor is placed in the TOP document (not this iframe) so the click
+  // isn't blocked.
   _download(url, filename){
     const topDoc = (window.top && window.top.document) || document;
     const a=topDoc.createElement("a");

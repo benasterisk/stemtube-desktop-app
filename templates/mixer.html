@@ -536,7 +536,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-<!-- Safe localStorage for WebView2 iframe (Tracking Prevention may block storage) -->
+<!-- Safe localStorage: the mixer runs in an iframe and some privacy settings
+     (tracking prevention, third-party storage blocking) make it throw. -->
 <script>
   (function() {
     try { localStorage.getItem('_test'); } catch(e) {
@@ -549,7 +550,7 @@
         get length() { return Object.keys(_mem).length; },
         key: i => Object.keys(_mem)[i] || null
       };
-      console.warn('[WebView2] localStorage blocked, using in-memory fallback');
+      console.warn('[mixer] localStorage blocked, using in-memory fallback');
     }
   })();
 </script>
@@ -954,9 +955,9 @@
       focusBtn.addEventListener("click", async function(){
         var tab = document.body.getAttribute("data-tab");
         if(tab !== "chords" && tab !== "lyrics") return;
-        // StageWindow.open() is async (it awaits pywebview's bridge). await it
-        // so the popup fallback fires ONLY on a real failure, never merely
-        // because the Promise is truthy.
+        // StageWindow.open() is async. await it so the popup fallback fires
+        // ONLY on a real failure (the browser blocked the popup), never merely
+        // because the returned Promise is truthy.
         if(window.StageWindow && window.StageWindow.open){
           var opened = await window.StageWindow.open(tab);
           if(!opened){

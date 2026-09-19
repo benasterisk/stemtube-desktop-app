@@ -1,5 +1,5 @@
 {
-  "_comment": "Machine-readable lockfile of the PURE-PYTHON pip deps that the auto-updater may install into an installed app without a full rebuild. This is the source of truth for gen_manifest.py's pip_installs diff. Compiled/heavy deps (torch, torchaudio, demucs, madmom, faster-whisper, PyGObject, pycairo) are NOT listed here — changing them requires a full release. Keep in sync when adding a pure dep the app imports at runtime.",
+  "_comment": "Machine-readable lockfile of the PURE-PYTHON pip deps that the auto-updater may install into an installed app without a full rebuild. This is the source of truth for gen_manifest.py's pip_installs diff. Compiled/heavy deps (torch, torchaudio, demucs, madmom, faster-whisper, PyGObject, pycairo) are NOT listed here — changing them requires a full release. pywebview is intentionally excluded: the GUI is the user's default browser, there is no embedded webview. Keep in sync when adding a pure dep the app imports at runtime.",
   "edition": "standard",
   "pip_pure": [
     "Flask",
@@ -17,7 +17,6 @@
     "psutil",
     "pychord",
     "beautifulsoup4",
-    "mir_eval",
-    "pywebview"
+    "mir_eval"
   ]
 }

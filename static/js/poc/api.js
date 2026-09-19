@@ -40,8 +40,8 @@ const API = {
   // Export the current mix server-side. The server renders the file, drops a copy
   // in the user's Downloads folder, and returns {download_url, filename, saved_to}.
   // The caller triggers the actual browser download by navigating to download_url
-  // (a real navigation — WebView2 ignores programmatic blob: downloads). Throws an
-  // Error carrying the server message on failure.
+  // (a real navigation — programmatic blob: downloads from an iframe are dropped by
+  // some browsers). Throws an Error carrying the server message on failure.
   async exportMix(job, body){
     const r = await fetch("/poc-mixer/export/" + encodeURIComponent(job),
       { method: "POST", headers: { "Content-Type": "application/json" },

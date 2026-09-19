@@ -1,23 +1,27 @@
 """
 StemTube Desktop Launcher
 =========================
-Opens the Flask app inside a native desktop window using pywebview.
-Uses Edge WebView2 on Windows (built-in on Windows 10/11).
+Starts the Flask app locally and opens it in the user's DEFAULT BROWSER.
+
+There is no embedded webview any more: the app is a local web app on every
+platform (the same thing the server edition does, and what the Linux build
+already did). A small Tkinter control window stays on the desktop so the user
+can reopen the page and — above all — shut the server down cleanly, which
+closing a browser tab cannot do.
 
 Usage:
-    python launcher.py              # Normal launch
-    python launcher.py --debug      # Launch with Flask debug + browser DevTools
+    python launcher.py              # Normal launch (browser + control window)
+    python launcher.py --debug      # Launch with Flask log output
     python launcher.py --no-gpu     # Force CPU mode (skip GPU detection)
+    python launcher.py --no-window  # Server + browser only, no control window
 """
 
 import os
 import sys
 import time
-import signal
 import threading
 import argparse
 import webbrowser
-from urllib.parse import quote
 
 # Ensure we run from the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -28,7 +32,7 @@ parser.add_argument('--debug', action='store_true', help='Enable debug mode')
 parser.add_argument('--no-gpu', action='store_true', help='Force CPU mode')
 parser.add_argument('--port', type=int, default=None, help='Override server port')
 parser.add_argument('--no-window', action='store_true',
-                    help='Run server only (open in browser instead of native window)')
+                    help='Run server only (browser, no desktop control window)')
 args = parser.parse_args()
 
 if args.no_gpu:
@@ -75,7 +79,7 @@ def start_flask_server(port):
     from app import app, socketio
 
     # Bind on all interfaces so other devices on the LAN can reach the app.
-    # (The native window below still opens via 127.0.0.1.)
+    # (The browser we open below still uses 127.0.0.1.)
     from core.config import HOST as _BIND_HOST
     print(f"[LAUNCHER] Starting Flask server on {_BIND_HOST}:{port}")
     socketio.run(
@@ -87,135 +91,6 @@ def start_flask_server(port):
         use_reloader=False,
         log_output=args.debug
     )
-
-
-def launch_native_window(port):
-    """Open a native desktop window with pywebview.
-
-    Falls back to the default browser if pywebview is missing, or if no GUI
-    backend is available (e.g. on a Linux box without the GTK/Qt Python
-    bindings, where webview.start() raises WebViewException at runtime rather
-    than failing to import).
-    """
-    try:
-        import webview
-
-        # WebView2 routes every NewWindowRequested (a window.open, a target=_blank)
-        # to the SYSTEM BROWSER while OPEN_EXTERNAL_LINKS_IN_BROWSER is true, which
-        # is pywebview's default. That is why a Stage View click produced a webview
-        # window AND a browser window: the native one came from open_stage(), the
-        # browser one from WebView2 handing the request to webbrowser.open(). Keep
-        # everything inside the app; the user only gets a browser when they open
-        # the GUI in one themselves.
-        webview.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = False
-    except ImportError:
-        print("[LAUNCHER] pywebview not installed — opening in the browser instead")
-        launch_browser(port)
-        return
-
-    url = f'http://127.0.0.1:{port}'
-
-    class _StageApi:
-        """Bridge exposed to JS as window.pywebview.api.
-
-        Stage View needs a SEPARATE resizable window for the Chords / Lyrics
-        view. In a browser the page opens one itself with window.open(), but
-        inside a pywebview webview that call does not create a real OS window:
-        it returns null and the page silently falls back to the old in-page
-        popup. Only Python can spawn another webview window, so the page calls
-        this instead when it detects it is running in a webview.
-        """
-
-        def __init__(self, base_url):
-            self._base = base_url
-            self._windows = {}
-
-        def open_stage(self, kind, extraction_id):
-            """Open (or refocus) a Chords/Lyrics stage window. True on success."""
-            if kind not in ('chords', 'lyrics'):
-                return False
-            try:
-                import webview as _wv
-                key = '%s:%s' % (kind, extraction_id)
-
-                existing = self._windows.get(key)
-                if existing is not None:
-                    try:
-                        existing.show()          # already open: bring it forward
-                        return True
-                    except Exception:
-                        self._windows.pop(key, None)   # stale handle, recreate
-
-                target = '%s/mixer?extraction_id=%s&stage=%s' % (
-                    self._base, quote(str(extraction_id)), kind)
-                # Opens maximized, like the browser route which uses 90% of the
-                # available screen: the stage view is meant to be read from a
-                # distance (music stand), not squeezed into a 1100x700 box.
-                win = _wv.create_window(
-                    title=('Lyrics' if kind == 'lyrics' else 'Chords') + ' - StemTube Stage',
-                    url=target,
-                    width=1100,
-                    height=700,
-                    min_size=(640, 400),
-                    resizable=True,
-                    maximized=True,
-                    text_select=True,
-                )
-                self._windows[key] = win
-                try:
-                    win.events.closed += lambda: self._windows.pop(key, None)
-                except Exception:
-                    pass                          # older backend: handle goes stale
-                return True
-            except Exception as e:
-                print('[LAUNCHER] stage window failed: %s' % e)
-                return False
-
-    stage_api = _StageApi(url)
-
-
-    try:
-        window = webview.create_window(
-            title='StemTube Desktop',
-            url=url,
-            js_api=stage_api,
-            width=1400,
-            height=900,
-            min_size=(1024, 700),
-            resizable=True,
-            confirm_close=True,
-            text_select=True,
-        )
-
-        def on_closed():
-            """Clean shutdown when window is closed."""
-            print("[LAUNCHER] Window closed — shutting down server...")
-            os._exit(0)
-
-        window.events.closed += on_closed
-
-        # Start pywebview. CRITICAL: private_mode defaults to True, which on the
-        # Linux WebKitGTK backend creates an EPHEMERAL WebContext where
-        # window.localStorage is null. The mixer touches localStorage during init
-        # (e.g. recording-engine calibration), so in private mode a bare
-        # localStorage access throws "null is not an object" and aborts mixer
-        # init — the stems never load. Disable private mode and give WebKit a
-        # persistent, writable storage dir so localStorage works like on Windows.
-        try:
-            from core.config import USER_DATA_DIR as _UDD
-            _storage = os.path.join(_UDD, 'webview')
-            os.makedirs(_storage, exist_ok=True)
-        except Exception:
-            _storage = None
-        webview.start(debug=args.debug, private_mode=False, storage_path=_storage)
-
-    except Exception as exc:
-        # No usable GUI backend (no GTK 'gi' / no Qt 'qtpy'), or the window
-        # failed to open. Don't crash — the Flask server is already running,
-        # so just open the app in the browser.
-        print(f"[LAUNCHER] Native window unavailable ({type(exc).__name__}: {exc})")
-        print("[LAUNCHER] Opening StemTube in your default browser instead.")
-        launch_browser(port)
 
 
 def _open_in_browser(url):
@@ -238,14 +113,15 @@ def _open_in_browser(url):
 
 
 def launch_control_window(port):
-    """Small native control window (Tkinter) that manages the server on Linux.
+    """Small native control window (Tkinter) that manages the server.
 
-    The GUI itself renders in the user's real browser (Firefox/Chrome…), which —
-    unlike the WebKitGTK webview pywebview would use — supports localStorage and
-    Web Audio correctly. This little window is just a desktop control surface:
-    it opens the browser, shows the status, and quits the server cleanly (so no
-    orphaned background process when the browser tab is closed). Falls back to a
-    headless keep-alive loop if Tkinter is unavailable.
+    This is the launch path on EVERY platform. The GUI itself renders in the
+    user's real browser (Firefox/Chrome/Edge…), which supports localStorage,
+    Web Audio and multi-window popups correctly and without surprises. This
+    little window is just a desktop control surface: it opens the browser,
+    shows the status, and quits the server cleanly (so closing the browser tab
+    does not leave an orphaned background process). Falls back to a headless
+    keep-alive loop if Tkinter is unavailable.
     """
     url = f'http://127.0.0.1:{port}'
 
@@ -307,20 +183,6 @@ def launch_control_window(port):
 # Backwards-compatible alias (older call sites / --no-window path).
 def launch_browser(port):
     launch_control_window(port)
-
-
-def _use_native_window():
-    """Whether to use the embedded native window (webview) or the default browser.
-
-    Linux → browser (WebKitGTK webview is too buggy; see launch_browser).
-    Windows/macOS → native window (WebView2 / WKWebView work well).
-    Override with STEMTUBE_FORCE_WEBVIEW=1 (native) or --no-window (browser).
-    """
-    if args.no_window:
-        return False
-    if os.environ.get('STEMTUBE_FORCE_WEBVIEW') == '1':
-        return True
-    return not sys.platform.startswith('linux')
 
 
 def run_update_with_progress():
@@ -503,10 +365,9 @@ def main():
                 time.sleep(1)
         except KeyboardInterrupt:
             pass
-    elif _use_native_window():
-        launch_native_window(port)   # Windows/macOS: embedded WebView2/WKWebView
     else:
-        launch_control_window(port)  # Linux: small Tk control window + real browser
+        # Every platform: default browser + small Tk control window.
+        launch_control_window(port)
 
 
 if __name__ == '__main__':

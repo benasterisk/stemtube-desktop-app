@@ -75,7 +75,6 @@ hidden_imports = [
     'madmom',
     'msaf',
     'pychord',
-    'webview',
 ]
 
 # Add all core and routes submodules

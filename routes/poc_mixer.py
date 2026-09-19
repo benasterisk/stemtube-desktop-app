@@ -45,8 +45,9 @@ _PREP = {}          # extraction_id -> {"stage":str,"pct":int,"done":bool,"error
 _PREP_LOCK = threading.Lock()
 
 # Export delivery: a POST renders the file and returns a download URL; a GET then
-# streams it with Content-Disposition so WebView2's native download handler fires
-# (a programmatic blob: download from inside the mixer iframe is silently dropped).
+# streams it with Content-Disposition so the browser's own download handler fires.
+# A programmatic blob: download from inside the mixer iframe is unreliable (some
+# browsers drop it silently), so we always use a real navigation instead.
 # token -> {"path": abs_file, "name": download_name, "ts": epoch_seconds}
 _EXPORTS = {}
 _EXPORTS_LOCK = threading.Lock()
@@ -951,7 +952,7 @@ def export(extraction_id):
     except OSError as e:
         logger.warning(f"[poc-mixer] could not copy export to Downloads: {e}")
 
-    # Register the rendered file for a real GET navigation download (WebView2-native).
+    # Register the rendered file for a real GET navigation download.
     _gc_exports()
     token = _register_export(written, dl_name)
     return jsonify({
@@ -966,8 +967,8 @@ def export(extraction_id):
 def download_export(token, filename):
     """Stream a previously-rendered export as a real attachment download.
 
-    Triggered by a genuine top-level navigation (not a blob: anchor), which is what
-    WebView2's download machinery actually handles. The temp dir is cleaned once the
+    Triggered by a genuine top-level navigation (not a blob: anchor), which every
+    browser's download machinery handles reliably. The temp dir is cleaned once the
     response is sent; stale exports are GC'd by TTL.
     """
     _gc_exports()

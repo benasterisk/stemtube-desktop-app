@@ -52,7 +52,6 @@ ESSENTIAL_PACKAGES = [
     "pychord",
     "mir_eval",           # Required by BTC chord detector
     "beautifulsoup4",
-    "pywebview",
     "werkzeug",
 ]
 # msaf is intentionally omitted: it imports scipy.inf which was removed
