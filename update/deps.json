@@ -1,5 +1,5 @@
 {
-  "_comment": "Machine-readable lockfile of the PURE-PYTHON pip deps that the auto-updater may install into an installed app without a full rebuild. This is the source of truth for gen_manifest.py's pip_installs diff. Compiled/heavy deps (torch, torchaudio, demucs, madmom, faster-whisper, PyGObject, pycairo) are NOT listed here — changing them requires a full release. Keep in sync when adding a pure dep the app imports at runtime.",
+  "_comment": "Machine-readable lockfile of the PURE-PYTHON pip deps that the auto-updater may install into an installed app without a full rebuild. This is the source of truth for gen_manifest.py's pip_installs diff. Compiled/heavy deps (torch, torchaudio, demucs, madmom, faster-whisper, PyGObject, pycairo) are NOT listed here - changing them requires a full release. PyYAML is deliberately absent for the same reason: it ships a compiled wheel, and demucs already requires it. pywebview is intentionally excluded: the GUI is the user's default browser, there is no embedded webview. beartype/rotary_embedding_torch/einops are the fine-stem (mvsep_mega_fine) inference deps - all pure wheels, so the updater can deliver that model to an existing install; its weights are not shipped at all, ensure_weights() fetches them on first use. Keep in sync when adding a pure dep the app imports at runtime.",
   "edition": "standard",
   "pip_pure": [
     "Flask",
@@ -15,10 +15,11 @@
     "scikit-learn",
     "numpy",
     "psutil",
-    "syncedlyrics",
     "pychord",
     "beautifulsoup4",
     "mir_eval",
-    "pywebview"
+    "beartype",
+    "rotary_embedding_torch",
+    "einops"
   ]
 }

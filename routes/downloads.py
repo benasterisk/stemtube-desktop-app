@@ -1,9 +1,10 @@
 """
 Library API endpoints.
 
-Historically this blueprint wrapped yt-dlp; the Standard desktop edition
-no longer downloads from YouTube, so the routes here only expose the
-user's uploaded library and its extraction status.
+Read-only view over the library database: these routes list the user's
+imported songs with their extraction status, and delete entries. The
+Standard desktop edition imports local files only, so nothing here fetches
+media from anywhere.
 """
 import json
 

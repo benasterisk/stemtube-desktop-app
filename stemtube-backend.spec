@@ -10,7 +10,7 @@ _madmom_models = os.path.join(_sp, 'madmom', 'models')
 if os.path.isdir(_madmom_models):
     datas.append((_madmom_models, 'madmom/models'))
 binaries = []
-hiddenimports = ['engineio.async_drivers.threading', 'flask_socketio', 'flask_login', 'flask_session', 'eventlet', 'eventlet.hubs.selects', 'dns', 'demucs.pretrained', 'demucs.apply', 'demucs.hdemucs', 'demucs.htdemucs', 'soundfile', 'sqlite3', 'ssl', 'pychord', 'syncedlyrics', 'numpy.core._multiarray_umath', 'charset_normalizer']
+hiddenimports = ['engineio.async_drivers.threading', 'flask_socketio', 'flask_login', 'flask_session', 'eventlet', 'eventlet.hubs.selects', 'dns', 'demucs.pretrained', 'demucs.apply', 'demucs.hdemucs', 'demucs.htdemucs', 'soundfile', 'sqlite3', 'ssl', 'pychord', 'numpy.core._multiarray_umath', 'charset_normalizer']
 tmp_ret = collect_all('numpy')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('torch')

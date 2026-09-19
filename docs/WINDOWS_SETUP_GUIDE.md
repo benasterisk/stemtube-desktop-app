@@ -77,8 +77,8 @@ pip install flask flask-login flask-session flask-socketio eventlet
 pip install requests python-dotenv Pillow
 pip install librosa soundfile scipy scikit-learn
 pip install yt-dlp[default] aiotube beautifulsoup4
-pip install faster-whisper msaf syncedlyrics pychord
-pip install pywebview werkzeug
+pip install faster-whisper msaf pychord
+pip install werkzeug
 
 :: Install demucs (needs torch first)
 pip install demucs
@@ -117,13 +117,13 @@ python launcher.py
 :: Browser mode (useful for DevTools)
 python launcher.py --no-window
 
-:: Debug mode (verbose logging + DevTools in native window)
+:: Debug mode (verbose Flask logging; use the browser's own DevTools)
 python launcher.py --debug
 
 :: CPU-only mode (skip GPU even if available)
 python launcher.py --no-gpu
 
-:: Direct Flask server (no pywebview)
+:: Direct Flask server (no launcher, no control window)
 python app.py
 :: Then open http://127.0.0.1:5011 in your browser
 ```
@@ -133,7 +133,7 @@ python app.py
 ```
 Stemtube_Desktop/
 │
-├── launcher.py              ← ENTRY POINT: pywebview + Flask
+├── launcher.py              ← ENTRY POINT: Flask + default browser
 ├── app.py                   ← Flask app (auto-login, localhost)
 ├── extensions.py            ← Shared singletons, UserSessionManager
 │
@@ -268,11 +268,11 @@ pip install madmom
 python patch_madmom.py
 ```
 
-### pywebview window is blank
+### The browser does not open by itself
 ```cmd
-:: Ensure Edge WebView2 Runtime is installed (built-in on Windows 11)
-:: Or install from: https://developer.microsoft.com/en-us/microsoft-edge/webview2/
-:: Alternative: use browser mode
+:: The launcher prints the address; open it manually:
+::   http://127.0.0.1:5011
+:: Or run without the small desktop control window:
 python launcher.py --no-window
 ```
 

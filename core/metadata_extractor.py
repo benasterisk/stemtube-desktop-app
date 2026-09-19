@@ -17,21 +17,21 @@ def extract_metadata(file_path: str = None, db_title: str = None) -> Tuple[str, 
     Extract artist and track name from multiple sources
 
     Priority:
-    1. Parse title "Artist - Track" format (most reliable for YouTube music videos)
-    2. ID3 tags from file (often contains YouTube channel name, less reliable)
+    1. Parse title "Artist - Track" format (most reliable for music releases)
+    2. ID3 tags from file (often hold a label or uploader name, less reliable)
     3. Fallback: use full title as track name
 
     Args:
         file_path: Path to audio file (MP3, etc.)
-        db_title: Title from database (YouTube video title)
+        db_title: Title from database (the library entry's song title)
 
     Returns:
         Tuple of (artist, track_name)
     """
     artist, track = None, None
 
-    # 1. FIRST try parsing the title (YouTube music videos are usually "Artist - Track")
-    # This is more reliable than ID3 tags which often contain the uploader name
+    # 1. FIRST try parsing the title (music releases are usually named "Artist - Track")
+    # This is more reliable than ID3 tags, which often hold a label or uploader name
     if db_title and ' - ' in db_title:
         parsed_artist, parsed_track = parse_artist_title(db_title)
         if parsed_artist:
@@ -39,7 +39,7 @@ def extract_metadata(file_path: str = None, db_title: str = None) -> Tuple[str, 
             track = parsed_track
             logger.info(f"[METADATA] Parsed from title: artist='{artist}', track='{track}'")
 
-    # 2. Try ID3 tags as fallback (yt-dlp often puts channel name as artist)
+    # 2. Try ID3 tags as fallback (the artist tag is often a label or uploader name)
     if file_path and not artist:
         tags = get_id3_tags(file_path)
         if tags:
@@ -122,7 +122,7 @@ def parse_artist_title(title: str) -> Tuple[Optional[str], Optional[str]]:
     if not title:
         return None, None
 
-    # Clean up common YouTube suffixes
+    # Clean up the decoration commonly appended to music release titles
     clean_title = title
 
     # Remove common video type suffixes
@@ -144,7 +144,7 @@ def parse_artist_title(title: str) -> Tuple[Optional[str], Optional[str]]:
     # Trim whitespace
     clean_title = clean_title.strip()
 
-    # Split on " - " (standard YouTube music video format)
+    # Split on " - " (the standard "Artist - Track" naming convention)
     if ' - ' in clean_title:
         parts = clean_title.split(' - ', 1)
         artist = parts[0].strip()

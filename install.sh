@@ -127,7 +127,7 @@ c "Installing audio/ML dependencies (this can take a few minutes)…"
 "$VENV_PY" -m pip install \
   Flask Flask-Login Flask-Session Flask-SocketIO eventlet requests python-dotenv \
   Pillow librosa soundfile scipy scikit-learn numpy psutil \
-  "demucs==4.0.1" faster-whisper syncedlyrics pychord beautifulsoup4 mir_eval
+  "demucs==4.0.1" faster-whisper pychord beautifulsoup4 mir_eval
 
 # madmom (chord/beat detection) — needs Cython + numpy first, builds from source on Linux
 c "Installing madmom (chord & beat detection)…"

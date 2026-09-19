@@ -1,7 +1,7 @@
 """
 StemTube Desktop — Desktop application for music analysis and stem extraction.
-Local-files-only edition: no YouTube, no licensing, no server deployment,
-no mobile, no jam sessions.
+Local-files-only edition: the library is built from audio files the user imports.
+No licensing, no server deployment, no mobile, no jam sessions.
 """
 # CRITICAL: Handle demucs subprocess mode BEFORE anything else
 # When PyInstaller calls this exe with --demucs-separate, run demucs and exit
@@ -15,6 +15,14 @@ if '--demucs-separate' in sys.argv:
     from demucs.separate import main as demucs_main
     demucs_main()
     sys.exit(0)
+
+# Same re-entry trick for the MSST fine-stem pipeline: in a frozen build sys.executable
+# cannot run `-m core.msst.separate`, so the exe calls itself with --msst-separate.
+if '--msst-separate' in sys.argv:
+    args = [a for a in sys.argv[1:] if a != '--msst-separate']
+    sys.argv = ['core.msst.separate'] + args
+    from core.msst.separate import main as msst_main
+    sys.exit(msst_main())
 
 import io
 

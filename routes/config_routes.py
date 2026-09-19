@@ -24,8 +24,24 @@ def get_config():
         'default_stem_model': get_setting('default_stem_model', 'htdemucs'),
         'ffmpeg_path': get_ffmpeg_path(),
         'ffprobe_path': get_ffprobe_path(),
-        'using_gpu': se.using_gpu
+        'using_gpu': se.using_gpu,
+        'mega_available': se.is_model_available('mvsep_mega_fine'),
+        'mega_gpu': se.gpu_status_for_model('mvsep_mega_fine')
     })
+
+
+@config_bp.route('/api/config/gpu-status', methods=['GET'])
+@api_login_required
+def get_gpu_status():
+    """Live GPU readiness for a GPU-only stem model.
+
+    Returns ``{available, total_gb, free_gb, needed_gb, reason}``. The frontend calls
+    this just before launching a fine extraction so it can warn (or refuse) *before*
+    anything is queued. Free VRAM moves, so this is deliberately not cached.
+    """
+    model_name = request.args.get('model', 'mvsep_mega_fine')
+    se = user_session_manager.get_stems_extractor()
+    return jsonify(se.gpu_status_for_model(model_name))
 
 
 @config_bp.route('/api/config', methods=['POST'])

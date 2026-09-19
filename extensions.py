@@ -316,7 +316,8 @@ class UserSessionManager:
                 except Exception as analysis_error:
                     logger.warning(f"[ANALYSIS] Auto-analysis error (non-fatal): {analysis_error}")
 
-                # AUTO-DETECT LYRICS after stems are ready (Whisper only — Musixmatch reserved for Regenerate)
+                # AUTO-DETECT LYRICS after stems are ready: LRCLIB text aligned on Whisper word
+                # timings from the vocals stem, Whisper alone when LRCLIB has no lyrics
                 try:
                     vocals_path = item.output_paths.get('vocals') if item.output_paths else None
                     if vocals_path and os.path.exists(vocals_path):
@@ -337,14 +338,21 @@ class UserSessionManager:
                         }, room=_room)
 
                         from core.lyrics_detector import detect_lyrics_unified
-                        from core.downloads_db import update_download_lyrics
+                        from core.downloads_db import (update_download_lyrics, find_any_global_extraction,
+                                                       resolve_file_path)
+                        from core.media_metadata import load_media_metadata
+
+                        song = find_any_global_extraction(video_id) or {}
+                        media_meta = load_media_metadata(video_id)
 
                         model_size = get_setting('lyrics_model_size') or 'medium'
                         use_gpu = get_setting('use_gpu_for_extraction', False)
 
                         # Map lyrics steps to extraction progress (48-72% range)
                         _lyrics_step_progress = {
-                            'metadata': 50, 'whisper': 55, 'whisper_done': 68,
+                            'metadata': 49, 'lyrics_search': 50, 'lyrics_found': 52,
+                            'lyrics_not_found': 52, 'whisper': 55, 'whisper_done': 68,
+                            'aligning': 69, 'aligned': 71, 'align_rejected': 71,
                             'done': 72, 'failed': 72,
                         }
 
@@ -363,10 +371,11 @@ class UserSessionManager:
 
                         result = detect_lyrics_unified(
                             audio_path=vocals_path,
-                            title=title,
+                            title=song.get('title') or title,
                             model_size=model_size,
                             use_gpu=use_gpu,
-                            force_whisper=True,
+                            media_metadata=media_meta,
+                            file_path=resolve_file_path(song.get('file_path')),
                             progress_callback=_lyrics_progress_cb
                         )
 
@@ -495,6 +504,23 @@ class UserSessionManager:
                         'extraction_id': item_id, 'progress': 97,
                         'message': 'Beat detection skipped', 'video_id': video_id
                     }, room=_room)
+
+                # Build the mixer artifacts now, so the first mixer open is a cache
+                # hit instead of a wait. Never fatal: without it the mixer prepares
+                # on demand exactly as it did before.
+                try:
+                    socketio.emit('extraction_progress', {
+                        'extraction_id': item_id, 'progress': 98,
+                        'message': 'Preparing mixer...', 'video_id': video_id
+                    }, room=_room)
+                    row_id = next((str(r['id']) for r in db_list_extractions(user_id)
+                                   if r.get('video_id') == video_id), None)
+                    if row_id:
+                        from routes.poc_mixer import warm_prepare
+                        if warm_prepare(f"download_{row_id}", user_id):
+                            logger.info(f"[MIXER] Pre-built mixer artifacts for download_{row_id}")
+                except Exception as prep_error:
+                    logger.warning(f"[MIXER] Mixer pre-build skipped (non-fatal): {prep_error}")
         else:
             print(f"[CALLBACK DEBUG] Missing user_id, video_id, or item data")
 

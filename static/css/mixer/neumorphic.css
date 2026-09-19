@@ -504,6 +504,25 @@ body.neumorphic-custom .track-slider {
     border-radius: 4px;
 }
 
+/* Keep the neumorphic inset groove as the visible track: neutralize the
+   desktop track-bar pseudo-elements styled in layout.css, which would
+   otherwise paint a hard-bordered bar over the groove.
+   (Separate -webkit/-moz rules: an unknown pseudo-element in a selector
+   list drops the whole rule in the other engine.) */
+body.neumorphic-white .track-slider::-webkit-slider-runnable-track,
+body.neumorphic-anthracite .track-slider::-webkit-slider-runnable-track,
+body.neumorphic-custom .track-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+}
+
+body.neumorphic-white .track-slider::-moz-range-track,
+body.neumorphic-anthracite .track-slider::-moz-range-track,
+body.neumorphic-custom .track-slider::-moz-range-track {
+    background: transparent;
+    border: none;
+}
+
 /* ---- Timeline ---- */
 body.neumorphic-white .timeline-container,
 body.neumorphic-anthracite .timeline-container,
@@ -928,28 +947,22 @@ body.neumorphic-custom .karaoke-step-done .karaoke-step-text {
     color: var(--accent-color);
 }
 
-/* ---- Lyrics Dialog Musixmatch (green→blue for white theme) ---- */
-body.neumorphic-white .lyrics-dialog-musixmatch,
-body.neumorphic-custom .lyrics-dialog-musixmatch {
+/* ---- Lyrics Dialog LRCLIB Timing (green→blue for white theme) ---- */
+body.neumorphic-white .lyrics-dialog-lrclib-timing,
+body.neumorphic-custom .lyrics-dialog-lrclib-timing {
     background: rgba(var(--accent-rgb), 0.15);
     border-color: rgba(var(--accent-rgb), 0.4);
     color: var(--accent-color);
 }
 
-body.neumorphic-white .lyrics-dialog-musixmatch:active,
-body.neumorphic-custom .lyrics-dialog-musixmatch:active {
+body.neumorphic-white .lyrics-dialog-lrclib-timing:active,
+body.neumorphic-custom .lyrics-dialog-lrclib-timing:active {
     background: rgba(var(--accent-rgb), 0.25);
 }
 
-/* ---- Lyrics Source Tag (green→blue for white theme) ---- */
-body.neumorphic-white .lyrics-source-tag.musixmatch,
-body.neumorphic-custom .lyrics-source-tag.musixmatch {
-    color: var(--accent-color);
-}
-
-/* ---- Richsync Badge (green→blue for white theme) ---- */
-body.neumorphic-white .lyrics-dialog-track-badge.badge-richsync,
-body.neumorphic-custom .lyrics-dialog-track-badge.badge-richsync {
+/* ---- Synced Badge (green→blue for white theme) ---- */
+body.neumorphic-white .lyrics-dialog-track-badge.badge-synced,
+body.neumorphic-custom .lyrics-dialog-track-badge.badge-synced {
     background: rgba(var(--accent-rgb), 0.2);
     color: var(--accent-color);
 }

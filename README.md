@@ -116,7 +116,7 @@ python build_windows.py --portable
 
 ```
 Stemtube_Desktop/
-├── launcher.py              # Desktop entry point (pywebview + Flask)
+├── launcher.py              # Desktop entry point (Flask + default browser)
 ├── app.py                   # Flask application (auto-login, localhost only)
 ├── setup_desktop.py         # Windows setup script
 ├── build_windows.py         # Build/packaging script

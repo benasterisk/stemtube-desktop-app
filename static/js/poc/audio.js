@@ -113,29 +113,59 @@ class AudioEngine {
 
   // names: stem names to load. metroResolutions: optional {"0.5":path,"1":path,"2":path}
   // — when present, the metronome stem holds all 3 buffers and can switch live.
-  async setStems(job, names, metroResolutions){
+  // onReserved() fires once the (empty) tracks exist, so the UI can show the lanes and
+  // the server-side waveforms while the audio is still downloading.
+  // onProgress(done, total) fires after each stem is decoded.
+  async setStems(job, names, metroResolutions, onProgress, onReserved){
     this.unload();
     this.ensureCtx();
     if(this.ctx.state === "suspended"){ try{ await this.ctx.resume(); }catch(e){} }
-    const failed = [];
-    await Promise.all(names.map(async name=>{
+    // Tracks first, audio later: a full stem set is tens of megabytes to read and decode,
+    // and the mixer used to show nothing at all until the last byte arrived.
+    names.forEach(name => {
+      this.stems[name] = { name, buffer:null, source:null, soundTouch:null, gain:null,
+                           // the click track starts muted; a saved session state (applied
+                           // right after loading) still wins if the user unmuted it
+                           panNode:null, muted:(name === "metronome"), solo:false, vol:1, pan:0 };
+    });
+    if(onReserved) onReserved();
+
+    // Fetch in parallel (I/O is the slow part) but DECODE with a small concurrency
+    // limit: decoding N multi-minute stems at once is a memory hazard, and on the
+    // weaker engines it can abort the whole batch. Each stem is decoded as soon as
+    // ITS download finishes (a slot is free), so decoding overlaps the downloads
+    // instead of starting only after all of them.
+    const CONCURRENCY = this._decodeConcurrency || 2;
+    let free = CONCURRENCY; const waiting = [];
+    const acquire = () => free > 0 ? (free--, Promise.resolve())
+                                   : new Promise(res => waiting.push(res));
+    const release = () => { const next = waiting.shift(); if(next) next(); else free++; };
+
+    let done = 0, ok = 0; const failed = [];
+    await Promise.all(names.map(async name => {
       try {
         const buf = await API.audioBuffer(job, name);
-        const audio = await this._decode(buf);
-        this.stems[name] = { name, buffer:audio, source:null, soundTouch:null, gain:null, panNode:null, muted:false, solo:false, vol:1, pan:0 };
+        await acquire();
+        try {
+          // _decode() is the cross-engine decoder (callback form first): WebKitGTK,
+          // the Linux AppImage's webview, resolves the promise form to `undefined`.
+          const audio = await this._decode(buf);
+          if(this.stems[name]){ this.stems[name].buffer = audio; ok++; }
+        } finally { release(); }
       } catch(e){
-        console.error(`[audio] failed to load stem '${name}':`, e);
+        // One unreadable stem must not sink the whole song: log and carry on
+        // (the mixer simply shows one track less).
+        console.warn(`[audio] stem failed to load: '${name}'`, e && e.message || e);
+        delete this.stems[name];
         failed.push(name);
       }
+      done++;
+      if(onProgress) onProgress(done, names.length);
     }));
-    if(failed.length){
-      console.error(`[audio] ${failed.length}/${names.length} stems failed to decode:`, failed);
-      if(failed.length === names.length){
-        throw new Error("No stems could be decoded (audio engine incompatible?)");
-      }
-    }
+    if(failed.length) console.error(`[audio] ${failed.length}/${names.length} stems failed to decode:`, failed);
+    if(!ok) throw new Error("No stems could be decoded (audio engine incompatible?)");
     // Load the metronome's other resolution buffers (0.5 / 2); "1" == metronome.wav already loaded.
-    if(metroResolutions && this.stems["metronome"]){
+    if(metroResolutions && this.stems["metronome"] && this.stems["metronome"].buffer){
       const m=this.stems["metronome"]; m.buffers={ "1": m.buffer };
       await Promise.all(Object.entries(metroResolutions).map(async ([res, _path])=>{
         if(res==="1") return;
@@ -280,11 +310,14 @@ class AudioEngine {
   applyGains(){ Object.values(this.stems).forEach(s=>{ if(s.gain) s.gain.gain.value=this.gainFor(s); }); }
 
   // Mute and Solo are independent toggles (a track may be both; mute wins).
-  setMute(name,v){ this.stems[name].muted=v; this.applyGains(); }
-  setSolo(name,v){ this.stems[name].solo=v; this.applyGains(); }
-  setVol(name,v){ const s=this.stems[name]; s.vol=v; if(s.gain) s.gain.gain.value=this.gainFor(s); }
+  // All four tolerate a stem that is reserved but not decoded yet (no nodes, or
+  // dropped because its download failed): the value is stored, the node updated
+  // only if it exists, and the chain picks the state up when it is built.
+  setMute(name,v){ const s=this.stems[name]; if(!s) return; s.muted=v; this.applyGains(); }
+  setSolo(name,v){ const s=this.stems[name]; if(!s) return; s.solo=v; this.applyGains(); }
+  setVol(name,v){ const s=this.stems[name]; if(!s) return; s.vol=v; if(s.gain) s.gain.gain.value=this.gainFor(s); }
   // pan: -1 = full left, 0 = center, +1 = full right (StereoPannerNode)
-  setPan(name,v){ const s=this.stems[name]; s.pan=Math.max(-1,Math.min(1,v)); if(s.panNode) s.panNode.pan.value=s.pan; }
+  setPan(name,v){ const s=this.stems[name]; if(!s) return; s.pan=Math.max(-1,Math.min(1,v)); if(s.panNode) s.panNode.pan.value=s.pan; }
 
   // ── Tempo/pitch math (R2's hybrid method) ─────────────────────────────────
   // Given a tempo ratio (target/base) and pitch in semitones, compute the
@@ -348,12 +381,22 @@ class AudioEngine {
   // pos() folds the (linearly advancing) anchor position back into [a,b] so the
   // playhead/chords/lyrics stay in sync with what the buffers actually play.
   setLoop(a, b, on){
+    // Raw (unfolded) read position of the live sources, needed below: pos() folds, so
+    // it cannot tell us whether the physical read head is already past the new loopEnd.
+    const rawBefore = (this.playing && this._anchorTime !== null)
+      ? this._anchorPos + (this.ctx.currentTime - this._anchorTime) * this._anchorRatio
+      : null;
     this.loopOn = !!on && (a!=null) && (b!=null) && (b>a);
     this.loopA = a; this.loopB = b;
     // apply to every live source
     Object.values(this.stems).forEach(s=> this._applyLoopToSource(s));
-    // re-anchor so pos() is consistent with the (possibly just-enabled) loop window
-    if(this.playing) this._reanchor();
+    if(this.playing){
+      // Loop moved behind the playhead? The live sources are past loopEnd and will
+      // never wrap - restart inside the window instead of going silent.
+      if(this.loopOn && rawBefore !== null && rawBefore >= this.loopB){ this.seek(this.loopA); return; }
+      // re-anchor so pos() is consistent with the (possibly just-enabled) loop window
+      this._reanchor();
+    }
   }
   _applyLoopToSource(s){
     if(!s || !s.source) return;
@@ -370,10 +413,13 @@ class AudioEngine {
   }
 
   // ── Position (anchor-based, drift-free, tempo-aware) ──────────────────────
-  pos(){
+  // pos(atCtxTime): song position now, or at a given AudioContext time (lets
+  // callers schedule against a precise future audio instant without rAF jitter).
+  pos(atCtxTime){
     if(!this.playing) return this.staticPos;
     if(this._anchorTime === null) return this._anchorPos;
-    let p = this._anchorPos + (this.ctx.currentTime - this._anchorTime) * this._anchorRatio;
+    const t = (typeof atCtxTime === "number") ? atCtxTime : this.ctx.currentTime;
+    let p = this._anchorPos + (t - this._anchorTime) * this._anchorRatio;
     // When looping, the buffer wraps b→a natively; fold the linear anchor reading
     // back into the [a,b] window so reported position matches the audio.
     if(this.loopOn && this.loopB > this.loopA && p >= this.loopA){
@@ -404,6 +450,8 @@ class AudioEngine {
   //     count-in click sits at WAV time (metroLeadSilence + offset); reading from there
   //     makes the count-in begin immediately at `when`.
   _startOneSource(s, when, offset){
+    if(!s || !s.buffer) return;        // still downloading/decoding — nothing to play yet
+    this._disposeStemNodes(s);         // drop any chain left over from a previous start
     const src=this.ctx.createBufferSource(); src.buffer=s.buffer;
     src.playbackRate.value = this.playbackRate;
     const g=this.ctx.createGain(); g.gain.value=this.gainFor(s);
@@ -453,6 +501,7 @@ class AudioEngine {
   play(whenDelay=0.06, leadIn=0){
     if(this.playing || !this.ctx) return this.ctx ? this.ctx.currentTime : 0;
     if(this.ctx.state==="suspended") this.ctx.resume();
+    this.staticPos = this._foldIntoLoop(this.staticPos || 0);
     const when=this.ctx.currentTime+whenDelay;
     const offset=(this.staticPos||0) - Math.max(0, leadIn);
     this._startSources(when, offset);
@@ -468,20 +517,47 @@ class AudioEngine {
   // song's real local tempo, then play that buffer; when it ends the song starts
   // exactly at the Start, and follows time-stretch because the precount IS the
   // metronome track. See loadPrecountMetro/usePrecountMetro above. ──
+  // Release EVERY node of one stem's chain: source -> [soundTouch] -> gain -> pan -> master.
+  // Only the source and the worklet used to be released, so each play/seek left a gain
+  // and a pan node connected to the master for good. With many stems a few playhead moves
+  // piled up hundreds of live nodes and the browser's audio thread eventually gave up -
+  // sound stopped until the page was reloaded (a fresh AudioContext).
+  _disposeStemNodes(s){
+    if(!s) return;
+    try{ s.source && s.source.stop(); }catch(e){}
+    try{ s.source && s.source.disconnect(); }catch(e){}
+    try{ s.soundTouch && s.soundTouch.disconnect(); }catch(e){}
+    // the worklet keeps a message port alive on the audio thread; close it explicitly
+    try{ s.soundTouch && s.soundTouch.port && s.soundTouch.port.close(); }catch(e){}
+    try{ s.gain && s.gain.disconnect(); }catch(e){}
+    try{ s.panNode && s.panNode.disconnect(); }catch(e){}
+    s.source=null; s.soundTouch=null; s.gain=null; s.panNode=null;
+  }
+
   stop(){
     if(this.playing) this.staticPos=this.pos();
-    Object.values(this.stems).forEach(s=>{
-      try{ s.source&&s.source.stop(); }catch(e){}
-      try{ s.soundTouch&&s.soundTouch.disconnect(); }catch(e){}
-      s.source=null; s.soundTouch=null;
-    });
+    Object.values(this.stems).forEach(s=> this._disposeStemNodes(s));
     this.playing=false;
     this._anchorTime=null;
+  }
+
+  // A source started PAST loopEnd never wraps: Web Audio only loops while the read
+  // position is inside the window, so every stem ran to the end of its buffer and went
+  // quiet while pos() - which folds - kept the playhead moving inside the loop. That is
+  // the "sound disappears after moving the playhead" bug. Fold like pos() does.
+  _foldIntoLoop(t){
+    if(!(this.loopOn && this.loopB > this.loopA)) return t;
+    if(t < this.loopB) return t;          // before or inside: the native wrap handles it
+    const span = this.loopB - this.loopA;
+    return this.loopA + ((t - this.loopA) % span);
   }
   seek(t){
     const was=this.playing;
     this.stop(); this.staticPos=Math.max(0, t);
     if(was){
+      // Only when audio actually restarts: while paused the raw position is kept so
+      // scrubbing outside the loop stays possible.
+      this.staticPos = this._foldIntoLoop(this.staticPos);
       if(this.ctx.state==="suspended") this.ctx.resume();
       const when=this.ctx.currentTime+0.04;
       this._startSources(when, this.staticPos);

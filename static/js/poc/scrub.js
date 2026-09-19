@@ -39,6 +39,7 @@ const Scrub = {
     const pos = Math.max(0, Math.min(t, dur || t));
 
     // The playhead should track the pointer smoothly, so move it every time…
+    this.engine._scrubbing = true;   // silence jam/recording side-effects mid-drag
     try {
       this.engine.seek(pos);
       if (this.view && this.view.drawPlayheads) this.view.drawPlayheads();
@@ -53,6 +54,13 @@ const Scrub = {
 
   /** Silence anything still ringing (call when the drag ends). */
   stop() {
+    const eng = this.engine;
+    if (eng && eng._scrubbing) {
+      eng._scrubbing = false;
+      // one final seek at the drop point: this is the call jam guests and the
+      // recording engine actually need to hear about.
+      try { eng.seek(eng.pos()); } catch (err) { /* engine not ready */ }
+    }
     for (const node of this._live) {
       try { node.stop(); } catch (e) { /* already finished */ }
     }

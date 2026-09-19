@@ -76,7 +76,7 @@ class TabManager {
             if (savedTab && this.validTabs.includes(savedTab)) {
                 this.switchTab(savedTab, false);
             }
-        } catch (e) { /* localStorage blocked in WebView2 iframe */ }
+        } catch (e) { /* localStorage blocked (iframe / privacy settings) */ }
 
         // Apply initial visibility state
         this.applyVisibilityState();

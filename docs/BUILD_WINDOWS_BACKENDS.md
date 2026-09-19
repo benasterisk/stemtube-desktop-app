@@ -67,7 +67,7 @@ Never zip an untested tree. Both checks below caught real problems:
 ```bash
 # 1. every critical import resolves
 venv/Scripts/python -c "import torch, torchaudio, demucs, faster_whisper, \
-    madmom, flask, librosa, soundfile, numpy, mir_eval, webview; print('ok')"
+    madmom, flask, librosa, soundfile, numpy, mir_eval; print('ok')"
 
 # 2. the server actually boots and serves the mixer
 venv/Scripts/python app.py       # then: curl http://127.0.0.1:5011/mixer

@@ -311,8 +311,10 @@
                             <option value="htdemucs_6s" data-stems="vocals,drums,bass,guitar,piano,other">htdemucs_6s (6 stems)</option>
                             <option value="mdx_extra" data-stems="vocals,drums,bass,other">mdx_extra (vocal focus)</option>
                             <option value="mdx_extra_q" data-stems="vocals,drums,bass,other" disabled title="Requires diffq package">mdx_extra_q (requires diffq - unavailable)</option>
+                            <option value="mvsep_mega_fine" data-stems="vocals,backing_vocals,drums,kick,snare,toms,cymbals,bass,electric_guitar,acoustic_guitar,piano,organ,synth,brass,winds,strings,other" title="Separation fine en 17 stems (GPU NVIDIA requis)">mvsep_mega_fine (17 stems - GPU requis)</option>
                         </select>
                         <p id="modelDescription" class="model-description"></p>
+                        <p id="megaGpuWarning" class="model-description" style="display: none; color: #e6a23c;"></p>
                     </div>
                     
                     <div class="option-item">
@@ -410,8 +412,6 @@
     <script>
         // Global admin status variable for JavaScript
         const isAdmin = {% if current_user.is_admin %}true{% else %}false{% endif %};
-        // YouTube features permanently disabled — desktop app is local-files only
-        const enableYoutube = false;
     </script>
     <!-- Dynamic logging with admin-controlled config - timestamp forces cache refresh -->
     <script src="{{ url_for('static', filename='js/logging-dynamic.js') }}?t=1761906276"></script>

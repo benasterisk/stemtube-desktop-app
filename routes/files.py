@@ -81,7 +81,7 @@ def upload_file_route():
         # Generate a unique video_id for the uploaded file
         video_id = f"upload_{uuid.uuid4().hex[:12]}"
 
-        # Create directory structure (same as YouTube downloads)
+        # Create the per-song directory structure used throughout the library
         downloads_dir = ensure_valid_downloads_directory()
         video_dir = os.path.join(downloads_dir, filename_without_ext)
         audio_dir = os.path.join(video_dir, 'audio')

@@ -47,10 +47,10 @@ This document describes the complete flow from download to extraction, including
 - **Algorithm:** CNMF + Foote boundaries
 - **Output:** `structure_data` (sections: Intro, Verse, Chorus, etc.)
 
-### 2.4 Lyrics Detection (Musixmatch Only)
-- **Library:** syncedlyrics API (Musixmatch)
-- **Note:** Only API call, NO Whisper fallback (will be done after extraction)
-- **Output:** `lyrics_data` (if found on Musixmatch)
+### 2.4 Lyrics Detection (LRCLIB lookup only)
+- **Library:** `core/lrclib_client.py` (LRCLIB, free, no account)
+- **Note:** Lookup only, NO Whisper here (the full pipeline runs after extraction)
+- **Output:** `lyrics_data` (a line-timed preview when the record is line-synced)
 
 **Database Update:** All results saved to `global_downloads` table
 
@@ -91,9 +91,10 @@ This document describes the complete flow from download to extraction, including
 
 ### 4.1 Lyrics Detection (Full)
 - **Condition:** Only if `vocals.mp3` exists
-- **Library:** SyncedLyrics (Musixmatch) → faster-whisper (fallback)
+- **Library:** LRCLIB → faster-whisper, aligned by `core/lyrics_merger.py`
 - **Input:** vocals.mp3 (better quality than full audio)
-- **Sync:** vocal_onset_detector for precise timing
+- **Sync:** LRCLIB words placed on Whisper word timings; below a 30% match
+  rate the alignment is rejected and the line timing (or Whisper alone) wins
 - **Output:** Updates `lyrics_data` in database
 
 **Note:** This REPLACES any lyrics found during download phase (uses better source)
@@ -108,9 +109,9 @@ This document describes the complete flow from download to extraction, including
 3. Hybrid (madmom beats + key-aware templates)
 
 ### Lyrics Detection
-1. Musixmatch via SyncedLyrics (word-level timestamps)
-2. faster-whisper (speech-to-text transcription)
-3. vocal_onset_detector (align with vocal peaks)
+1. LRCLIB line-synced record aligned on Whisper word timings
+2. LRCLIB line timing alone (alignment rejected below a 30% match rate)
+3. faster-whisper alone (song missing from LRCLIB)
 
 ### Structure Analysis
 1. CNMF + Foote boundaries
@@ -126,9 +127,9 @@ This document describes the complete flow from download to extraction, including
 | BPM/Key | librosa, scipy | Spectral analysis, template matching |
 | Chords | BTC, madmom | Chord recognition |
 | Structure | MSAF | Section segmentation |
-| Lyrics (sync) | syncedlyrics | Musixmatch API |
+| Lyrics (sync) | LRCLIB | Free lyrics database, no account |
 | Lyrics (ASR) | faster-whisper | Speech-to-text |
-| Onset Detection | librosa | Vocal onset alignment |
+
 | Stem Separation | Demucs | Source separation |
 
 ---
@@ -140,8 +141,8 @@ This document describes the complete flow from download to extraction, including
 | Download Management | `core/download_manager.py` |
 | Stem Extraction | `core/stems_extractor.py` |
 | Chord Detection | `core/chord_detector.py`, `core/btc_chord_detector.py`, `core/madmom_chord_detector.py` |
-| Lyrics Detection | `core/lyrics_detector.py`, `core/syncedlyrics_client.py` |
-| Vocal Sync | `core/vocal_onset_detector.py` |
+| Lyrics Detection | `core/lyrics_detector.py`, `core/lrclib_client.py`, `core/lyrics_merger.py` |
+| Media Metadata | `core/media_metadata.py` (artist/track for the lyrics lookup) |
 | Structure Analysis | `core/msaf_structure_detector.py` |
 | Database | `core/downloads_db.py` |
 | Main Routes | `app.py` |
@@ -151,8 +152,8 @@ This document describes the complete flow from download to extraction, including
 ## Optimization Notes
 
 1. **Lyrics Detection Optimized:**
-   - During download: Only Musixmatch (fast API call)
-   - After extraction: Musixmatch + Whisper fallback (using vocals.mp3)
+   - During download: LRCLIB lookup only (fast API call)
+   - After extraction: LRCLIB + Whisper alignment (using vocals.mp3)
    - Avoids redundant Whisper processing on full audio
 
 2. **Chord Detection:**

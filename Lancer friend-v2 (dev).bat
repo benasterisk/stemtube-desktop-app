@@ -10,10 +10,12 @@ REM    NOTE: c'est la MEME base que l'app habituelle -> evite de lancer les deux
 REM    en meme temps, et reste prudent (lecture pour tester, ok ; les extractions
 REM    ecrivent dans cette base).
 REM
-REM  Lance launcher.py -> ouvre une FENETRE DESKTOP native (pywebview / WebView2),
-REM  exactement comme l'app StemTube habituelle. Pas besoin de navigateur.
+REM  Lance launcher.py -> demarre le serveur Flask et ouvre StemTube dans ton
+REM  NAVIGATEUR PAR DEFAUT (http://127.0.0.1:5011), exactement comme l'app
+REM  StemTube habituelle. Une petite fenetre de controle reste sur le bureau
+REM  pour rouvrir la page et arreter le serveur proprement.
 REM  (Toute la coquille StemTube y est : My Library, Download, sidebar ; le mixer
-REM  s'ouvre DANS la fenetre quand tu cliques "Open Mixer" sur un morceau.)
+REM  s'ouvre dans un onglet quand tu cliques "Open Mixer" sur un morceau.)
 REM ============================================================================
 
 setlocal

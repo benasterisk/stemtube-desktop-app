@@ -49,8 +49,11 @@ def find_any_global_extraction(video_id):
         return dict(result) if result else None
 
 
-def find_or_reserve_extraction(video_id, model_name):
+def find_or_reserve_extraction(video_id, model_name, force=False):
     """Atomically check for existing extraction or reserve it for processing.
+
+    With ``force`` an existing completed extraction with the same model does not count
+    (explicit "re-extract"), so the slot is reserved for a new run.
 
     Returns:
         tuple: (existing_extraction_dict or None, reserved_successfully: bool)
@@ -73,7 +76,7 @@ def find_or_reserve_extraction(video_id, model_name):
             """, (video_id, model_name))
             existing = cursor.fetchone()
 
-            if existing:
+            if existing and not force:
                 print(f"[DB DEBUG] Found existing completed extraction")
                 conn.commit()
                 return dict(existing), False
@@ -90,10 +93,13 @@ def find_or_reserve_extraction(video_id, model_name):
                 conn.commit()
                 return None, False
 
-            # No existing or in-progress extraction - try to reserve it
+            # No existing or in-progress extraction - try to reserve it. On a re-extraction
+            # with another model the active model is kept until the new run completes, so a
+            # failed or cancelled run does not relabel the old stems with the new model.
             cursor.execute("""
                 UPDATE global_downloads
-                SET extracting=1, extraction_model=?
+                SET extracting=1,
+                    extraction_model=CASE WHEN extracted=1 THEN extraction_model ELSE ? END
                 WHERE video_id=? AND (extracting=0 OR extracting IS NULL)
             """, (model_name, video_id))
 

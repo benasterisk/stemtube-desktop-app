@@ -1,7 +1,7 @@
 """
 Core page routes for StemTube Desktop.
 Desktop-only: no mobile redirect, no service worker, auto-login.
-Local files only — no YouTube.
+The library is built from local files the user imports.
 """
 
 import os
@@ -27,9 +27,9 @@ def _ensure_desktop_login():
     Desktop is single-user with auto-login, so there is no login page to send
     anyone to: `auth.login` does not exist in this edition. A @login_required
     route that is reached without a session therefore does not redirect — it
-    raises BuildError and returns 500. That is exactly what happened to the
-    Stage View window on Windows: pywebview opens it as a SEPARATE webview
-    that does not inherit the main window's session cookie, so /mixer blew up.
+    raises BuildError and returns 500. This guard covers every way a page can
+    be reached without a session yet: opening /mixer directly as the very first
+    URL, a bookmark, or a fresh browser profile.
 
     Returns None on success, or an error response to return as-is.
     """
@@ -78,7 +78,6 @@ def index():
         'index.html',
         current_username=current_user.username,
         current_user=current_user,
-        enable_youtube=False,
         has_license=HAS_LICENSE,
         cache_buster=cache_buster,
         update_applied=update_applied,
@@ -88,10 +87,11 @@ def index():
 
 @pages_bp.route('/mixer')
 def mixer():
-    # Auto-login rather than @login_required: a Stage View window opened by the
-    # launcher is a separate webview with no session cookie, and @login_required
-    # would 500 here (no login endpoint exists in this edition). Authentication
-    # is still enforced — we log the desktop user in, we do not skip the check.
+    # Auto-login rather than @login_required: /mixer can legitimately be the
+    # first URL a session ever sees (a bookmark, a pasted link), and
+    # @login_required would 500 here (no login endpoint exists in this
+    # edition). Authentication is still enforced — we log the desktop user in,
+    # we do not skip the check.
     _err = _ensure_desktop_login()
     if _err:
         return _err

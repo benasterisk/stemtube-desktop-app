@@ -74,10 +74,16 @@ def add_or_update(user_id, meta):
         return global_download_id
 
 
-def update_download_analysis(video_id, detected_bpm, detected_key, analysis_confidence, chords_data=None, beat_offset=0.0, structure_data=None, lyrics_data=None, beat_times=None, beat_positions=None, music_start_time=0.0):
-    """Update audio analysis results for a download."""
+def update_download_analysis(video_id, detected_bpm, detected_key, analysis_confidence, chords_data=None, beat_offset=None, structure_data=None, lyrics_data=None, beat_times=None, beat_positions=None, music_start_time=None):
+    """Update audio analysis results for a download.
+
+    Every field defaults to None, which PRESERVES the stored value. beat_offset and
+    music_start_time used to default to 0.0: not NULL, so COALESCE let that 0.0 win and
+    any caller that omitted them (chord and beat regeneration) wiped Skip Intro and the
+    beat grid offset.
+    """
     with _conn() as conn:
-        print(f"[DB DEBUG] Updating analysis for video_id='{video_id}': BPM={detected_bpm}, Key={detected_key}, Chords={bool(chords_data)}, BeatOffset={beat_offset:.3f}s, Structure={bool(structure_data)}, Lyrics={bool(lyrics_data)}, BeatTimes={len(beat_times) if beat_times else 0}, BeatPositions={len(beat_positions) if beat_positions else 0}, MusicStart={music_start_time:.1f}s")
+        print(f"[DB DEBUG] Updating analysis for video_id='{video_id}': BPM={detected_bpm}, Key={detected_key}, Chords={bool(chords_data)}, BeatOffset={beat_offset}, Structure={bool(structure_data)}, Lyrics={bool(lyrics_data)}, BeatTimes={len(beat_times) if beat_times else 0}, BeatPositions={len(beat_positions) if beat_positions else 0}, MusicStart={music_start_time}")
 
         # Convert structure_data, lyrics_data, beat_times, beat_positions to JSON if necessary
         structure_json = json.dumps(structure_data) if structure_data else None
@@ -85,22 +91,35 @@ def update_download_analysis(video_id, detected_bpm, detected_key, analysis_conf
         beat_times_json = json.dumps(beat_times) if beat_times else None
         beat_positions_json = json.dumps(beat_positions) if beat_positions else None
 
-        # Update global_downloads table
-        cursor = conn.execute("""
-            UPDATE global_downloads
-            SET detected_bpm=?, detected_key=?, analysis_confidence=?, chords_data=?, beat_offset=?, structure_data=?, lyrics_data=?, beat_times=?, beat_positions=?, music_start_time=?
+        # NULL params PRESERVE the existing value (COALESCE): callers pass None
+        # for "I did not compute this", and a partial result (e.g. a chord
+        # regenerate without positions, or an admin re-analysis) must never
+        # silently erase analysis another pass already stored. Clearing fields
+        # is the job of the dedicated reset helpers, not this updater.
+        _sql = """
+            SET detected_bpm=COALESCE(?, detected_bpm),
+                detected_key=COALESCE(?, detected_key),
+                analysis_confidence=COALESCE(?, analysis_confidence),
+                chords_data=COALESCE(?, chords_data),
+                beat_offset=COALESCE(?, beat_offset),
+                structure_data=COALESCE(?, structure_data),
+                lyrics_data=COALESCE(?, lyrics_data),
+                beat_times=COALESCE(?, beat_times),
+                beat_positions=COALESCE(?, beat_positions),
+                music_start_time=COALESCE(?, music_start_time)
             WHERE video_id=?
-        """, (detected_bpm, detected_key, analysis_confidence, chords_data, beat_offset, structure_json, lyrics_json, beat_times_json, beat_positions_json, music_start_time or 0.0, video_id))
+        """
+        _params = (detected_bpm, detected_key, analysis_confidence, chords_data,
+                   beat_offset, structure_json, lyrics_json, beat_times_json,
+                   beat_positions_json, music_start_time, video_id)
+
+        cursor = conn.execute("UPDATE global_downloads" + _sql, _params)
 
         rows_updated = cursor.rowcount
         print(f"[DB DEBUG] Updated {rows_updated} rows in global_downloads")
 
         # Update all user_downloads entries for this video_id
-        cursor2 = conn.execute("""
-            UPDATE user_downloads
-            SET detected_bpm=?, detected_key=?, analysis_confidence=?, chords_data=?, beat_offset=?, structure_data=?, lyrics_data=?, beat_times=?, beat_positions=?, music_start_time=?
-            WHERE video_id=?
-        """, (detected_bpm, detected_key, analysis_confidence, chords_data, beat_offset, structure_json, lyrics_json, beat_times_json, beat_positions_json, music_start_time or 0.0, video_id))
+        cursor2 = conn.execute("UPDATE user_downloads" + _sql, _params)
 
         rows_updated2 = cursor2.rowcount
         print(f"[DB DEBUG] Updated {rows_updated2} rows in user_downloads")
@@ -111,6 +130,45 @@ def update_download_analysis(video_id, detected_bpm, detected_key, analysis_conf
             print(f"[DB DEBUG] WARNING: No rows updated! Video_id '{video_id}' not found in global_downloads")
         else:
             print(f"[DB DEBUG] Analysis updated successfully for video_id='{video_id}'")
+
+
+def update_beat_grid(video_id, beat_times, beat_positions):
+    """Persist ONLY the beat grid (times + bar positions) for a song.
+
+    Unlike update_download_analysis - which rewrites every analysis column
+    and would null out chords/structure/lyrics when called with just beats -
+    this touches nothing else. Used by the POC mixer preparation to write
+    back its madmom downbeat detection so the expensive pass runs at most
+    once per song, for every user, forever.
+    """
+    beat_times_json = json.dumps(beat_times) if beat_times else None
+    beat_positions_json = json.dumps(beat_positions) if beat_positions else None
+    with _conn() as conn:
+        cur = conn.execute(
+            "UPDATE global_downloads SET beat_times=?, beat_positions=? WHERE video_id=?",
+            (beat_times_json, beat_positions_json, video_id))
+        conn.execute(
+            "UPDATE user_downloads SET beat_times=?, beat_positions=? WHERE video_id=?",
+            (beat_times_json, beat_positions_json, video_id))
+        conn.commit()
+        print(f"[DB] Beat grid saved for video_id='{video_id}': "
+              f"{len(beat_times) if beat_times else 0} beats "
+              f"({cur.rowcount} global row(s))")
+
+
+def update_stems_zip_path(user_id, download_id, zip_path):
+    """Persist the path of the stems ZIP archive for one user's row.
+
+    Per-user on purpose: the archive lives under the extraction output dir
+    that the user's row points at, and users may hold different rows for the
+    same song. Touches nothing else (same targeted-write rationale as
+    update_beat_grid).
+    """
+    with _conn() as conn:
+        conn.execute(
+            "UPDATE user_downloads SET stems_zip_path=? WHERE id=? AND user_id=?",
+            (zip_path, download_id, user_id))
+        conn.commit()
 
 
 def update_download_lyrics(video_id, lyrics_data):
@@ -147,6 +205,27 @@ def update_download_lyrics(video_id, lyrics_data):
             print(f"[LYRICS] WARNING: No rows updated! Video_id '{video_id}' not found")
         else:
             print(f"[LYRICS] Lyrics saved successfully for video_id='{video_id}'")
+
+
+def get_media_metadata(video_id):
+    """Stored media metadata (core/media_metadata.py) for a song, or None."""
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT media_metadata FROM global_downloads WHERE video_id=?", (video_id,)).fetchone()
+    if not row or not row[0]:
+        return None
+    try:
+        return json.loads(row[0])
+    except (TypeError, ValueError):
+        return None
+
+
+def update_media_metadata(video_id, metadata):
+    """Store media metadata (artist, track, language...) on the global record."""
+    with _conn() as conn:
+        conn.execute("UPDATE global_downloads SET media_metadata=? WHERE video_id=?",
+                     (json.dumps(metadata, ensure_ascii=False) if metadata else None, video_id))
+        conn.commit()
 
 
 def update_download_structure(video_id, structure_data):

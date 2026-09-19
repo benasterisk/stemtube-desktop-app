@@ -9,6 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — backported from the server edition
+
+- **Lyrics from LRCLIB aligned on Whisper**, replacing Musixmatch, whose
+  unofficial API stopped serving anonymous clients around April 2026. LRCLIB is
+  free and needs no account; faster-whisper supplies word timings and the LRCLIB
+  words are placed on them. Below a 30% match rate the alignment is rejected and
+  the record's own line timing (or Whisper alone) is used.
+- **Language detected on voiced parts only** (VAD, three 30 s windows) instead of
+  Whisper's first 30 seconds — the reason French songs with an instrumental intro
+  came out transcribed as English. Whisper's credit hallucinations over
+  instrumentals are dropped.
+- **Mixer scrub** — drag the timeline ruler to move the playhead and hear short
+  slices as you go.
+- **Loop controls** — draggable edge handles, fields accepting a timecode
+  (`1:23.45`) or a bar (`b17`), and a clear button. Defining a loop is now
+  Shift+drag on both the ruler and the lanes, so a plain drag no longer creates
+  one by accident.
+- **Shared snap-to-beat toggle** for loop bounds and the Start/Stop markers, with
+  Alt still overriding it for a single drag.
+- **Stage-prompter lyrics popup** — real font scaling up to 3x (the text reflows
+  instead of overflowing), size remembered between sessions, active line parked
+  mid-screen, per-line timecodes hidden.
+- **Explicit re-extraction** — a button next to Open Mixer re-runs a song with
+  another model and replaces the stems.
+- **`POST /api/extractions/<id>/analyze-structure`** to run MSAF on one song.
+- **Mixer artifacts are pre-built after an extraction**, so the first mixer open
+  is a cache hit instead of a wait.
+
+### Fixed
+
+- **Analysis data could be wiped**: the analysis writer overwrote every column,
+  so a caller passing None for chords, structure or lyrics erased them, and
+  omitting beat_offset/music_start_time reset Skip Intro and the beat offset.
+  Every column is now written with COALESCE, so NULL preserves what is stored.
+- **Playback died until the page was reloaded**: each stem's gain and pan nodes
+  stayed connected to the master bus on stop, so every seek leaked a full chain.
+- **Silence when seeking with a loop armed**: a source started past loopEnd never
+  wraps, so the stems ran to the end of their buffers while the playhead kept
+  looping.
+- **Structure detection was dead code**: msaf 0.1.80 imports `scipy.inf` and
+  `scipy.signal.gaussian`, both removed in SciPy 1.12/1.13, so it failed to
+  import and `structure_data` stayed NULL for every song. Sections are now
+  labelled A, B, C… by similarity cluster.
+- **Downbeat detection crashed on numpy ≥ 1.24**: madmom's compiled `hmm.pyx`
+  reads `np.int` at runtime, which `patch_madmom.py` cannot reach.
+- **The stems ZIP 404'd** for any song not extracted in the current process —
+  i.e. everything after a restart. Resolution is now database-first.
+- **Tempo leaked between songs**: a session state saved before the tempo module
+  had loaded stretched the next song to 120 BPM.
+- **One manual scroll stuck the mixer in Manual mode**: the transient value was
+  saved instead of the mode chosen with the toolbar button.
+- Waveform peaks are built at the file's own sample rate and vectorized
+  (2.3 s → 0.34 s for a 3-minute stem).
+
+### Removed
+
+- **De-bleed** (Demucs speaker-bleed removal on recordings) — it never worked,
+  and the server edition dropped it.
+- `musixmatch_client.py`, `syncedlyrics_client.py`, the dead `lyrics_aligner.py`
+  and `vocal_onset_detector.py`, and the `syncedlyrics` dependency.
+
 ### Added — Linux support
 - **`.deb` installer for Ubuntu/Debian (`linux-installer/deb/`)** — the Linux equivalent of the Windows `setup.exe`: a package users download and **double-click** to install (via the software centre), adding a **StemTube Desktop** apps-menu entry and a `stemtube` command. First launch opens a GTK window (zenity), detects the GPU, downloads the matching self-contained engine (CPU or NVIDIA GPU) with a progress bar and runs it — with `--appimage-extract-and-run`, so **no `libfuse2` and no root at run time**. (An earlier AppImage-based installer was dropped: a `.AppImage` isn't double-clickable on desktops without libfuse2. Other distros run the engine AppImage directly.)
 - **Self-contained AppImages (CPU + GPU)** — a Linux distribution mirroring the Windows model. Each AppImage bundles a relocatable CPython 3.12, PyTorch (CPU or CUDA 12.4), Demucs, madmom, faster-whisper and FFmpeg, so end users need no Python, no pip and no system CUDA. Published on the `linux-v2.0.0` release; the GPU build (~3 GB) ships split in two parts under GitHub's 2 GB asset limit. CPU build validated in a VM, GPU build validated with real CUDA on an NVIDIA RTX 4050 via WSL2.

@@ -2,6 +2,7 @@
 Stems extractor for StemTubes application.
 Handles extraction of audio stems using Demucs models.
 """
+import gc
 import os
 import time
 import threading
@@ -24,6 +25,138 @@ import librosa
 import numpy as np
 
 from .config import get_setting, STEM_MODELS, MODELS_DIR, get_ffmpeg_path, ensure_valid_downloads_directory, get_compatible_models, get_fallback_model
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# MSST fine-stem jobs load a ~1.4 GB checkpoint and peak around 4 GB of VRAM. Serialize
+# them so two fine extractions can never fight over the GPU.
+_MSST_GPU_LOCK = threading.Lock()
+
+# Absolute floor of usable VRAM, in GiB, below which the pipeline cannot run at all.
+# See the "min_usable_vram_gb" comment in config.STEM_MODELS for how it was derived.
+_MSST_FALLBACK_MIN_VRAM_GB = 4.5
+
+
+def model_engine(model_name: str) -> str:
+    """Separation backend for a model: "demucs" (default) or "msst"."""
+    return STEM_MODELS.get(model_name, {}).get("engine", "demucs")
+
+
+def _msst_min_vram_gb(model_name: str) -> float:
+    """Usable VRAM (GiB) the model needs, from config with a safe default."""
+    info = STEM_MODELS.get(model_name) or {}
+    try:
+        return float(info.get("min_usable_vram_gb", _MSST_FALLBACK_MIN_VRAM_GB))
+    except (TypeError, ValueError):
+        return _MSST_FALLBACK_MIN_VRAM_GB
+
+
+def _cuda_memory_gb() -> Optional[Tuple[float, float]]:
+    """(free_gb, total_gb) for CUDA device 0, or None when there is no usable CUDA GPU."""
+    try:
+        if not torch.cuda.is_available():
+            return None
+        free_b, total_b = torch.cuda.mem_get_info(0)
+        return free_b / 2 ** 30, total_b / 2 ** 30
+    except Exception as e:  # driver hiccup, no device, ...
+        print(f"[MSST] Could not query CUDA memory: {e}")
+        return None
+
+
+def _release_gpu_memory() -> None:
+    """Best-effort VRAM release before a fine extraction: drop cached models, empty cache.
+
+    ``LyricsDetector`` is instantiated per call in this edition (no module-level
+    singleton), so there is usually nothing holding Whisper weights by the time we get
+    here. The explicit release below is kept as a safety net and is a no-op when nothing
+    is loaded, so it stays correct if a cache is added later.
+    """
+    try:
+        from core import lyrics_detector as _ld
+        cached = getattr(_ld, "_CACHED_DETECTOR", None)
+        if cached is not None:
+            # Drop the faster-whisper handle, then the detector itself.
+            if getattr(cached, "model", None) is not None:
+                cached.model = None
+            _ld._CACHED_DETECTOR = None
+            print("[MSST] Released cached lyrics (Whisper) model")
+    except Exception as e:
+        print(f"[MSST] Lyrics model release skipped: {e}")
+
+    try:
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+    except Exception as e:
+        print(f"[MSST] empty_cache failed: {e}")
+
+
+def _is_cuda_oom(output: str) -> bool:
+    """Whether subprocess output shows a CUDA out-of-memory failure."""
+    if not output:
+        return False
+    low = output.lower()
+    return ("cuda out of memory" in low
+            or "cuda error: out of memory" in low
+            or "torch.cuda.outofmemoryerror" in low
+            or "outofmemoryerror" in low)
+
+
+def check_gpu_for_model(model_name: str) -> Dict[str, Any]:
+    """GPU readiness for a GPU-only model, without launching anything.
+
+    Returns ``{available, total_gb, free_gb, needed_gb, reason}``. ``reason`` is a
+    user-facing FRENCH message when ``available`` is False, else None. The UI calls this
+    through ``/api/config`` (and ``/api/config/gpu-status``) to warn *before* launching.
+
+    Policy (deliberately different from the server's fixed >= 6 GiB total gate, which
+    rejects a 6 GB card that reports 5.997 GiB):
+      * no CUDA GPU            -> unavailable
+      * total below the floor  -> physically impossible, refuse with a clear message
+      * free below the floor   -> still "available": free_gb is reported so the UI can
+                                  warn, and the launch path retries after freeing memory
+      * otherwise              -> available
+    """
+    info = STEM_MODELS.get(model_name) or {}
+    needed_gb = _msst_min_vram_gb(model_name)
+    mem = _cuda_memory_gb()
+
+    if mem is None:
+        return {
+            "available": False, "total_gb": 0.0, "free_gb": 0.0, "needed_gb": needed_gb,
+            "reason": "Aucun GPU CUDA detecte. Ce niveau de separation necessite une carte "
+                      "graphique NVIDIA. Choisissez un modele moins exigeant.",
+        }
+
+    free_gb, total_gb = mem
+    result = {"total_gb": round(total_gb, 2), "free_gb": round(free_gb, 2),
+              "needed_gb": needed_gb}
+
+    # The card physically cannot do it: no amount of freeing will help.
+    if total_gb < needed_gb:
+        result["available"] = False
+        result["reason"] = (
+            f"Desole, votre carte graphique ne dispose pas d'assez de memoire pour ce "
+            f"niveau de separation. Elle possede {total_gb:.1f} Go de VRAM alors que "
+            f"{needed_gb:.1f} Go sont necessaires. Veuillez choisir un modele de "
+            f"separation moins exigeant."
+        )
+        return result
+
+    result["available"] = True
+    # Enough card, but something else is using the VRAM right now. Not a refusal: the
+    # launch path frees what it can and re-checks. The UI warns with this text.
+    if free_gb < needed_gb:
+        result["reason"] = (
+            f"Memoire GPU insuffisante pour le moment : {free_gb:.1f} Go libres sur "
+            f"{total_gb:.1f} Go, {needed_gb:.1f} Go necessaires. Fermez les applications "
+            f"qui utilisent le GPU (jeux, navigateur, montage video) avant de lancer "
+            f"l'extraction."
+        )
+    else:
+        result["reason"] = None
+    return result
 
 
 class ExtractionStatus(Enum):
@@ -376,7 +509,95 @@ class StemsExtractor:
             status = status_message if status_message else "Extracting stems"
             # Pass video_id and title directly so callback doesn't need to look up the item
             self.on_extraction_progress(extraction_id, progress, status, item.video_id, item.title)
-    
+
+    def is_model_available(self, model_name: str) -> bool:
+        """Whether this extractor can run ``model_name``.
+
+        GPU-only models stay available as long as a CUDA GPU is present and the card is
+        physically big enough (total VRAM >= the usable floor). Momentarily-busy VRAM
+        does NOT make the model unavailable: the launch path frees memory and re-checks.
+        """
+        info = STEM_MODELS.get(model_name)
+        if not info or not info.get("compatible", True):
+            return False
+        if not info.get("requires_gpu"):
+            return True
+        if not self.using_gpu:
+            return False
+        return bool(check_gpu_for_model(model_name).get("available"))
+
+    def gpu_status_for_model(self, model_name: str) -> Dict[str, Any]:
+        """``check_gpu_for_model`` plus the extractor's own GPU toggle state."""
+        status = check_gpu_for_model(model_name)
+        if not self.using_gpu:
+            status["available"] = False
+            status["reason"] = ("L'extraction GPU est desactivee dans les parametres. "
+                                "Activez-la pour utiliser ce niveau de separation.")
+        return status
+
+    def _acquire_msst_slot(self, item: ExtractionItem) -> bool:
+        """Wait for the shared MSST GPU slot. Returns False if cancelled while waiting."""
+        if _MSST_GPU_LOCK.acquire(blocking=False):
+            return True
+        self._on_extraction_progress(item.extraction_id, item.progress,
+                                     "Attente du GPU (une autre extraction fine est en cours)...")
+        while not _MSST_GPU_LOCK.acquire(timeout=1):
+            if item.status == ExtractionStatus.CANCELLED:
+                return False
+        return True
+
+    def _ensure_msst_vram(self, item: ExtractionItem) -> None:
+        """Make sure enough VRAM is free for a fine extraction, or raise a clear error.
+
+        Checks FREE memory (``torch.cuda.mem_get_info``), not total. When free memory is
+        short but the card is big enough, releases what we hold (cached Whisper model,
+        allocator cache, ``gc.collect()``) and re-checks; the extraction itself runs in a
+        subprocess, so its VRAM is fully returned on exit.
+        """
+        needed_gb = _msst_min_vram_gb(item.model_name)
+        mem = _cuda_memory_gb()
+        if mem is None:
+            raise RuntimeError(
+                "Aucun GPU CUDA detecte. Ce niveau de separation necessite une carte "
+                "graphique NVIDIA. Veuillez choisir un modele moins exigeant."
+            )
+
+        free_gb, total_gb = mem
+
+        # The card physically cannot do it -> clear refusal, no retry.
+        if total_gb < needed_gb:
+            raise RuntimeError(
+                f"Desole, votre carte graphique ne dispose pas d'assez de memoire pour ce "
+                f"niveau de separation. Elle possede {total_gb:.1f} Go de VRAM alors que "
+                f"{needed_gb:.1f} Go sont necessaires. Veuillez choisir un modele de "
+                f"separation moins exigeant."
+            )
+
+        if free_gb >= needed_gb:
+            print(f"[MSST] VRAM OK: {free_gb:.2f} GiB free / {total_gb:.2f} GiB total "
+                  f"(need {needed_gb:.1f} GiB)")
+            return
+
+        # Big enough card, busy right now: free what we can and re-check.
+        print(f"[MSST] Only {free_gb:.2f} GiB free of {total_gb:.2f} GiB "
+              f"(need {needed_gb:.1f} GiB) - releasing GPU memory...")
+        self._on_extraction_progress(item.extraction_id, item.progress,
+                                     "Liberation de la memoire GPU...")
+        _release_gpu_memory()
+
+        mem = _cuda_memory_gb()
+        free_gb = mem[0] if mem else free_gb
+        if free_gb >= needed_gb:
+            print(f"[MSST] VRAM recovered: {free_gb:.2f} GiB free")
+            return
+
+        raise RuntimeError(
+            f"Memoire GPU insuffisante : {free_gb:.1f} Go libres sur {total_gb:.1f} Go, "
+            f"{needed_gb:.1f} Go necessaires. Fermez les applications qui utilisent le GPU "
+            f"(jeux, navigateur, montage video) puis reessayez, ou choisissez un modele de "
+            f"separation moins exigeant."
+        )
+
     def _extraction_thread(self, item: ExtractionItem):
         """Thread for extracting stems.
         
@@ -388,6 +609,8 @@ class StemsExtractor:
             # Use system temp directory to avoid Flask auto-reload issues
             system_temp_dir = tempfile.gettempdir()
             temp_dir = tempfile.mkdtemp(prefix="demucs_extraction_", dir=system_temp_dir)
+            engine = model_engine(item.model_name)
+            msst_locked = False
 
             try:
                 # Get FFmpeg path for setting environment variables
@@ -447,45 +670,71 @@ class StemsExtractor:
                 os.environ["PATH"] = env["PATH"]
                 os.environ["FFMPEG_PATH"] = ffmpeg_path
 
-                # Build demucs command
-                # In PyInstaller builds, sys.executable is the frozen exe, not Python.
-                # We use the exe itself with a special --demucs flag to run demucs in-process.
-                cmd = [
-                    sys.executable,
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "wrap_demucs.py"),
-                    ffmpeg_path,
-                    '--mp3',                  # Output as MP3
-                    '--mp3-bitrate', '320',   # High quality MP3
-                    '-v',                     # Verbose output for progress tracking
-                    '-n', item.model_name,    # Model name
-                    '-o', temp_dir            # Output to temp directory
-                ]
+                if engine == "msst":
+                    # GPU-only by design: no CPU fallback for this pipeline.
+                    if self.device.type != 'cuda':
+                        raise RuntimeError(
+                            "Ce niveau de separation necessite un GPU CUDA. Activez "
+                            "l'extraction GPU dans les parametres ou choisissez un autre "
+                            "modele."
+                        )
+                    # Verify FREE VRAM (and free some if needed) before we commit.
+                    self._ensure_msst_vram(item)
 
-                # In frozen (PyInstaller) mode, run demucs in-process via a thread
-                # instead of subprocess, since sys.executable can't run .py scripts
-                _is_frozen = getattr(sys, 'frozen', False)
-                if _is_frozen:
-                    print("[EXTRACTION] PyInstaller mode: running demucs in-process")
-                    cmd = [
-                        sys.executable,       # This calls the frozen exe
-                        '--demucs-separate',  # Special flag handled by app.py
-                        '--mp3',
-                        '--mp3-bitrate', '320',
-                        '-v',
-                        '-n', item.model_name,
-                        '-o', temp_dir
+                    # Same <temp>/<model>/<track>/<stem>.mp3 layout as Demucs so the copy
+                    # step below is shared. "other" is always produced (it is the residual).
+                    requested = [s for s in (item.selected_stems or []) if s != "other"]
+                    if getattr(sys, 'frozen', False):
+                        # Frozen build: the exe re-enters itself, like --demucs-separate.
+                        cmd = [sys.executable, '--msst-separate']
+                    else:
+                        cmd = [sys.executable, '-m', 'core.msst.separate']
+                    cmd += [
+                        '-o', os.path.join(temp_dir, item.model_name, 'input'),
+                        '--ffmpeg', ffmpeg_path,
+                        '-d', 'cuda',
+                        '--stems', ','.join(requested),
                     ]
-                
-                # Add device (GPU or CPU)
-                if self.device.type == 'cuda':
-                    cmd.extend(['-d', 'cuda'])
                 else:
-                    cmd.extend(['-d', 'cpu'])
-                
-                # Add two stem mode if needed
-                if item.two_stem_mode and item.primary_stem:
-                    cmd.extend(['--two-stems', item.primary_stem])
-                
+                    # Build demucs command
+                    # In PyInstaller builds, sys.executable is the frozen exe, not Python.
+                    # We use the exe itself with a special --demucs flag to run demucs in-process.
+                    cmd = [
+                        sys.executable,
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)), "wrap_demucs.py"),
+                        ffmpeg_path,
+                        '--mp3',                  # Output as MP3
+                        '--mp3-bitrate', '320',   # High quality MP3
+                        '-v',                     # Verbose output for progress tracking
+                        '-n', item.model_name,    # Model name
+                        '-o', temp_dir            # Output to temp directory
+                    ]
+
+                    # In frozen (PyInstaller) mode, run demucs in-process via a thread
+                    # instead of subprocess, since sys.executable can't run .py scripts
+                    _is_frozen = getattr(sys, 'frozen', False)
+                    if _is_frozen:
+                        print("[EXTRACTION] PyInstaller mode: running demucs in-process")
+                        cmd = [
+                            sys.executable,       # This calls the frozen exe
+                            '--demucs-separate',  # Special flag handled by app.py
+                            '--mp3',
+                            '--mp3-bitrate', '320',
+                            '-v',
+                            '-n', item.model_name,
+                            '-o', temp_dir
+                        ]
+
+                    # Add device (GPU or CPU)
+                    if self.device.type == 'cuda':
+                        cmd.extend(['-d', 'cuda'])
+                    else:
+                        cmd.extend(['-d', 'cpu'])
+
+                    # Add two stem mode if needed
+                    if item.two_stem_mode and item.primary_stem:
+                        cmd.extend(['--two-stems', item.primary_stem])
+
                 # Add audio file at the end (use the temporary file if available)
                 temp_audio_path = None
                 try:
@@ -520,7 +769,13 @@ class StemsExtractor:
                 
                 # Print the command for debugging
                 print(f"Running command: {' '.join(cmd)}")
-                
+
+                if engine == "msst":
+                    # Only one fine extraction may hold the GPU at a time.
+                    if not self._acquire_msst_slot(item):
+                        raise RuntimeError("Extraction annulee par l'utilisateur")
+                    msst_locked = True
+
                 # Run demucs.separate as a subprocess.
                 # CREATE_NO_WINDOW hides the child console window when the
                 # parent is a GUI process (Tauri shell). Falls back to 0 on
@@ -536,7 +791,8 @@ class StemsExtractor:
                     encoding='utf-8',
                     errors='replace',
                     env=env,  # Use the environment with FFmpeg configured
-                    creationflags=no_window
+                    creationflags=no_window,
+                    cwd=PROJECT_ROOT if engine == "msst" else None  # needed for `-m core.msst...`
                 )
                 
                 # Store the process reference for cancellation
@@ -555,7 +811,11 @@ class StemsExtractor:
                 base_extraction_timeout = get_setting("extraction_timeout_minutes", 30)
 
                 # Adjust timeouts based on model complexity
-                if item.model_name == "htdemucs_6s":
+                if engine == "msst":
+                    # Model load (and first-use weight download) prints no percentage
+                    progress_timeout = base_progress_timeout * 3 * 60
+                    max_extraction_time = base_extraction_timeout * 1.5 * 60
+                elif item.model_name == "htdemucs_6s":
                     # 6-stem model takes longer
                     progress_timeout = base_progress_timeout * 2 * 60  # Double timeout for 6-stem
                     max_extraction_time = base_extraction_timeout * 1.5 * 60  # 50% more time
@@ -668,6 +928,11 @@ class StemsExtractor:
                 
                 # Wait for process to complete
                 return_code = process.wait()
+                # The subprocess has exited, so its VRAM is back: free the slot now
+                # rather than holding it through the file-copy phase.
+                if msst_locked:
+                    _MSST_GPU_LOCK.release()
+                    msst_locked = False
 
                 # Update progress to completion if successful
                 if return_code == 0 and item.status != ExtractionStatus.CANCELLED:
@@ -695,6 +960,21 @@ class StemsExtractor:
                 if return_code != 0:
                     # Join the last 20 lines of output for error reporting
                     error_output = "\n".join(output_lines[-20:]) if output_lines else "No output captured"
+                    # A CUDA OOM inside the subprocess is a user-actionable condition, not
+                    # a crash to dump: turn it into a clear message. The subprocess is
+                    # already gone here, so its VRAM has been returned.
+                    if _is_cuda_oom(error_output):
+                        needed_gb = _msst_min_vram_gb(item.model_name)
+                        mem = _cuda_memory_gb()
+                        detail = (f" ({mem[0]:.1f} Go libres sur {mem[1]:.1f} Go)"
+                                  if mem else "")
+                        raise Exception(
+                            f"Memoire GPU insuffisante pendant l'extraction{detail} : ce "
+                            f"niveau de separation necessite environ {needed_gb:.1f} Go de "
+                            f"VRAM libre. Fermez les applications qui utilisent le GPU "
+                            f"(jeux, navigateur, montage video) puis reessayez, ou "
+                            f"choisissez un modele de separation moins exigeant."
+                        )
                     raise Exception(f"Demucs exited with code {return_code}. Output:\n{error_output}")
                 
                 # Finalization phase — progress continues from 45%
@@ -721,6 +1001,10 @@ class StemsExtractor:
                 # Determine expected stems based on model
                 if item.model_name == "htdemucs_6s":
                     default_stems = ["vocals", "drums", "bass", "guitar", "piano", "other"]
+                elif engine == "msst":
+                    # 17 fine stems; take the list from the model definition.
+                    default_stems = list(STEM_MODELS.get(item.model_name, {}).get(
+                        "stems", ["vocals", "drums", "bass", "other"]))
                 else:
                     default_stems = ["vocals", "drums", "bass", "other"]
 
@@ -780,6 +1064,14 @@ class StemsExtractor:
                                 # Keep the file on disk for debugging but don't include in mixer
                                 print(f"[-] Stem '{stem}' excluded from mixer (mostly silent/empty)")
                 
+                # Split drum kits also ship the full kit: the mixer's beat detection and
+                # metronome need it, but it is not a mixer track so it stays out of
+                # stem_files. Without this copy the mixer reports "no drums stem".
+                drums_full = os.path.join(track_dir, "drums_full.mp3")
+                if os.path.exists(drums_full):
+                    shutil.copy2(drums_full, os.path.join(item.output_dir, "drums_full.mp3"))
+                    print("[+] drums_full.mp3 copied (full kit for beat detection)")
+
                 # Stems copied — lyrics + beat detection happen in extensions.py (48-97%)
                 item.progress = 48.0
                 self._on_extraction_progress(item.extraction_id, 48.0, "Finalizing...")
@@ -809,6 +1101,10 @@ class StemsExtractor:
                     self.on_extraction_complete(item.extraction_id, item.title, item.video_id, item)
             
             finally:
+                # Safety net: release the MSST slot if we bailed out before process.wait()
+                if msst_locked:
+                    _MSST_GPU_LOCK.release()
+                    msst_locked = False
                 # Clean up temporary directory
                 try:
                     shutil.rmtree(temp_dir, ignore_errors=True)

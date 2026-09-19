@@ -459,6 +459,29 @@ STEM_MODELS = {
         "description": "Optimized MDX model for superior quality (requires diffq package)",
         "requires_diffq": True,
         "compatible": check_diffq_available()
+    },
+    "mvsep_mega_fine": {
+        "name": "MVSep Mega (fine stems)",
+        "stems": ["vocals", "backing_vocals", "drums", "kick", "snare", "toms", "cymbals",
+                  "bass", "electric_guitar", "acoustic_guitar", "piano", "organ", "synth",
+                  "brass", "winds", "strings", "other"],
+        "path": os.path.join(MODELS_DIR, "msst"),
+        "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/"
+               "v1.0.21/mvsep_mega_model_bs_roformer_53_stems_v1.ckpt",
+        "description": "Fine separation (Demucs 6-stem + DrumSep + MVSep Mega): lead/backing "
+                       "vocals, drums split into kick/snare/toms/cymbals, electric/acoustic "
+                       "guitar, piano, organ, "
+                       "synth, brass, winds, strings (CUDA GPU required)",
+        "requires_diffq": False,
+        "compatible": True,
+        "engine": "msst",
+        "requires_gpu": True,
+        # Usable VRAM the pipeline needs. Measured peak of the three stages is ~3-4 GB;
+        # 4.5 GiB is that peak plus a small allocator/fragmentation margin. This is a
+        # *usable* floor, compared against free memory at launch time (and against total
+        # memory only to decide whether the card could ever run it) -- NOT a total-VRAM
+        # gate. A 6 GB card reporting 5.997 GiB total with ~4.95 GiB free at idle passes.
+        "min_usable_vram_gb": 4.5
     }
 }
 
