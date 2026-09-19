@@ -3,7 +3,7 @@
 // FUNCTIONAL logic = friend (recording-engine.js / recording-effects.js, verbatim).
 // VISUAL design   = the POC tracks (compact controls left, waveform lane right).
 //
-// friend's engine draws every recording waveform (live, final, de-bleed) into
+// friend's engine draws every recording waveform (live and final) into
 //   document.getElementById('rec-track-<id>').querySelector('.waveform')  →  <canvas>
 // and positions it as ratios of that container's FULL width (full-song width × zoom).
 // So we build, per recording:
