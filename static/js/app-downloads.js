@@ -208,11 +208,26 @@ function openExtractionModal(downloadId, title, filePath, videoId) {
     document.getElementById('extractionTitle').textContent = title;
     document.getElementById('extractionPath').textContent = filePath;
 
+    // MVSep Mega is GPU-only: keep it visible whenever a CUDA GPU is present (the
+    // backend decides), and only hide it when there is no usable GPU at all.
+    const modelSelect = document.getElementById('stemModel');
+    const megaOption = modelSelect.querySelector('option[value="mvsep_mega_fine"]');
+    if (megaOption) {
+        const megaUsable = appConfig.mega_available !== false;
+        megaOption.hidden = megaOption.disabled = !megaUsable;
+    }
+
     // Set default values from settings
-    document.getElementById('stemModel').value = appConfig.default_stem_model || 'htdemucs';
+    modelSelect.value = appConfig.default_stem_model || 'htdemucs';
+    if (!modelSelect.value || modelSelect.selectedOptions[0]?.disabled) {
+        modelSelect.value = 'htdemucs';
+    }
 
     // Update available stems based on the model
     updateStemOptions();
+
+    // Show the current GPU state for the selected model
+    updateMegaGpuWarning();
 
     // Update the model description
     updateModelDescription();
@@ -238,11 +253,70 @@ function updateModelDescription() {
         'htdemucs_ft': 'Fine-tuned HTDemucs model with enhanced quality for 4-stem separation',
         'htdemucs_6s': 'Advanced 6-stem separation (vocals, drums, bass, guitar, piano, other)',
         'mdx_extra': 'MDX model with enhanced vocal separation capabilities',
-        'mdx_extra_q': 'Optimized MDX model requiring diffq package (currently unavailable on Windows)'
+        'mdx_extra_q': 'Optimized MDX model requiring diffq package (currently unavailable on Windows)',
+        'mvsep_mega_fine': "Separation fine en 17 stems (Demucs 6 stems, puis MVSep Mega decoupe chaque stem) : chant principal/choeurs, batterie separee par DrumSep en kick/caisse claire/toms/cymbales (charleston inclus dans les cymbales), guitare electrique/acoustique, piano, orgue, synthe, cuivres, bois, cordes. Les stems non coches sont regroupes dans « Other ». GPU NVIDIA (CUDA) requis, environ 1 a 2 min par morceau."
     };
 
     // Update the description
     modelDescriptionElement.textContent = modelDescriptions[selectedModel] || '';
+
+    // Keep the GPU warning in sync with the selected model
+    updateMegaGpuWarning();
+}
+
+// Live GPU state for the selected GPU-only model, fetched from the backend.
+// Cached per modal opening so switching models does not spam the endpoint.
+let megaGpuStatus = null;
+
+function fetchMegaGpuStatus(force) {
+    if (megaGpuStatus && !force) {
+        return Promise.resolve(megaGpuStatus);
+    }
+    return fetch('/api/config/gpu-status?model=mvsep_mega_fine')
+        .then(r => r.json())
+        .then(data => {
+            megaGpuStatus = data;
+            return data;
+        })
+        .catch(err => {
+            console.warn('[GPU STATUS] Could not fetch GPU status:', err);
+            return null;
+        });
+}
+
+// Show the GPU state under the model dropdown BEFORE the user launches anything.
+function updateMegaGpuWarning() {
+    const warningElement = document.getElementById('megaGpuWarning');
+    if (!warningElement) return;
+
+    const selectedModel = document.getElementById('stemModel').value;
+    if (selectedModel !== 'mvsep_mega_fine') {
+        warningElement.style.display = 'none';
+        warningElement.textContent = '';
+        return;
+    }
+
+    fetchMegaGpuStatus(true).then(status => {
+        if (!status) return;
+        if (status.reason) {
+            // Red when the card simply cannot do it, orange when it is just busy.
+            warningElement.style.color = status.available ? '#e6a23c' : '#e63950';
+            warningElement.textContent = status.reason;
+            warningElement.style.display = 'block';
+        } else {
+            warningElement.style.color = '#67c23a';
+            warningElement.textContent =
+                `GPU pret : ${status.free_gb} Go libres sur ${status.total_gb} Go `
+                + `(${status.needed_gb} Go necessaires).`;
+            warningElement.style.display = 'block';
+        }
+    });
+}
+
+// "electric_guitar" -> "Electric guitar"
+function formatStemLabel(stem) {
+    const text = String(stem).replace(/_/g, ' ');
+    return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 // Function to update stem options based on the selected model
@@ -273,7 +347,7 @@ function updateStemOptions() {
         
         const label = document.createElement('label');
         label.htmlFor = stemId;
-        label.textContent = stem.charAt(0).toUpperCase() + stem.slice(1); // Capitalize first letter
+        label.textContent = formatStemLabel(stem);
         
         checkboxDiv.appendChild(checkbox);
         checkboxDiv.appendChild(label);
@@ -287,7 +361,7 @@ function updateStemOptions() {
     availableStems.forEach(stem => {
         const option = document.createElement('option');
         option.value = stem;
-        option.textContent = stem.charAt(0).toUpperCase() + stem.slice(1);
+        option.textContent = formatStemLabel(stem);
         primaryStemSelect.appendChild(option);
     });
 
@@ -309,6 +383,32 @@ function startExtraction() {
     const modelName = document.getElementById('stemModel').value;
     const twoStemMode = document.getElementById('twoStemMode').checked;
     const primaryStem = document.getElementById('primaryStem').value;
+
+    // GPU-only models: check live VRAM before queuing anything. A card that is simply
+    // busy still goes through (the backend frees memory and re-checks); a card that is
+    // physically too small is refused here with an explicit dialog.
+    if (modelName === 'mvsep_mega_fine') {
+        fetchMegaGpuStatus(true).then(status => {
+            if (status && status.available === false) {
+                alert(status.reason
+                    || "Desole, votre carte graphique ne dispose pas d'assez de memoire "
+                     + "pour ce niveau de separation. Veuillez choisir un modele de "
+                     + "separation moins exigeant.");
+                return;
+            }
+            if (status && status.reason) {
+                // Enough card, busy right now: warn but let the extraction proceed.
+                showToast(status.reason, 'warning');
+            }
+            launchExtraction(modelName, twoStemMode, primaryStem);
+        });
+        return;
+    }
+
+    launchExtraction(modelName, twoStemMode, primaryStem);
+}
+
+function launchExtraction(modelName, twoStemMode, primaryStem) {
 
     // Get selected stems from dynamically created checkboxes
     const selectedStems = [];

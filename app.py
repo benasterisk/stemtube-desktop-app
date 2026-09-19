@@ -16,6 +16,14 @@ if '--demucs-separate' in sys.argv:
     demucs_main()
     sys.exit(0)
 
+# Same re-entry trick for the MSST fine-stem pipeline: in a frozen build sys.executable
+# cannot run `-m core.msst.separate`, so the exe calls itself with --msst-separate.
+if '--msst-separate' in sys.argv:
+    args = [a for a in sys.argv[1:] if a != '--msst-separate']
+    sys.argv = ['core.msst.separate'] + args
+    from core.msst.separate import main as msst_main
+    sys.exit(msst_main())
+
 import io
 
 # Fix Windows console encoding — cp1252 cannot handle emoji/unicode in print()
