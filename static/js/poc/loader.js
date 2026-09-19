@@ -43,9 +43,23 @@ const Loader = {
     // Make sure the SoundTouch worklet is ready before stems can play.
     if(this.engine.loadWorklet) await this.engine.loadWorklet();
     const names = Mixer.STEM_ORDER.filter(n => meta.stems[n]);
-    await this.engine.setStems(job, names, meta.metronome_resolutions);
-    this.engine.duration = meta.duration;
     this.view.meta = meta; this.view.engine = this.engine;
+    // Show the tracks and the server-side waveforms right away, then fill them in as
+    // each stem finishes downloading and decoding, instead of showing nothing until
+    // the last one has arrived. setStems() starts with unload(), which zeroes
+    // engine.duration — so the duration is (re)set from the reserve callback, once
+    // the empty tracks exist and before anything draws.
+    await this.engine.setStems(job, names, meta.metronome_resolutions,
+      (loaded, total) => {
+        this.progress(`Loading stems ${loaded}/${total}…`, Math.round(100 * loaded / total));
+        this.view.redrawVisible();
+      },
+      () => {
+        this.engine.duration = meta.duration;
+        Mixer.build(this.engine, this.view);
+        this.view.redrawAll();
+      });
+    this.engine.duration = meta.duration;
     Mixer.build(this.engine, this.view);
     this._label = label || (window.EXTRACTION_INFO && window.EXTRACTION_INFO.title) || job;
     // Re-apply any saved per-track controls / zoom / playhead for THIS job (keyed by
