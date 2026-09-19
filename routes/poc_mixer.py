@@ -73,10 +73,34 @@ def _gc_exports():
             if e:
                 shutil.rmtree(os.path.dirname(e["path"]), ignore_errors=True)
 
-# Stem display order the POC engine expects (metronome first). guitar/piano appear in
-# some demucs models; they're tolerated as extra stems.
-STEM_ORDER = ["metronome", "drums", "bass", "vocals", "other", "guitar", "piano"]
-_REAL_STEMS = ["drums", "bass", "vocals", "other", "guitar", "piano"]
+# Stem display order the POC engine expects (metronome first). guitar/piano come from
+# htdemucs_6s, the split names (kick, electric_guitar, ...) from MVSep Mega.
+STEM_ORDER = ["metronome", "drums", "kick", "snare", "toms", "hihat", "cymbals", "bass",
+              "vocals", "backing_vocals", "other", "guitar", "electric_guitar",
+              "acoustic_guitar", "piano", "organ", "synth", "brass", "winds", "strings"]
+_REAL_STEMS = STEM_ORDER[1:]
+
+
+def _real_stem_names(stems_map):
+    """Stems to serve: known names in display order, then any other name (never dropped)."""
+    extra = sorted(n for n in stems_map if n not in _REAL_STEMS and n != "metronome")
+    return [n for n in _REAL_STEMS if n in stems_map] + extra
+
+
+def _drums_ref(stems_map):
+    """Full drum kit used for beat detection / metronome rendering.
+
+    Models that split the kit (MVSep Mega) keep only the non-isolated part in "drums"
+    (or drop it as silent) and write the whole kit to drums_full.mp3 next to the stems,
+    which is preferred when present.
+    """
+    # Any stem's folder will do: the kit stems themselves may all have been dropped as
+    # silent, while drums_full.mp3 is always written by the fine-stem model.
+    for path in stems_map.values():
+        full = os.path.join(os.path.dirname(path), "drums_full.mp3")
+        if os.path.exists(full):
+            return full
+    return stems_map.get("drums")
 
 
 def _set_prep(eid, stage, pct, done=False, error=None):
@@ -159,8 +183,8 @@ def _resolve_context(extraction_id, user_id):
         raise ValueError("no resolvable stem paths")
     # all stems share a directory; derive it from the first real stem we can find
     ref = None
-    for n in _REAL_STEMS:
-        if n in stems_map and os.path.exists(stems_map[n]):
+    for n in _real_stem_names(stems_map):
+        if os.path.exists(stems_map[n]):
             ref = stems_map[n]
             break
     if not ref:
@@ -326,7 +350,7 @@ def _build_meta(extraction_id, row, stems_map, stems_dir, cache):
     step("Reading beats…", 10)
     beats, positions = _db_beats(row)
 
-    drums = stems_map.get("drums")
+    drums = _drums_ref(stems_map)
     metro_map = _existing_metronomes(stems_dir)
 
     if not metro_map:
@@ -359,7 +383,7 @@ def _build_meta(extraction_id, row, stems_map, stems_dir, cache):
 
     # ── duration / median bpm / start ──
     step("Measuring…", 80)
-    ref = drums or next((stems_map[n] for n in _REAL_STEMS if n in stems_map), None)
+    ref = drums or next((stems_map[n] for n in _real_stem_names(stems_map)), None)
     dur = round(sf.info(ref).duration, 3) if ref else 0.0
 
     median_bpm = row.get('detected_bpm') or 0
@@ -393,7 +417,8 @@ def _build_meta(extraction_id, row, stems_map, stems_dir, cache):
 
     # ── waveforms for every served stem + the 1x metronome ──
     step("Building waveforms…", 88)
-    served = {n: stems_map[n] for n in _REAL_STEMS if n in stems_map and os.path.exists(stems_map[n])}
+    served = {n: stems_map[n] for n in _real_stem_names(stems_map)
+              if os.path.exists(stems_map[n])}
     waveforms = {}
     for name, p in served.items():
         try:
@@ -557,7 +582,7 @@ def _resolve_stem_file(extraction_id, stem, user_id):
         instrument = _meta_instrument(meta)
         if instrument != "click":
             try:
-                paths = _ensure_instrument_metros(meta, stems_map.get("drums"), cache, instrument)
+                paths = _ensure_instrument_metros(meta, _drums_ref(stems_map), cache, instrument)
                 p = paths.get(res)
                 if p and os.path.exists(p):
                     return p
@@ -642,7 +667,7 @@ def detect_intro(extraction_id):
         except (TypeError, ValueError):
             stop_time = None
 
-    drums = stems_map.get("drums")
+    drums = _drums_ref(stems_map)
     if not (drums and os.path.exists(drums)):
         return jsonify({"error": "no drums stem for precount"}), 400
 
@@ -708,7 +733,7 @@ def set_metro_instrument(extraction_id):
 
     body = request.get_json(silent=True) or {}
     instrument = click_kit.normalize(body.get("instrument"))
-    drums = stems_map.get("drums")
+    drums = _drums_ref(stems_map)
 
     try:
         # 1) render the base resolution WAVs for the new instrument (no-op for click)
@@ -846,7 +871,7 @@ def export(extraction_id):
     lead_silence = 0.0
     first_offset = 0.0
     lead_pad = 0.0
-    can_bake = include_metro and stems_map.get("drums") \
+    can_bake = include_metro and _drums_ref(stems_map) \
         and os.path.exists(stems_map["drums"]) and meta.get("beats")
     try:
         if include_metro and can_bake:

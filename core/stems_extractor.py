@@ -1064,6 +1064,14 @@ class StemsExtractor:
                                 # Keep the file on disk for debugging but don't include in mixer
                                 print(f"[-] Stem '{stem}' excluded from mixer (mostly silent/empty)")
                 
+                # Split drum kits also ship the full kit: the mixer's beat detection and
+                # metronome need it, but it is not a mixer track so it stays out of
+                # stem_files. Without this copy the mixer reports "no drums stem".
+                drums_full = os.path.join(track_dir, "drums_full.mp3")
+                if os.path.exists(drums_full):
+                    shutil.copy2(drums_full, os.path.join(item.output_dir, "drums_full.mp3"))
+                    print("[+] drums_full.mp3 copied (full kit for beat detection)")
+
                 # Stems copied — lyrics + beat detection happen in extensions.py (48-97%)
                 item.progress = 48.0
                 self._on_extraction_progress(item.extraction_id, 48.0, "Finalizing...")
