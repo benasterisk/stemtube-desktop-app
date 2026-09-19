@@ -6,16 +6,10 @@ Provides Chordify/Moises-level accuracy with advanced beat tracking and extended
 import os
 import sys
 import json
+import core.numpy_compat  # noqa: F401  (must precede madmom imports)
 import numpy as np
 from typing import Tuple, List, Dict, Optional
 
-# Monkey-patch numpy for madmom compatibility with numpy 2.x
-if not hasattr(np, 'int'):
-    np.int = np.int64
-if not hasattr(np, 'float'):
-    np.float = np.float64
-if not hasattr(np, 'bool'):
-    np.bool = np.bool_
 
 # Fix madmom model paths in compiled mode (PyInstaller / Nuitka).
 # madmom uses MODEL_PATH = os.path.dirname(__file__) in its models/__init__.py
