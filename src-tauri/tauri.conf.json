@@ -1,6 +1,6 @@
 {
   "productName": "StemTube Desktop",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "identifier": "com.stemtube.desktop.standard",
   "build": {
     "frontendDist": "../dist",
@@ -26,7 +26,9 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "resources": [],
     "icon": [
       "icons/32x32.png",

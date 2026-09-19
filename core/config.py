@@ -18,7 +18,7 @@ load_dotenv()
 
 # Application information
 APP_NAME = "StemTube Desktop"
-APP_VERSION = "1.0.0"
+APP_VERSION = "2.2.0"
 APP_AUTHOR = "StemTube"
 
 # ============================================================================

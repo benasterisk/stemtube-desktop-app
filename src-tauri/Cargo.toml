@@ -1,6 +1,6 @@
 [package]
 name = "stemtube-desktop"
-version = "2.0.0"
+version = "2.2.0"
 description = "StemTube Desktop - Music Stem Separation & Mixing"
 authors = ["StemTube"]
 edition = "2021"
