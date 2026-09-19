@@ -80,7 +80,7 @@ fn open_in_browser(app: &AppHandle) -> Result<(), String> {
         .map_err(|e| format!("Cannot open {} in the default browser: {}", url, e))
 }
 
-const RELEASE_BASE: &str = "https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.0.0";
+const RELEASE_BASE: &str = "https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.2.0";
 // GPU build is split into <2 GB parts (GitHub asset size limit); CPU build fits in one file.
 const GPU_BACKEND_PARTS: &[&str] = &[
     "stemtube-backend-standard-gpu.zip.000",

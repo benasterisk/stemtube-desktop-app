@@ -10,7 +10,7 @@
 set -uo pipefail
 
 REL_BASE="https://github.com/benasterisk/stemtube-desktop-releases/releases/download"
-REL_TAG="${STEMTUBE_LINUX_TAG:-linux-v2.0.0}"
+REL_TAG="${STEMTUBE_LINUX_TAG:-v2.2.0}"
 DEST="${STEMTUBE_HOME:-$HOME/.local/share/stemtube-desktop}"
 
 ZEN="$(command -v zenity || true)"
