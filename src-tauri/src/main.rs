@@ -1,17 +1,27 @@
-// StemTube Desktop — Tauri Shell with Splash Screen and Auto-Download
+// StemTube Desktop — Tauri Shell with Control Window and Auto-Download
+//
+// There is no embedded webview for the application UI: StemTube runs in the
+// user's DEFAULT BROWSER. The single Tauri window (label "main") is a small
+// setup/control panel that owns the Python backend's lifetime.
 //
 // Flow:
-// 1. Tauri opens immediately with splash.html (small window with progress bar)
+// 1. Tauri opens immediately with splash.html (small window, setup progress)
 // 2. Background thread runs first_run_setup:
 //    - GPU detection → selects the GPU or CPU backend archive
 //    - Download backend archive (multi-part for GPU) from GitHub Releases
 //    - Concatenate parts into a single zip (GPU only)
 //    - Extract with tar.exe / PowerShell Expand-Archive
-//    - Emits `setup_progress` events to the splash window at each step
+//    - Emits `setup_progress` events to the control window at each step
 // 3. Repair the venv if its base interpreter is missing (portable Python)
 // 4. Once backend is installed, launch Python venv
 // 5. Wait for Flask on 127.0.0.1:5011
-// 6. Navigate the splash window to the Flask URL (main UI)
+// 6. Open http://127.0.0.1:5011 in the default browser (tauri-plugin-shell)
+//    and switch the control window to its "running" state: it stays open so
+//    the app (and therefore the backend) keeps living, offers a button to
+//    re-open the browser tab, and a quit button.
+//
+// Closing the control window destroys label "main", which kills the backend
+// and ends the process — the browser tab is then simply dead.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -27,7 +37,8 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager};
+use tauri_plugin_shell::ShellExt;
 
 const PORT: u16 = 5011;
 const STARTUP_TIMEOUT_SECS: u64 = 300;
@@ -49,8 +60,25 @@ fn log_shell(msg: &str) {
         let _ = writeln!(f, "[{}] {}", now, msg);
     }
 }
-const MAIN_WINDOW_WIDTH: f64 = 1400.0;
-const MAIN_WINDOW_HEIGHT: f64 = 900.0;
+/// URL of the Flask UI, opened in the user's default browser.
+fn app_url() -> String {
+    format!("http://127.0.0.1:{}", PORT)
+}
+
+/// Open the StemTube web UI in the user's DEFAULT BROWSER.
+///
+/// Uses tauri-plugin-shell's opener (already a dependency, already initialised
+/// in `main`). `Shell::open` is deprecated in favour of tauri-plugin-opener,
+/// but it is the opener available without adding a new crate and it still
+/// works: called from Rust it bypasses the JS-side scope check, so no extra
+/// scope entry is needed beyond the `shell:allow-open` capability.
+#[allow(deprecated)]
+fn open_in_browser(app: &AppHandle) -> Result<(), String> {
+    let url = app_url();
+    app.shell()
+        .open(&url, None)
+        .map_err(|e| format!("Cannot open {} in the default browser: {}", url, e))
+}
 
 const RELEASE_BASE: &str = "https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.0.0";
 // GPU build is split into <2 GB parts (GitHub asset size limit); CPU build fits in one file.
@@ -742,43 +770,52 @@ fn run_setup_flow(app: AppHandle) {
     }
     log_shell("Step 3 OK: server reachable");
 
-    // Step 4: notify the splash that we're ready
-    let _ = app.emit("setup_done", ());
+    // Step 4: notify the control window that we're ready. It switches from the
+    // setup progress view to the "running" view (open-browser / quit buttons).
+    // The window is NEVER closed here: it is the app's only window, and Tauri 2
+    // exits the process when the last window closes — which would kill the
+    // backend right after we started it.
+    let _ = app.emit("setup_done", app_url());
     thread::sleep(Duration::from_millis(600));
 
-    // CRITICAL: build the new main window BEFORE closing the splash.
-    // Tauri 2 quits the app automatically when the last window is closed,
-    // so we must have a window alive at all times during the transition.
-    let url = format!("http://127.0.0.1:{}", PORT);
-    let parsed_url = match url.parse::<tauri::Url>() {
-        Ok(u) => WebviewUrl::External(u),
-        Err(_) => WebviewUrl::External(format!("http://127.0.0.1:{}/", PORT).parse().unwrap()),
-    };
-
-    let builder = WebviewWindowBuilder::new(&app, "stemtube", parsed_url)
-        .title("StemTube Desktop")
-        .inner_size(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT)
-        .min_inner_size(1024.0, 700.0)
-        .resizable(true)
-        .center();
-
-    log_shell("Building main window");
-    match builder.build() {
-        Ok(_main_window) => {
-            log_shell("Main window built OK, closing splash");
-            // New window is alive — now we can safely close the splash.
-            thread::sleep(Duration::from_millis(300));
-            if let Some(splash) = app.get_webview_window("main") {
-                let _ = splash.close();
-            }
-            log_shell("Splash closed, transition complete");
-        }
+    // Step 5: hand the UI over to the user's default browser.
+    log_shell("Opening the web UI in the default browser");
+    match open_in_browser(&app) {
+        Ok(()) => log_shell("Default browser launched, control window stays open"),
         Err(e) => {
-            log_shell(&format!("Main window build FAILED: {}", e));
-            eprintln!("[Tauri] Failed to open main window: {}", e);
-            let _ = app.emit("setup_error", format!("Failed to open main window: {}", e));
+            // Not fatal: the backend is up and the control window still offers
+            // the "open in browser" button plus the URL to copy manually.
+            log_shell(&format!("Browser launch FAILED: {}", e));
+            eprintln!("[Tauri] {}", e);
+            let _ = app.emit("browser_error", e);
         }
     }
+}
+
+// --- Commands invoked by the control window ---
+
+/// Re-open the web UI in the default browser (button in the running view).
+#[tauri::command]
+fn open_browser(app: AppHandle) -> Result<(), String> {
+    log_shell("open_browser command from the control window");
+    open_in_browser(&app)
+}
+
+/// Quit StemTube: stop the Python backend, then exit the process.
+/// Closing the control window does the same thing via `on_window_event`.
+#[tauri::command]
+fn quit_app(app: AppHandle) {
+    log_shell("quit_app command from the control window");
+    if let Some(state) = app.try_state::<AppState>() {
+        kill_backend(&state);
+    }
+    app.exit(0);
+}
+
+/// The URL the control window displays so it can be copied by hand.
+#[tauri::command]
+fn get_app_url() -> String {
+    app_url()
 }
 
 // --- Entry point ---
@@ -789,6 +826,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .manage(state)
+        .invoke_handler(tauri::generate_handler![open_browser, quit_app, get_app_url])
         .setup(|app| {
             let handle = app.handle().clone();
             // Run setup in background thread
@@ -801,11 +839,14 @@ fn main() {
             if let tauri::WindowEvent::Destroyed = event {
                 let label = window.label();
                 log_shell(&format!("WindowEvent::Destroyed for label '{}'", label));
-                // Only kill the backend when the MAIN UI window closes, not
-                // when the splash window is destroyed during the transition.
-                // The splash uses label "main" (legacy), the actual UI uses "stemtube".
-                if label == "stemtube" {
-                    log_shell("Main UI closed → killing backend");
+                // "main" is the setup/control window — the only window this app
+                // ever creates, since the UI itself lives in the user's browser.
+                // Closing it is the user's "quit": stop the Python backend so it
+                // does not outlive the shell. It is never closed programmatically
+                // during the setup → running transition, so the backend cannot be
+                // killed prematurely.
+                if label == "main" {
+                    log_shell("Control window closed → killing backend");
                     if let Some(s) = window.try_state::<AppState>() {
                         kill_backend(&s);
                     }
