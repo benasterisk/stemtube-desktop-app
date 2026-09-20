@@ -158,10 +158,15 @@ def launch_control_window(port):
         pass
 
     def _font(size, weight="normal", mono=False):
-        families = set(tkfont.families())
-        wanted = (("DejaVu Sans Mono", "Liberation Mono", "Consolas", "Courier New")
+        families = {f.lower(): f for f in tkfont.families()}
+        wanted = (("DejaVu Sans Mono", "Liberation Mono", "Consolas", "Courier New",
+                   "nimbus mono l", "courier")
                   if mono else
-                  ("Segoe UI", "Inter", "Ubuntu", "Cantarell", "Noto Sans", "DejaVu Sans"))
+                  ("Segoe UI", "Inter", "Ubuntu", "Cantarell", "Noto Sans", "DejaVu Sans",
+                   # The Tk bundled in the Linux engine is built without Xft: it
+                   # only sees X core fonts. These two are the scalable ones;
+                   # without them Tk falls back to a bitmap "fixed".
+                   "nimbus sans l", "helvetica"))
         for fam in wanted:
             if fam in families:
                 return tkfont.Font(family=fam, size=size, weight=weight)
