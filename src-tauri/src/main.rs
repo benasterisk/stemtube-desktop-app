@@ -688,6 +688,41 @@ fn kill_backend(state: &AppState) {
         }
         *guard = None;
     }
+    // The handle above is not enough on Windows, see below.
+    kill_stray_backends();
+}
+
+/// Kill every process running out of the backend directory, children included.
+///
+/// The `Child` handle only tracks the process we spawned. After an in-app
+/// update the backend restarts itself (core/updater.py: Popen + os._exit on
+/// Windows, which has no real exec), so the process actually serving the app
+/// is one we never spawned and `child.kill()` hits a PID that is already dead.
+/// The orphan then outlives the shell, keeps serving stale code on the next
+/// launch, and locks the venv so the uninstaller cannot delete it.
+#[cfg(windows)]
+fn kill_stray_backends() {
+    let dir = backend_dir().display().to_string().replace('\'', "''");
+    // /T takes the base interpreter too: venv\Scripts\python.exe is a
+    // redirector whose real python.exe child lives outside the backend dir.
+    let script = format!(
+        "Get-CimInstance Win32_Process | Where-Object {{ $_.ExecutablePath -like '{}\\*' }} | ForEach-Object {{ taskkill /F /T /PID $_.ProcessId }}",
+        dir
+    );
+    let mut cmd = Command::new("powershell");
+    cmd.args(["-NoProfile", "-NonInteractive", "-Command", &script])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    match cmd.status() {
+        Ok(_) => log_shell("stray backend sweep done"),
+        Err(e) => log_shell(&format!("stray backend sweep failed: {}", e)),
+    }
+}
+
+#[cfg(not(windows))]
+fn kill_stray_backends() {
+    // os.execv keeps the PID on POSIX, so the Child handle stays valid.
 }
 
 // --- Setup orchestration (runs in background thread) ---
@@ -708,6 +743,11 @@ fn run_setup_flow(app: AppHandle) {
         }
         log_shell("first_run_setup OK");
     }
+
+    // A backend left over from a previous session (see kill_stray_backends)
+    // would answer on the port and make us skip straight to "server reachable"
+    // with whatever code it had loaded. Clear it before starting ours.
+    kill_stray_backends();
 
     // Step 2: start backend
     log_shell("Step 2: start_backend");
