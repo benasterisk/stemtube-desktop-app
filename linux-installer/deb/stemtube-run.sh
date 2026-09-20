@@ -16,7 +16,12 @@ DEST="${STEMTUBE_HOME:-$HOME/.local/share/stemtube-desktop}"
 ZEN="$(command -v zenity || true)"
 if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && [ -n "$ZEN" ]; then GUI=1; else GUI=0; fi
 
-die()  { [ "$GUI" = 1 ] && "$ZEN" --error --width=440 --title="StemTube" --text="$1" || echo "ERROR: $1" >&2; exit 1; }
+# zenity follows the desktop GTK theme, which on a bare install is a glaring
+# white dialog. Force the dark variant so the first-launch window is at least
+# in the same family as the app's own dark control window.
+zen()  { GTK_THEME="${STEMTUBE_GTK_THEME:-Adwaita:dark}" "$ZEN" "$@"; }
+
+die()  { [ "$GUI" = 1 ] && zen --error --width=440 --title="StemTube" --text="$1" || echo "ERROR: $1" >&2; exit 1; }
 
 command -v curl >/dev/null 2>&1 || die "curl is required.\nInstall it with: sudo apt install curl"
 mkdir -p "$DEST"
@@ -64,14 +69,31 @@ if [ ! -x "$APPIMAGE" ]; then
     pid=$!
     (
       echo "# Detected: $LABEL"
-      echo "# Downloading the StemTube engine (one-time, may take a few minutes)…"
+      # A pulsating bar gives no idea whether 4 GB will take 2 minutes or 40.
+      # Ask GitHub for the real size first, then report true progress.
+      total=0
+      if curl -fsIL "$REL_BASE/$REL_TAG/$base" >/dev/null 2>&1; then urls="$base"
+      else urls=""; i=0
+        while curl -fsIL "$REL_BASE/$REL_TAG/${base}.part$i" >/dev/null 2>&1; do urls="$urls ${base}.part$i"; i=$((i+1)); done
+      fi
+      for u in $urls; do
+        n=$(curl -fsIL "$REL_BASE/$REL_TAG/$u" 2>/dev/null | tr -d '\r' | awk 'tolower($1)=="content-length:"{v=$2} END{print v+0}')
+        total=$((total + n))
+      done
+      total_mb=$((total / 1048576))
       while kill -0 "$pid" 2>/dev/null; do
-        [ -f "$APPIMAGE" ] && echo "# $LABEL — downloaded $(du -m "$APPIMAGE" 2>/dev/null | awk '{print $1}') MB…"
+        got=$(du -scm "$APPIMAGE" "$DEST"/.parts.* 2>/dev/null | awk 'END{print $1+0}')
+        if [ "$total_mb" -gt 0 ]; then
+          pct=$((got * 100 / total_mb)); [ "$pct" -gt 99 ] && pct=99
+          echo "$pct"
+          echo "# StemTube engine — $LABEL\n\nDownloading $got of $total_mb MB ($pct%)\nOne-time download. Later launches start instantly."
+        else
+          echo "# StemTube engine — $LABEL\n\nDownloaded $got MB…"
+        fi
         sleep 1
       done
       echo "100"
-    ) | "$ZEN" --progress --pulsate --auto-close --no-cancel --width=470 \
-             --title="StemTube — first launch" --text="Preparing…"
+    ) | zen --progress --auto-close --no-cancel --width=520              --title="StemTube Desktop — first launch" --text="Contacting GitHub…"
     wait "$pid"; rc=$(cat "$status_file" 2>/dev/null || echo 1); rm -f "$status_file"
   else
     echo "Detected: $LABEL — downloading engine…"; download_engine; rc=$?
@@ -102,7 +124,7 @@ extract_tree() {
 
 if [ ! -f "$APPTREE/usr/src/stemtube/app.py" ] || [ "$APPIMAGE" -nt "$APPTREE" ]; then
   if [ "$GUI" = 1 ]; then
-    ( echo "# Preparing StemTube (one-time)…"; extract_tree; echo "100" )       | "$ZEN" --progress --pulsate --auto-close --no-cancel --width=470                --title="StemTube" --text="Preparing…"
+    ( echo "# Unpacking the StemTube engine (one-time, about a minute)…"; extract_tree; echo "100" )       | zen --progress --pulsate --auto-close --no-cancel --width=520 --title="StemTube Desktop" --text="Unpacking the engine…"
   else
     echo "Preparing StemTube (one-time)…"; extract_tree
   fi

@@ -142,25 +142,56 @@ def launch_control_window(port):
     # open the browser once at startup
     _open_in_browser(url)
 
+    # Same look as the Windows control window (src-tauri/splash.html): dark
+    # burgundy panel, red wordmark, green "running" dot, one primary and one
+    # ghost button. Tk has no gradients, so the background is the flat midpoint.
+    BG, FG, RED, RED_HI = "#25101a", "#e8d0d5", "#e41b36", "#ff4757"
+    MUTED, DIM, GREEN, WARN = "#8a7077", "#5c4248", "#3ddc84", "#ffb347"
+
     root = tk.Tk()
     root.title("StemTube Desktop")
+    root.configure(bg=BG)
     try:
-        root.geometry("360x200")
+        root.geometry("520x340")
         root.resizable(False, False)
     except Exception:
         pass
 
-    title_font = tkfont.Font(size=14, weight="bold")
-    tk.Label(root, text="StemTube Desktop", font=title_font).pack(pady=(18, 4))
-    tk.Label(root, text="Running — open in your browser:").pack()
-    link = tk.Label(root, text=url, fg="#2563eb", cursor="hand2")
-    link.pack(pady=(0, 12))
-    link.bind("<Button-1>", lambda _e: _open_in_browser(url))
+    def _font(size, weight="normal", mono=False):
+        families = set(tkfont.families())
+        wanted = (("DejaVu Sans Mono", "Liberation Mono", "Consolas", "Courier New")
+                  if mono else
+                  ("Segoe UI", "Inter", "Ubuntu", "Cantarell", "Noto Sans", "DejaVu Sans"))
+        for fam in wanted:
+            if fam in families:
+                return tkfont.Font(family=fam, size=size, weight=weight)
+        return tkfont.Font(size=size, weight=weight)
 
-    btns = tk.Frame(root)
-    btns.pack(pady=6)
-    tk.Button(btns, text="Open StemTube", width=14,
-              command=lambda: _open_in_browser(url)).grid(row=0, column=0, padx=6)
+    tk.Label(root, text="STEMTUBE DESKTOP", font=_font(22, "bold"),
+             fg=RED, bg=BG).pack(pady=(34, 2))
+    tk.Label(root, text="StemTube runs in your web browser", font=_font(10),
+             fg=MUTED, bg=BG).pack(pady=(0, 22))
+
+    status = tk.Frame(root, bg=BG)
+    status.pack()
+    dot = tk.Canvas(status, width=12, height=12, bg=BG, highlightthickness=0)
+    dot.create_oval(1, 1, 11, 11, fill=GREEN, outline=GREEN)
+    dot.pack(side="left", padx=(0, 8))
+    tk.Label(status, text="StemTube is running", font=_font(12),
+             fg=FG, bg=BG).pack(side="left")
+
+    warn = tk.Label(root, text="", font=_font(9), fg=WARN, bg=BG)
+
+    def open_ui(_e=None):
+        if _open_in_browser(url):
+            warn.config(text="")
+        else:
+            warn.config(text="Could not open your browser — open the address above manually.")
+
+    link = tk.Label(root, text=url, font=_font(10, mono=True),
+                    fg=RED, bg=BG, cursor="hand2")
+    link.pack(pady=(6, 20))
+    link.bind("<Button-1>", open_ui)
 
     def quit_app():
         print("[LAUNCHER] Quit requested — shutting down.")
@@ -169,9 +200,34 @@ def launch_control_window(port):
         finally:
             os._exit(0)
 
-    tk.Button(btns, text="Quit", width=10, command=quit_app).grid(row=0, column=1, padx=6)
-    tk.Label(root, text="Closing this window stops StemTube.",
-             fg="#888").pack(side="bottom", pady=(0, 10))
+    def _button(parent, text, command, primary):
+        # A bordered Frame around a flat Button: the only way to get a 1px
+        # coloured outline (the "ghost" style) that renders the same on every
+        # Tk theme.
+        border = RED if primary else DIM
+        holder = tk.Frame(parent, bg=border, padx=1, pady=1)
+        base, hover = (RED, RED_HI) if primary else (BG, "#32161f")
+        btn = tk.Button(holder, text=text, command=command,
+                        font=_font(10, "bold" if primary else "normal"),
+                        fg="#ffffff" if primary else MUTED, bg=base,
+                        activebackground=hover,
+                        activeforeground="#ffffff" if primary else FG,
+                        relief="flat", bd=0, highlightthickness=0,
+                        padx=20, pady=8, cursor="hand2")
+        btn.pack()
+        btn.bind("<Enter>", lambda _e: btn.config(bg=hover))
+        btn.bind("<Leave>", lambda _e: btn.config(bg=base))
+        return holder
+
+    btns = tk.Frame(root, bg=BG)
+    btns.pack()
+    _button(btns, "Open in browser", open_ui, True).grid(row=0, column=0, padx=6)
+    _button(btns, "Quit StemTube", quit_app, False).grid(row=0, column=1, padx=6)
+
+    warn.pack(pady=(12, 0))
+    tk.Label(root, text="Keep this window open while you use StemTube.\n"
+                        "Closing it stops the engine and ends your session.",
+             font=_font(9), fg=DIM, bg=BG, justify="center").pack(side="bottom", pady=(0, 18))
 
     # closing the window (the X) quits the server too — no orphan process
     root.protocol("WM_DELETE_WINDOW", quit_app)
@@ -259,17 +315,31 @@ def run_update_with_progress():
         nonlocal root, bar, msg_var
         if root is not None:
             return
+        # Themed like the control window so the update step does not flash a
+        # default grey dialog before the burgundy one.
+        BG, FG, RED = "#25101a", "#e8d0d5", "#e41b36"
         root = tk.Tk()
-        root.title("StemTube")
+        root.title("StemTube Desktop")
+        root.configure(bg=BG)
         try:
-            root.geometry("380x140"); root.resizable(False, False)
+            root.geometry("520x200"); root.resizable(False, False)
         except Exception:
             pass
-        tk.Label(root, text="StemTube Desktop",
-                 font=tkfont.Font(size=13, weight="bold")).pack(pady=(16, 2))
+        tk.Label(root, text="STEMTUBE DESKTOP", fg=RED, bg=BG,
+                 font=tkfont.Font(size=18, weight="bold")).pack(pady=(28, 6))
         msg_var = tk.StringVar(value="Checking for updates…")
-        tk.Label(root, textvariable=msg_var).pack(pady=(0, 8))
-        bar = ttk.Progressbar(root, orient="horizontal", length=320, mode="indeterminate")
+        tk.Label(root, textvariable=msg_var, fg=FG, bg=BG).pack(pady=(0, 14))
+        try:
+            style = ttk.Style(root)
+            style.theme_use("default")
+            style.configure("StemTube.Horizontal.TProgressbar", troughcolor="#3a1a24",
+                            background=RED, bordercolor=BG, lightcolor=RED,
+                            darkcolor=RED, thickness=8)
+            bar = ttk.Progressbar(root, orient="horizontal", length=420,
+                                  mode="indeterminate",
+                                  style="StemTube.Horizontal.TProgressbar")
+        except Exception:
+            bar = ttk.Progressbar(root, orient="horizontal", length=420, mode="indeterminate")
         bar.pack(pady=4)
         bar.start(12)
 
