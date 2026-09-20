@@ -42,3 +42,9 @@ StemTube_Desktop_portable.zip
 
 # Local dev launchers (never shipped, never in an update manifest)
 TEST backport (GPU).bat
+
+# Build outputs (uploaded to the release, never committed)
+release-2.2.0/
+linux-installer/deb/*.deb
+linux-installer/deb/*.deb.sha256
+src-tauri/gen/
