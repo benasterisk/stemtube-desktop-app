@@ -261,13 +261,6 @@ function initializeEventListeners() {
         document.getElementById('settingsModal').style.display = 'flex';
     });
     
-    // Logout button
-    document.getElementById('logoutButton').addEventListener('click', () => {
-        if (confirm('Are you sure you want to logout?')) {
-            window.location.href = '/logout';
-        }
-    });
-    
     // Add global function to clear all downloads (for console testing)
     window.clearAllDownloads = function() {
         if (confirm('Are you sure you want to clear ALL downloads and stems? This cannot be undone!')) {

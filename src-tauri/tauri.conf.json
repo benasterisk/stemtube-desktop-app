@@ -3,6 +3,7 @@
   "version": "2.2.0",
   "identifier": "com.stemtube.desktop.standard",
   "build": {
+    "beforeBuildCommand": "node tools/sync-dist.js",
     "frontendDist": "../dist",
     "devUrl": "http://127.0.0.1:5011"
   },
