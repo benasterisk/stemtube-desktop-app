@@ -10,11 +10,13 @@ name: Build Linux AppImage
 
 on:
   push:
-    tags: ["linux-v*"]
+    # linux-v* is the old per-platform scheme; v* is the single tag that now
+    # carries every platform's assets. Both fire so older tags still work.
+    tags: ["v*", "linux-v*"]
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release tag to attach assets to (e.g. linux-v2.0.0)"
+        description: "Release tag to attach assets to (e.g. v2.2.0)"
         required: true
         default: "linux-dev"
 
