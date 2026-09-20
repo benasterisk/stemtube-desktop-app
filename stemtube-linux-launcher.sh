@@ -58,7 +58,10 @@ if [ ! -x "$APPIMAGE" ]; then
     dl "$REL_BASE/$REL_TAG/$base" "$APPIMAGE"
   else
     c "Downloading the engine in parts (one-time download)…"
-    tmp="$(mktemp -d)"; i=0
+    # Stage in $DEST, not $TMPDIR: /tmp is a small tmpfs on many systems
+    # (3.8 GB under WSL2) and the GPU engine is ~4 GB.
+    tmp="$(mktemp -d "$DEST/.parts.XXXXXX")" || exit 1
+    i=0
     while :; do
       part="${base}.part$i"
       curl -fsIL "$REL_BASE/$REL_TAG/$part" >/dev/null 2>&1 || break

@@ -34,7 +34,11 @@ download_engine() {
   if curl -fsIL "$REL_BASE/$REL_TAG/$base" >/dev/null 2>&1; then
     curl -fL --retry 3 -o "$APPIMAGE" "$REL_BASE/$REL_TAG/$base" 2>/dev/null || return 1
   else
-    local tmp; tmp="$(mktemp -d)"; local i=0
+    # Stage the parts next to the final file, not in $TMPDIR: /tmp is a small
+    # tmpfs on many systems (3.8 GB under WSL2) and the GPU engine is ~4 GB, so
+    # mktemp -d there fails mid-download with no useful message.
+    local tmp; tmp="$(mktemp -d "$DEST/.parts.XXXXXX")" || return 1
+    local i=0
     while :; do
       local part="${base}.part$i"
       curl -fsIL "$REL_BASE/$REL_TAG/$part" >/dev/null 2>&1 || break
@@ -84,7 +88,10 @@ fi
 # when the engine is newer than the tree (i.e. after a fresh engine download).
 APPTREE="$DEST/app"
 extract_tree() {
-  local tmp; tmp="$(mktemp -d)" || return 1
+  # Same reason as the download: extracting a ~4 GB engine needs real disk, and
+  # staging inside $DEST also makes the final mv a rename instead of a copy
+  # across filesystems.
+  local tmp; tmp="$(mktemp -d "$DEST/.extract.XXXXXX")" || return 1
   ( cd "$tmp" && "$APPIMAGE" --appimage-extract >/dev/null 2>&1 ) || { rm -rf "$tmp"; return 1; }
   [ -d "$tmp/squashfs-root/usr/src/stemtube" ] || { rm -rf "$tmp"; return 1; }
   rm -rf "$APPTREE"
