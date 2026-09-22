@@ -7,6 +7,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] — delivered by the in-app updater
+
+Ported from the server edition (StemTube_R2 commits `1677f8d`, `9154fb5`,
+`0dee7f7`, 2026-09-22). No new installer: existing 2.2.0 installs receive it
+through `update/manifest.json`. Songs extracted before this update keep their
+old chords until **Réanalyser** (Chords tab) or
+`python utils/analysis/reanalyze_all_chords.py [--limit N] [--video-id ID]`.
+
+### Changed — chords are detected after extraction, on the harmonic stems
+
+- **Chord detection moved after stem extraction.** Nothing is detected at
+  import any more (chords are only shown in the mixer, which needs the stems
+  anyway); the import phase keeps BPM, a provisional key, Skip Intro and
+  structure. The new `core/chord_refiner.py` runs right after the madmom beat
+  grid ("Detecting chords..."), on `POST /api/extractions/<id>/chords/regenerate`
+  and in `utils/analysis/reanalyze_all_chords.py`: BTC on a mix of every stem
+  but vocals and drums (full mix when none is on disk), boundaries snapped to
+  the beat grid (half-tempo gaps subdivided internally, stored grid untouched),
+  a Viterbi pass over beats on triads (a change is cheapest on a downbeat, and
+  follows the bar position where changes pile up when the downbeat tracker is
+  out of phase), major/minor doubts settled with the key, one-beat chords
+  absorbed. The chord count roughly halves, with zero sub-beat chords;
+  ~5-10 s per song on CPU.
+- **Both chord names are stored**: `chords_data` is now
+  `[{"timestamp": 19.705, "chord": "Em7", "simple": "Em"}, ...]` — the
+  detailed name when it covers at least half of the segment, plus its triad;
+  timestamps sit on beats and "N" passages are omitted. `/chords/regenerate`
+  also returns `detected_key`, `key_confidence` and `source` (`stems` | `mix`).
+- **The key comes from the chords**: after extraction `detected_key` is the
+  best of the 24 keys scored on time spent on the key's chords, tonic time,
+  dominant resolutions, first/last chord and the Krumhansl-Kessler correlation
+  of the harmonic chroma; `analysis_confidence` is the margin over the
+  runner-up. The import-time key is only provisional.
+- **Chords are re-decoded after a beat regeneration**:
+  `POST /api/extractions/<id>/beats/regenerate` re-runs the chord decoding on
+  the new grid and returns the result as `chords`.
+- **Fresh chords and key in the mixer metadata**: `GET /poc-mixer/meta/<id>`
+  overlays `chords`, `key`, `key_tonic`, `key_mode` and `key_confidence` from
+  the database on every request (the cached `meta.json` stays valid for the
+  audio artifacts only), so a regeneration shows up without rebuilding the
+  mixer cache.
+
+### Added — lyrics under the chords, songbook chords, follow-scroll
+
+- **Simple / Détaillé chord names** — a toggle in the Chords tab header
+  switches between triads (`Em`) and detailed names (`Em7`, `A7`); the chord
+  changes are the same either way. Stored per browser (`localStorage` key
+  `stemtube_chord_detail`, default simple); the stage window follows.
+- **Réanalyser button in the Chords tab** (`#regenerateChordsBtn`) — re-detects
+  chords and key from the stems.
+- **Lyrics under the chords are now a timeline of their own** (Chords tab,
+  Stage View chord grid): one lane per chord row where each word sits where it
+  is sung, on the same clock as the beat cells, instead of being dumped into
+  the bar it starts in. Overlapping words move to a second row or slide right;
+  the sung word is highlighted; the lane is not cut by beats or bars. The Stage
+  View grid is now systems of 4 bars with the lane underneath. Words are
+  positioned from the on-screen cells, so cell width and bar borders cannot
+  drift them.
+- **Chords above the lyrics (songbook)** in the Lyrics tab and its Stage View:
+  every chord change is placed over the syllable where it happens; changes
+  played in a long gap between two lines (intro, solo, outro) appear as a
+  dimmed chord-only row. The songbook already existed but never showed
+  anything: it read the chords from a global filled after the lyrics render.
+- **Manual scrolling in the lyrics and chord views during playback** (Lyrics
+  tab, both Stage Views): scrolling by hand now pauses the auto-follow instead
+  of being snapped back within a second, and a "Now" button appears
+  bottom-right to return to the current position (`static/js/follow-scroll.js`).
+
+### Fixed
+
+- **"F major" on almost every song**: the import-time key chroma was built from
+  the tempo STFT (2048-point window at 44.1 kHz = 21.5 Hz bins, all multiples
+  of a low F and wider than a semitone below 370 Hz) and the key was "loudest
+  pitch class + compare triads". `core/audio_analysis.py` now uses a
+  16384-point STFT restricted to 65–2100 Hz and Krumhansl-Kessler correlation.
+  Still approximate — it is replaced by the chord-based key after extraction.
+- **Volume and pan sliders clipped at low vertical zoom**: rows under 68 px now
+  use a one-line compact layout (`Mixer.syncRowHeights`, `.lctrl.compact`).
+- **Control blocks drifting away from their lanes after restoring a saved
+  vertical zoom**: row heights are re-synced after the restore.
+
+### Removed
+
+- `core/chord_detector.py` (the librosa template detector and the
+  `analyze_audio_file()` wrapper around BTC — no importers left),
+  `utils/analysis/reanalyze_with_madmom.py` and
+  `utils/analysis/reanalyze_neil_young.py`.
+
+---
+
 ## [2.2.0] - 2026-09-20
 
 First release published as a **single tag carrying every platform** — the

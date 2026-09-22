@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Sources | Local file uploads only (MP3/WAV/FLAC/M4A/AAC/OGG/WMA/MP4/AVI/MKV/MOV/WEBM) |
 | Licensing | Disabled |
 | Beat detection | Madmom (CNN + CRF + downbeat tracking) |
-| Chord detection | BTC Transformer + madmom fallback |
+| Chord detection | BTC Transformer on the harmonic stems **after extraction**, snapped to the madmom beat grid and decoded with a Viterbi pass (`core/chord_refiner.py`); the key is estimated from the chords. No chords at import. |
 | Auto-login | Yes (single desktop user) |
 | Blueprints | 10 (`downloads` kept as a DB-only library blueprint — no yt-dlp) |
 
@@ -28,6 +28,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `core/audio_analysis.py` | Standalone BPM + key detection (STFT + autocorrelation) |
 | `core/stems_extractor.py` | Demucs stem separation |
 | `core/madmom_chord_detector.py` | Beat/chord detection with compiled-mode path fix |
+| `core/btc_chord_detector.py` | BTC Transformer (170 chord vocabulary) — the only chord engine; `detect_segments()` returns raw `(start, end, label)` with "N" kept; returns no beats |
+| `core/chord_refiner.py` | Chords + key after extraction. `update_song_chords(video_id, stems_paths=None, fallback_audio=None)` reads stems, beat grid and BPM from the DB and writes ONLY `chords_data`, `detected_key`, `analysis_confidence`. `analyze_stems()` → `refine()`: harmonic stems mixed with ffmpeg → BTC → grid prepared internally (half-tempo gaps subdivided, stored grid untouched) → snap → Viterbi on triads → thirds settled with the key → richest agreeing label → key from the chords. Runs in `extensions.py` after the beat grid ("Detecting chords..."), on `POST /api/extractions/<id>/chords/regenerate`, after `/beats/regenerate`, and in `utils/analysis/reanalyze_all_chords.py` (backfill, ~5-10 s per song on CPU) |
+| `core/audio_analysis.py` (key) | Import-time key is **provisional**: 16384-point STFT restricted to 65–2100 Hz + Krumhansl-Kessler correlation (the old 2048-point/loudest-pitch-class method named nearly every song "F major"); replaced by the chord-based key after extraction |
 | `routes/files.py` | Local file upload endpoint |
 | `routes/downloads.py` | Library listing + extraction status (DB only) |
 | `routes/extractions.py` | Stem extraction jobs |

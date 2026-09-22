@@ -15,8 +15,9 @@ def _compute_chroma_from_stft(magnitude, frequencies, sr):
     chroma = np.zeros((12, n_frames))
     A4_freq = 440.0
 
+    # Musical range only (C2-C7): sub-bass bins carry rumble and span several semitones.
     for i, freq in enumerate(frequencies):
-        if freq > 0:
+        if 65.0 <= freq <= 2100.0:
             midi_note = 69 + 12 * np.log2(freq / A4_freq)
             pitch_class = int(round(midi_note)) % 12
             chroma[pitch_class, :] += magnitude[i, :]
@@ -87,20 +88,24 @@ def analyze_audio(audio_path: str) -> dict:
         else:
             final_tempo = 120.0
 
-        chroma = _compute_chroma_from_stft(magnitude, f, sr)
+        # Long window for the key: the tempo STFT above has 21.5 Hz bins at 44.1 kHz,
+        # wider than a semitone below 370 Hz and all multiples of a low F, so every
+        # bass note landed on F, A or C and every song came out as "F major".
+        key_f, _, key_Zxx = signal.stft(y, fs=sr, nperseg=16384, noverlap=8192)
+        chroma = _compute_chroma_from_stft(np.abs(key_Zxx), key_f, sr)
         chroma_mean = np.mean(chroma, axis=1)
-        dominant_note_idx = int(np.argmax(chroma_mean))
-        note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-        dominant_note = note_names[dominant_note_idx]
 
-        major_intervals = [0, 4, 7]
-        minor_intervals = [0, 3, 7]
-        major_strength = sum(chroma_mean[(dominant_note_idx + i) % 12] for i in major_intervals)
-        minor_strength = sum(chroma_mean[(dominant_note_idx + i) % 12] for i in minor_intervals)
-
-        mode = "major" if major_strength > minor_strength else "minor"
-        total = float(np.sum(chroma_mean))
-        confidence = float(max(major_strength, minor_strength) / total) if total > 0 else 0.0
+        # Krumhansl-Kessler profile correlation. (Taking the loudest pitch class as
+        # the tonic called almost every song "F major".) This is the provisional key:
+        # after stem extraction it is re-estimated from the chords (core/chord_refiner.py).
+        from core.chord_refiner import NOTES as note_names, _KS_MAJOR, _KS_MINOR
+        best_score, dominant_note, mode = -2.0, 'C', 'major'
+        for tonic in range(12):
+            for profile, profile_mode in ((_KS_MAJOR, 'major'), (_KS_MINOR, 'minor')):
+                score = float(np.corrcoef(np.roll(profile, tonic), chroma_mean)[0, 1])
+                if score > best_score:
+                    best_score, dominant_note, mode = score, note_names[tonic], profile_mode
+        confidence = max(0.0, best_score)
         detected_key = f"{dominant_note} {mode}"
 
         return {

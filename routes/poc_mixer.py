@@ -323,6 +323,13 @@ def _db_beats(row):
     return None, None
 
 
+def _db_key(row):
+    """(key, tonic, mode) from the DB detected_key, e.g. ("B major", "B", "major")."""
+    key = row.get('detected_key') or ""
+    parts = str(key).split()
+    return key, (parts[0] if parts else ""), (parts[1].lower() if len(parts) > 1 else "")
+
+
 def _db_chords(row):
     c = row.get('chords_data')
     if isinstance(c, str):
@@ -407,14 +414,7 @@ def _build_meta(extraction_id, row, stems_map, stems_dir, cache):
         logger.warning(f"[poc-mixer] startpoint detection failed: {e}")
 
     # ── key (from DB detected_key like "B major") ──
-    key = row.get('detected_key') or ""
-    key_tonic, key_mode = "", ""
-    if key:
-        parts = str(key).split()
-        if parts:
-            key_tonic = parts[0]
-        if len(parts) > 1:
-            key_mode = parts[1].lower()
+    key, key_tonic, key_mode = _db_key(row)
 
     # ── waveforms for every served stem + the 1x metronome ──
     step("Building waveforms…", 88)
@@ -557,7 +557,17 @@ def meta(extraction_id):
     if not os.path.exists(meta_path):
         return jsonify({"error": "not prepared"}), 404
     with open(meta_path, encoding="utf-8") as f:
-        return jsonify(json.load(f))
+        payload = json.load(f)
+    # Chords and key are analysis results that change without the stems changing
+    # (regeneration, re-analysis): the cached copy is only valid for the audio
+    # artifacts, so these come from the database on every request.
+    try:
+        key, key_tonic, key_mode = _db_key(_row)
+        payload.update(chords=_db_chords(_row), key=key, key_tonic=key_tonic, key_mode=key_mode,
+                       key_confidence=_row.get('analysis_confidence') or 0.0)
+    except (AttributeError, TypeError):
+        pass
+    return jsonify(payload)
 
 
 def _resolve_stem_file(extraction_id, stem, user_id):

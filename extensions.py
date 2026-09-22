@@ -262,24 +262,8 @@ class UserSessionManager:
                             _confidence = analysis.get('confidence')
                             logger.info(f"[ANALYSIS] BPM={_bpm}, Key={_key}")
 
-                            socketio.emit('extraction_progress', {
-                                'extraction_id': item_id, 'progress': 52,
-                                'message': 'Detecting chords...', 'video_id': video_id
-                            }, room=_room)
-
-                            # Chords
-                            _chords = None
-                            _chord_offset = 0.0
-                            try:
-                                from core.chord_detector import analyze_audio_file as _analyze_chords
-                                _result = _analyze_chords(audio_path, bpm=_bpm)
-                                if len(_result) == 4:
-                                    _chords, _chord_offset, _, _ = _result
-                                else:
-                                    _chords, _chord_offset, _ = _result
-                                logger.info(f"[ANALYSIS] Chords: {len(_chords) if _chords else 0} segments")
-                            except Exception as ce:
-                                logger.warning(f"[ANALYSIS] Chord detection error: {ce}")
+                            # Chords and the final key are detected once the stems exist, on
+                            # the harmonic stems and the beat grid (core/chord_refiner.py, below).
 
                             # Structure
                             _structure = None
@@ -298,16 +282,13 @@ class UserSessionManager:
                                 pass
 
                             # Save to DB
-                            import json as _json
                             from core.downloads_db import update_download_analysis
                             update_download_analysis(
                                 video_id, _bpm, _key, _confidence,
-                                chords_data=_json.dumps(_chords) if _chords else None,
-                                beat_offset=_chord_offset,
                                 structure_data=_structure,
                                 music_start_time=_music_start,
                             )
-                            logger.info(f"[ANALYSIS] BPM/key/chords/structure saved for {video_id}")
+                            logger.info(f"[ANALYSIS] BPM/key/structure saved for {video_id}")
 
                             socketio.emit('extraction_progress', {
                                 'extraction_id': item_id, 'progress': 55,
@@ -504,6 +485,24 @@ class UserSessionManager:
                         'extraction_id': item_id, 'progress': 97,
                         'message': 'Beat detection skipped', 'video_id': video_id
                     }, room=_room)
+
+                # CHORDS AND KEY, on the harmonic stems (no vocals, no drums) and decoded on the
+                # beat grid detected just above - which is why they run here and not at import.
+                try:
+                    socketio.emit('extraction_progress', {
+                        'extraction_id': item_id, 'progress': 97,
+                        'message': 'Detecting chords...', 'video_id': video_id
+                    }, room=_room)
+                    from core.chord_refiner import update_song_chords
+                    chords_result = update_song_chords(
+                        video_id, stems_paths=item.output_paths,
+                        fallback_audio=getattr(item, 'audio_path', None))
+                    if chords_result:
+                        logger.info(f"[CHORDS] {len(chords_result['chords'])} chords, key {chords_result['key']}")
+                    else:
+                        logger.warning("[CHORDS] No chords detected")
+                except Exception as chords_error:
+                    logger.warning(f"[CHORDS] Chord detection error (non-fatal): {chords_error}")
 
                 # Build the mixer artifacts now, so the first mixer open is a cache
                 # hit instead of a wait. Never fatal: without it the mixer prepares

@@ -157,21 +157,9 @@ def upload_file_route():
                 confidence = analysis.get('confidence')
                 logger.info(f"[UPLOAD ANALYSIS] BPM={bpm}, Key={key}")
 
-                # Chord detection
-                chords_data = None
-                beat_offset = 0.0
-                beat_times_list = []
-                beat_positions = []
-                try:
-                    from core.chord_detector import analyze_audio_file
-                    result = analyze_audio_file(file_path, bpm=bpm)
-                    if len(result) == 4:
-                        chords_data, beat_offset, beat_times_list, beat_positions = result
-                    else:
-                        chords_data, beat_offset, beat_times_list = result
-                    logger.info(f"[UPLOAD ANALYSIS] Chords detected: {len(chords_data) if chords_data else 0} segments")
-                except Exception as e:
-                    logger.warning(f"[UPLOAD ANALYSIS] Chord detection error: {e}")
+                # Chords and the final key are detected after stem extraction, on the
+                # harmonic stems and the beat grid (core/chord_refiner.py): the mixer,
+                # the only place that shows them, needs the stems anyway.
 
                 # Structure detection
                 structure_data = None
@@ -195,11 +183,7 @@ def upload_file_route():
                 # Save to database (uses video_id, not global_id)
                 update_download_analysis(
                     vid, bpm, key, confidence,
-                    chords_data=json.dumps(chords_data) if chords_data else None,
-                    beat_offset=beat_offset,
                     structure_data=structure_data,
-                    beat_times=beat_times_list,
-                    beat_positions=beat_positions,
                     music_start_time=music_start_time,
                 )
                 logger.info(f"[UPLOAD ANALYSIS] Analysis saved for {vid}")

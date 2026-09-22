@@ -20,6 +20,17 @@ logger = get_logger(__name__)
 
 media_bp = Blueprint('media', __name__)
 
+
+def _as_list(value):
+    """DB JSON columns come back as a JSON string, a list or None."""
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except ValueError:
+            return []
+    return value if isinstance(value, list) else []
+
+
 def _find_download_for(extraction_id):
     """Resolve an extraction id (download_<id>, video id or filename prefix) to a row."""
     from core.downloads_db import get_download_by_id, list_extractions_for
@@ -115,9 +126,7 @@ def get_extraction_lyrics(extraction_id):
 def regenerate_extraction_chords(extraction_id):
     """Regenerate chord timeline for an extraction."""
     try:
-        from core.downloads_db import get_download_by_id, list_extractions_for, update_download_analysis
-        from core.chord_detector import analyze_audio_file
-        from core.config import load_config
+        from core.downloads_db import get_download_by_id, list_extractions_for
 
         download = None
         download_id = extraction_id
@@ -140,73 +149,29 @@ def regenerate_extraction_chords(extraction_id):
         if not download:
             return jsonify({'error': 'Extraction not found'}), 404
 
-        audio_path = download.get('file_path')
-        if not audio_path or not os.path.exists(audio_path):
-            return jsonify({'error': 'Audio file not found'}), 404
-
-        config = load_config()
-        use_hybrid = config.get('chords_use_hybrid', True)
-        use_madmom = config.get('chords_use_madmom', True)
-
-        result = analyze_audio_file(
-            audio_path,
-            bpm=download.get('detected_bpm'),
-            detected_key=download.get('detected_key'),
-            use_hybrid=use_hybrid,
-            use_madmom=use_madmom
-        )
-        if len(result) == 4:
-            chords_json, beat_offset, beat_times, beat_positions = result
-        else:
-            chords_json, beat_offset, beat_times = result
-            beat_positions = []
-
-        if not chords_json:
-            return jsonify({'error': 'Chord detection failed'}), 500
-
-        structure_data = download.get('structure_data')
-        if isinstance(structure_data, str):
-            try:
-                structure_data = json.loads(structure_data)
-            except Exception:
-                structure_data = None
-
-        lyrics_data = download.get('lyrics_data')
-        if isinstance(lyrics_data, str):
-            try:
-                lyrics_data = json.loads(lyrics_data)
-            except Exception:
-                lyrics_data = None
-
         video_id = download.get('video_id')
         if not video_id:
             return jsonify({'error': 'Video ID not found'}), 400
 
-        # Use existing detected_bpm — don't recompute from beat_times
-        # (beat_times BPM may be in wrong octave; detected_bpm from autocorrelation is more reliable)
-        detected_bpm = download.get('detected_bpm')
+        # Same pass as after an extraction: BTC on the harmonic stems, decoded on the
+        # stored beat grid, key re-estimated. Only chords and key are written; the beat
+        # grid, Skip Intro and the rest of the analysis are left untouched.
+        from core.chord_refiner import update_song_chords
+        result = update_song_chords(video_id)
+        if not result:
+            return jsonify({'error': 'Chord detection failed'}), 500
 
-        update_download_analysis(
-            video_id,
-            detected_bpm,
-            download.get('detected_key'),
-            download.get('analysis_confidence'),
-            chords_json,
-            beat_offset,
-            structure_data,
-            lyrics_data,
-            beat_times=beat_times,
-            beat_positions=beat_positions
-        )
-
-        parsed_chords = json.loads(chords_json)
         return jsonify({
             'success': True,
-            'chords': parsed_chords,
-            'detected_bpm': detected_bpm,
-            'beat_offset': beat_offset,
-            'beat_times': beat_times,
-            'beat_positions': beat_positions
+            'chords': result['chords'],
+            'detected_key': result['key'],
+            'key_confidence': result['key_confidence'],
+            'source': result['source'],
+            'detected_bpm': download.get('detected_bpm'),
+            # the STORED grid, so clients keep their metronome alignment
+            'beat_offset': download.get('beat_offset') or 0.0,
+            'beat_times': _as_list(download.get('beat_times')),
+            'beat_positions': _as_list(download.get('beat_positions'))
         })
 
     except Exception as e:
@@ -287,12 +252,22 @@ def regenerate_extraction_beats(extraction_id):
             beat_positions=beat_positions
         )
 
+        # Chords are decoded on the beat grid: a new grid means new chord boundaries.
+        chords = None
+        try:
+            from core.chord_refiner import update_song_chords
+            chords_result = update_song_chords(video_id)
+            chords = chords_result['chords'] if chords_result else None
+        except Exception as chords_error:
+            logger.warning(f"[CHORDS] Re-decoding after beat regeneration failed: {chords_error}")
+
         return jsonify({
             'success': True,
             'beat_times': beat_times,
             'beat_positions': beat_positions,
             'beat_offset': beat_offset,
-            'beat_count': len(beat_times)
+            'beat_count': len(beat_times),
+            'chords': chords
         })
 
     except Exception as e:
