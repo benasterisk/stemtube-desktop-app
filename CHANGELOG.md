@@ -51,6 +51,18 @@ old chords until **Réanalyser** (Chords tab) or
 
 ### Added — lyrics under the chords, songbook chords, follow-scroll
 
+- **Chord chart PDF for paper** (`GET /api/extractions/<id>/chart.pdf?detail=simple|detailed&transpose=N`,
+  **PDF** button in the Chords tab next to Réanalyser): each lyric line followed by the
+  bars sung during it, one cell per beat, the chord printed where it is played (bold on a
+  change, the bar's chord always named in its first cell), instrumental passages as rows
+  of bars with their timestamp. Built from the stored beat grid, chords and lyrics
+  (`core/chord_chart.py`), drawn with reportlab (`core/chord_chart_pdf.py`, new pure
+  dependency installed by the updater). The first page is a musician's summary: the song's
+  form (A · B ×5 · C · B ×6 …) and, for each part, the chord loop it repeats with its
+  count — parts found from the chords themselves as bar loops searched from any bar (a
+  9-bar intro no longer shifts every verse by one bar), not from the MSAF sections. Bars
+  are re-anchored on the beat where chord changes fall when the detected downbeat is off.
+  Uses DejaVu Sans when present, else Arial on Windows, else Helvetica.
 - **Simple / Détaillé chord names** — a toggle in the Chords tab header
   switches between triads (`Em`) and detailed names (`Em7`, `A7`); the chord
   changes are the same either way. Stored per browser (`localStorage` key
