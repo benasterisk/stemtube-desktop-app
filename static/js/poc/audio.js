@@ -83,6 +83,23 @@ class AudioEngine {
     }
   }
 
+  // Try to start a suspended context, but never wait for it. Chromium keeps resume()
+  // pending until the user has clicked or typed in the page (autoplay policy): a page
+  // reload, or the song reopened at startup, would otherwise wait forever and no stem
+  // would ever be fetched. Decoding works on a suspended context, so loading goes on;
+  // the context is started by the first gesture (see below) or by play().
+  async _wake(){
+    if(!this.ctx || this.ctx.state !== "suspended") return;
+    if(!this._wakeHooked){
+      this._wakeHooked = true;
+      const go = () => { if(this.ctx && this.ctx.state === "suspended") this.ctx.resume().catch(()=>{}); };
+      ["pointerdown","keydown","touchstart"].forEach(ev => window.addEventListener(ev, go, true));
+    }
+    try{
+      await Promise.race([this.ctx.resume(), new Promise(res => setTimeout(res, 200))]);
+    }catch(e){}
+  }
+
   // Decode an ArrayBuffer to an AudioBuffer, cross-engine.
   // WebKitGTK (the Linux AppImage's webview) does NOT implement the
   // promise-returning form of decodeAudioData the way Chromium/WebView2 does:
@@ -92,7 +109,7 @@ class AudioEngine {
   // prefer it and only fall back to the promise form. We also resume() first
   // because WebKit tends to create the context "suspended".
   async _decode(arrayBuffer){
-    if(this.ctx.state === "suspended"){ try{ await this.ctx.resume(); }catch(e){} }
+    await this._wake();
     // Some engines detach the ArrayBuffer on decode; hand decodeAudioData a copy
     // so a fallback attempt still has valid data.
     const bytes = arrayBuffer.slice(0);
@@ -119,14 +136,16 @@ class AudioEngine {
   async setStems(job, names, metroResolutions, onProgress, onReserved){
     this.unload();
     this.ensureCtx();
-    if(this.ctx.state === "suspended"){ try{ await this.ctx.resume(); }catch(e){} }
+    await this._wake();
     // Tracks first, audio later: a full stem set is tens of megabytes to read and decode,
     // and the mixer used to show nothing at all until the last byte arrived.
     names.forEach(name => {
       this.stems[name] = { name, buffer:null, source:null, soundTouch:null, gain:null,
                            // the click track starts muted; a saved session state (applied
                            // right after loading) still wins if the user unmuted it
-                           panNode:null, muted:(name === "metronome"), solo:false, vol:1, pan:0 };
+                           // MIDI companion tracks ("<stem>_midi") start muted too
+                           panNode:null, muted:(name === "metronome" || /_midi$/.test(name)),
+                           solo:false, vol:1, pan:0 };
     });
     if(onReserved) onReserved();
 
@@ -225,6 +244,22 @@ class AudioEngine {
     const active = this._metroBufFor(sel) || next[sel];
     if(active) m.buffer = active;
     if(this.playing) this._restartMetro();
+  }
+
+  // Reload the audio of ONE stem (a MIDI companion track rendered again with another
+  // sound or mode) and, when playing, restart only that source at the current position.
+  async reloadStem(job, name, tag){
+    const s=this.stems[name]; if(!s) return;
+    const bust = tag ? ("?v="+encodeURIComponent(tag)) : "";
+    const buf = await API.audioBuffer(job, name + bust);
+    s.buffer = await this._decode(buf);
+    if(this.playing){
+      const pos=this.pos();
+      try{ s.source&&s.source.stop(); }catch(e){}
+      try{ s.soundTouch&&s.soundTouch.disconnect(); }catch(e){}
+      s.source=null; s.soundTouch=null;
+      this._startOneSource(s, this.ctx.currentTime+0.03, pos);
+    }
   }
 
   // ── Precount (baked count-in) metronome ──

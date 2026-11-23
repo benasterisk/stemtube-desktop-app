@@ -188,6 +188,8 @@ function addReextractButton(mixerButton) {
         }
     });
     mixerButton.insertAdjacentElement('afterend', btn);
+    // Auto remix button (app-automix.js), right after the re-extract one.
+    if (typeof addAutoRemixButton === 'function') addAutoRemixButton(mixerButton);
 }
 
 function openExtractionModal(downloadId, title, filePath, videoId) {

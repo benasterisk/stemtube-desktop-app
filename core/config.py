@@ -124,6 +124,7 @@ DEFAULT_SETTINGS = {
     "auto_check_updates": True,
     "extraction_timeout_minutes": 30,
     "extraction_progress_timeout_minutes": 5,
+    "enable_midi_tracks": True,
     "enable_silent_stem_detection": True,
     "silent_stem_threshold_db": -40.0,
     "silent_stem_min_duration_ratio": 0.05,

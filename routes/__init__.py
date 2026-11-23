@@ -15,6 +15,9 @@ from .files import files_bp
 from .config_routes import config_bp
 from .recordings import recordings_bp
 from .poc_mixer import poc_mixer_bp
+from .automix import automix_bp
+from .midi import midi_bp
+from .retime import retime_bp
 
 ALL_BLUEPRINTS = [
     pages_bp,
@@ -27,6 +30,9 @@ ALL_BLUEPRINTS = [
     config_bp,
     recordings_bp,
     poc_mixer_bp,
+    automix_bp,
+    midi_bp,
+    retime_bp,
 ]
 
 if HAS_LICENSE:
