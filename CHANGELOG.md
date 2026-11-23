@@ -110,6 +110,14 @@ delivered by the updater between 2.2.0 and this version.
 
 ### Fixed
 
+- **Every request could end in a 500 after days of uptime.** The logging
+  context swapped the process-wide log record factory on enter and put the
+  previous one back on exit; two requests overlapping in two threads restored
+  each other's wrapper, one more layer stayed installed each time, and after
+  about a thousand layers every log call raised `RecursionError`. The context
+  now lives in a context variable read by a single factory installed once.
+  (Seen in production on a sister application sharing this module; delivered
+  by the updater on 2026-11-23 where one exists.)
 - **A reloaded mixer page never loaded its stems.** Loading waited for
   `AudioContext.resume()`, which Chromium leaves pending until the user has
   clicked or typed in the page: after a browser reload, or for the song reopened
