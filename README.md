@@ -1,6 +1,6 @@
 # StemTube Desktop
 
-Version **2.2.0**. Desktop application (Windows and Linux) for AI-powered music analysis of your own audio files. Extracts stems, detects chords and transcribes lyrics — all locally on your machine.
+Version **2.3.0**. Desktop application (Windows and Linux) for AI-powered music analysis of your own audio files. Extracts stems, detects chords and transcribes lyrics — all locally on your machine.
 
 The app runs a local server and opens in your **default browser** at `http://127.0.0.1:5011`; a small control window stays behind it to show the URL, reopen the browser and quit cleanly. There is no embedded webview.
 
@@ -24,36 +24,36 @@ The app runs a local server and opens in your **default browser** at `http://127
 
 ## Install
 
-Every platform ships on a single release: **[v2.2.0](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/v2.2.0)**.
+Every platform ships on a single release: **[v2.3.0](https://github.com/benasterisk/stemtube-desktop-releases/releases/tag/v2.3.0)**.
 
 Both the `.exe` and the `.deb` are **light installers** (~1–2 MB). They contain no AI engine: on first launch they detect your hardware and download the matching self-contained engine — **CPU** or **NVIDIA GPU** (CUDA) — assemble it and start the app. You never handle the split download parts yourself; the installer does. First boot takes a few minutes, later launches are immediate. Python and FFmpeg are bundled in the engine, so nothing else is needed.
 
 ### Windows
 
-Download and run **`StemTube_Desktop_2.2.0_x64-setup.exe`** from the release. The engine is ~570 MB (CPU) or ~2.8 GB (GPU).
+Download and run **`StemTube_Desktop_2.3.0_x64-setup.exe`** from the release. The engine is ~0.6 GB (CPU) or ~3 GB (GPU).
 
 ### Ubuntu / Debian
 
-Download **`stemtube-desktop_2.2.0_amd64.deb`** and double-click it (opens in your software centre → Install), or:
+Download **`stemtube-desktop_2.3.0_amd64.deb`** and double-click it (opens in your software centre → Install), or:
 
 ```bash
-sudo apt install ./stemtube-desktop_2.2.0_amd64.deb
+sudo apt install ./stemtube-desktop_2.3.0_amd64.deb
 ```
 
-Then launch **StemTube Desktop** from your applications menu. The first launch opens a small progress window, detects your GPU and downloads the matching engine (CPU ~620 MB / NVIDIA GPU ~3 GB), unpacking it once — no `libfuse2`, no root at run time.
+Then launch **StemTube Desktop** from your applications menu. The first launch opens a small progress window, detects your GPU and downloads the matching engine (CPU ~1.6 GB / NVIDIA GPU ~4.3 GB), unpacking it once — no `libfuse2`, no root at run time.
 
 ### Other distros (Fedora, Arch, openSUSE…)
 
 No package manager step — run the engine AppImage directly:
 
 ```bash
-# CPU (~620 MB) — works on any 64-bit Linux, no libfuse2 needed
-wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.2.0/StemTube-x86_64-cpu.AppImage
+# CPU (~1.6 GB) — works on any 64-bit Linux, no libfuse2 needed
+wget https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.3.0/StemTube-x86_64-cpu.AppImage
 chmod +x StemTube-x86_64-cpu.AppImage
 ./StemTube-x86_64-cpu.AppImage --appimage-extract-and-run
 ```
 
-For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0` + `.part1` (~3 GB, CUDA 12.6) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`. (This manual step applies only to this direct-AppImage route; the `.deb` and `.exe` do it for you.)
+For NVIDIA GPUs, download `StemTube-x86_64-gpu.AppImage.part0`, `.part1` and `.part2` (~4.3 GB, CUDA 12.6) and join them: `cat StemTube-x86_64-gpu.AppImage.part* > StemTube-x86_64-gpu.AppImage`. (This manual step applies only to this direct-AppImage route; the `.deb` and `.exe` do it for you.)
 
 **Developers — from-source script.** Clones the app and builds a Python environment from source. Requires `git` and `python3` **3.10–3.13** (not 3.14 yet — PyTorch has no wheel for it).
 

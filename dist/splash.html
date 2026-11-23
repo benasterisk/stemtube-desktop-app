@@ -77,24 +77,101 @@
     0%   { margin-left: -30%; }
     100% { margin-left: 100%; }
   }
+  /* --- Running state: shown once the backend is up and the UI has been
+     handed over to the default browser. --- */
+  .hidden { display: none !important; }
+  .status {
+    font-size: 15px;
+    color: #e8d0d5;
+    margin-bottom: 6px;
+  }
+  .dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #3ddc84;
+    margin-right: 8px;
+    box-shadow: 0 0 8px rgba(61, 220, 132, 0.8);
+  }
+  .url {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 13px;
+    color: #e41b36;
+    margin-bottom: 22px;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  button {
+    font: inherit;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  button:hover { filter: brightness(1.15); }
+  .btn-primary {
+    background: linear-gradient(90deg, #e41b36, #ff4757);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: #5c4248;
+    color: #8a7077;
+  }
+  .warn {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #ffb347;
+    min-height: 16px;
+  }
 </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">STEMTUBE DESKTOP</div>
-    <div class="tagline">Beta edition · first launch setup</div>
-    <div class="step" id="step">Preparing…</div>
-    <div class="bar-wrap" id="bar-wrap">
-      <div class="bar" id="bar"></div>
+
+    <!-- Setup view: progress while the backend is downloaded and started -->
+    <div id="view-setup">
+      <div class="tagline">Beta edition · first launch setup</div>
+      <div class="step" id="step">Preparing…</div>
+      <div class="bar-wrap" id="bar-wrap">
+        <div class="bar" id="bar"></div>
+      </div>
+      <div class="details">
+        <span id="detail-left">—</span>
+        <span class="pct" id="pct">0%</span>
+      </div>
+      <div class="sub" id="sub">
+        First launch only: downloads ~2.7 GB from GitHub, extracts the backend, and starts the Python engine.<br>
+        Allow <b>5 to 10 minutes</b> depending on your connection. <span id="timer"></span><br>
+        Subsequent launches take only a few seconds.
+      </div>
     </div>
-    <div class="details">
-      <span id="detail-left">—</span>
-      <span class="pct" id="pct">0%</span>
-    </div>
-    <div class="sub" id="sub">
-      First launch only: downloads ~2.7 GB from GitHub, extracts the backend, and starts the Python engine.<br>
-      Allow <b>5 to 10 minutes</b> depending on your connection. <span id="timer"></span><br>
-      Subsequent launches take only a few seconds.
+
+    <!-- Running view: the UI itself is in the default browser, this window
+         only keeps StemTube alive and offers the browser / quit actions -->
+    <div id="view-running" class="hidden">
+      <div class="tagline">StemTube runs in your web browser</div>
+      <div class="status"><span class="dot"></span>StemTube is running</div>
+      <div class="url" id="url">http://127.0.0.1:5011</div>
+      <div class="actions">
+        <button class="btn-primary" id="btn-open">Open in browser</button>
+        <button class="btn-ghost" id="btn-quit">Quit StemTube</button>
+      </div>
+      <div class="warn" id="warn"></div>
+      <div class="sub">
+        Keep this window open while you use StemTube.<br>
+        Closing it stops the engine and ends your session.
+      </div>
     </div>
   </div>
 
@@ -114,12 +191,25 @@
   // Elapsed-time counter so the user sees the app is not frozen
   const startedAt = Date.now();
   const timerEl = document.getElementById('timer');
-  setInterval(() => {
+  var timerId = setInterval(() => {
     const s = Math.floor((Date.now() - startedAt) / 1000);
     const mm = String(Math.floor(s / 60)).padStart(2, '0');
     const ss = String(s % 60).padStart(2, '0');
     if (timerEl) timerEl.textContent = `(elapsed: ${mm}:${ss})`;
   }, 1000);
+
+  // Views: setup progress, then the "running" control panel
+  const viewSetup = document.getElementById('view-setup');
+  const viewRunning = document.getElementById('view-running');
+  const urlEl = document.getElementById('url');
+  const warn = document.getElementById('warn');
+
+  function showRunning(url) {
+    if (url) urlEl.textContent = url;
+    if (typeof timerId !== 'undefined') clearInterval(timerId);
+    viewSetup.classList.add('hidden');
+    viewRunning.classList.remove('hidden');
+  }
 
   // Guard: wait for Tauri API to be available
   function waitForTauri(cb, tries = 0) {
@@ -132,6 +222,31 @@
       detail.textContent = 'Missing window.__TAURI__';
     }
   }
+
+  function invoke(cmd, args) {
+    const core = window.__TAURI__ && (window.__TAURI__.core || window.__TAURI__.tauri);
+    if (!core || !core.invoke) return Promise.reject(new Error('Tauri invoke unavailable'));
+    return core.invoke(cmd, args || {});
+  }
+
+  // Ask Rust for the real URL so the port is never hard-coded twice.
+  setTimeout(() => {
+    invoke('get_app_url').then((u) => { if (u) urlEl.textContent = u; }).catch(() => {});
+  }, 300);
+
+  document.getElementById('btn-open').addEventListener('click', () => {
+    warn.textContent = '';
+    invoke('open_browser').catch((e) => {
+      warn.textContent = 'Could not open the browser: ' + e;
+    });
+  });
+
+  document.getElementById('btn-quit').addEventListener('click', () => {
+    warn.textContent = 'Shutting down…';
+    // Fallback: if the command is unreachable, closing the window has the
+    // same effect (Destroyed on label "main" kills the backend).
+    invoke('quit_app').catch(() => window.close());
+  });
 
   function setIndeterminate(on) {
     if (on) wrap.classList.add('indeterminate');
@@ -166,10 +281,11 @@
       }
     });
 
-    listen('setup_done', () => {
-      step.textContent = 'Starting StemTube…';
-      setIndeterminate(true);
-      pct.textContent = '';
+    // Backend is up: Rust is about to open the default browser. Switch this
+    // window to its control-panel role — it must stay open, it is what keeps
+    // the Python engine alive.
+    listen('setup_done', (event) => {
+      showRunning(event.payload);
     });
 
     listen('setup_error', (event) => {
@@ -177,6 +293,14 @@
       setIndeterminate(false);
       bar.style.background = '#8a7077';
       detail.textContent = event.payload || 'Unknown error';
+    });
+
+    // The backend started but the browser could not be launched: stay in the
+    // running view and tell the user to open the URL manually.
+    listen('browser_error', (event) => {
+      showRunning();
+      warn.textContent = 'Could not open your browser automatically — open the address above manually.';
+      console.warn(event.payload);
     });
   });
 </script>

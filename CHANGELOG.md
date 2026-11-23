@@ -7,13 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.3.0] - 2026-11-23 — delivered by the in-app updater
+## [2.3.0] - 2026-11-23
 
 Auto remix, pre-mix, MIDI companion tracks with their editor, and quantize
-(first entries below). No new installer: 2.2.0 installs on Windows and Linux
-receive it through `update/manifest.json`, and a fresh install updates itself
-on first launch. The entries after those were delivered the same way between
-2.2.0 and this version.
+(first entries below). 2.2.0 installs on Windows and Linux receive it through
+`update/manifest.json`; the release also carries full installers and engines
+(`v2.3.0`: Windows setup and engine archives, Linux AppImages and `.deb`), so a
+fresh install starts on this version. The entries after the first ones were
+delivered by the updater between 2.2.0 and this version.
+
+### Changed — packaging
+
+- **Engines state the generation of their Python environment** in an
+  `ENGINE_GENERATION` file, and the Windows shell can replace an engine that is
+  too old to be patched (the updater replaces code, never the environment).
+  Standard needs generation 1, so no installed engine is replaced.
+- **The SoundFont player ships in the engines** instead of being installed on
+  first need, and `yt-dlp` — unused since YouTube support was removed — is no
+  longer left in the Python environment.
 
 ### Added — auto remix, MIDI companion tracks
 

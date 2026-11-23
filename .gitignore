@@ -45,6 +45,8 @@ TEST backport (GPU).bat
 
 # Build outputs (uploaded to the release, never committed)
 release-2.2.0/
+release-2.3.0/
+linux-installer/deb/pkgroot/
 linux-installer/deb/*.deb
 linux-installer/deb/*.deb.sha256
 src-tauri/gen/

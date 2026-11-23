@@ -80,7 +80,7 @@ fn open_in_browser(app: &AppHandle) -> Result<(), String> {
         .map_err(|e| format!("Cannot open {} in the default browser: {}", url, e))
 }
 
-const RELEASE_BASE: &str = "https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.2.0";
+const RELEASE_BASE: &str = "https://github.com/benasterisk/stemtube-desktop-releases/releases/download/v2.3.0";
 // GPU build is split into <2 GB parts (GitHub asset size limit); CPU build fits in one file.
 const GPU_BACKEND_PARTS: &[&str] = &[
     "stemtube-backend-standard-gpu.zip.000",
@@ -164,6 +164,59 @@ fn python_exe(backend: &PathBuf) -> PathBuf {
 fn backend_exists() -> bool {
     let bd = backend_dir();
     bd.join("app.py").exists() && python_exe(&bd).exists()
+}
+
+// --- Engine generation ---
+//
+// The in-app updater replaces code, never the Python environment. An engine
+// states the generation of its environment in the `ENGINE_GENERATION` file at
+// its root; engines published before that file existed count as 1. When this
+// shell needs a newer generation than the one installed, the downloaded engine
+// is set aside and fetched again. The library, the database and the settings
+// live beside the engine folder, never inside it, so they are not touched.
+const MIN_ENGINE_GENERATION: u32 = 1;
+
+fn engine_generation(backend: &PathBuf) -> u32 {
+    fs::read_to_string(backend.join("ENGINE_GENERATION"))
+        .ok()
+        .and_then(|s| s.trim().parse().ok())
+        .unwrap_or(1)
+}
+
+/// Set aside a downloaded engine that is too old for this shell.
+/// Returns Ok(true) when one was removed, so the caller downloads a new one.
+fn drop_outdated_engine(app: &AppHandle) -> Result<bool, String> {
+    let downloaded = data_dir().join("stemtube-backend-standard");
+    let old = data_dir().join("stemtube-backend-standard.old");
+    if old.exists() {
+        // Left over from an earlier replacement that could not finish deleting.
+        fs::remove_dir_all(&old).ok();
+    }
+    let backend = backend_dir();
+    if backend != downloaded || !backend_exists() {
+        return Ok(false); // a source tree, or nothing installed yet
+    }
+    let found = engine_generation(&backend);
+    if found >= MIN_ENGINE_GENERATION {
+        return Ok(false);
+    }
+    log_shell(&format!(
+        "engine generation {} is older than the required {}: replacing the engine",
+        found, MIN_ENGINE_GENERATION
+    ));
+    emit_step(app, "Removing the previous engine…", true);
+    kill_stray_backends();
+    std::thread::sleep(Duration::from_millis(1500));
+    // Rename first: it fails at once, leaving the engine whole, when a file is
+    // still in use. Deleting in place could stop halfway through.
+    fs::rename(&backend, &old).map_err(|e| {
+        format!(
+            "The previous engine is still in use and could not be replaced ({}). Close StemTube, wait a few seconds and start it again.",
+            e
+        )
+    })?;
+    fs::remove_dir_all(&old).ok();
+    Ok(true)
 }
 
 // --- GPU detection ---
@@ -731,6 +784,13 @@ fn run_setup_flow(app: AppHandle) {
     log_shell("=== run_setup_flow START ===");
     log_shell(&format!("backend_dir = {}", backend_dir().display()));
     log_shell(&format!("backend_exists = {}", backend_exists()));
+
+    // Step 0: an engine too old for this shell is replaced, not patched
+    if let Err(e) = drop_outdated_engine(&app) {
+        log_shell(&format!("drop_outdated_engine FAILED: {}", e));
+        let _ = app.emit("setup_error", e);
+        return;
+    }
 
     // Step 1: download + extract if needed
     if !backend_exists() {

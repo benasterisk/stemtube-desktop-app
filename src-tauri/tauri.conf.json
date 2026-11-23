@@ -1,6 +1,6 @@
 {
   "productName": "StemTube Desktop",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "identifier": "com.stemtube.desktop.standard",
   "build": {
     "beforeBuildCommand": "node tools/sync-dist.js",
