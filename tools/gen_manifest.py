@@ -137,11 +137,11 @@ def main():
              "recorded commit is that previous target, not this base.")
     args = ap.parse_args()
 
-    base = git("rev-parse", "--short", args.base_commit)
-    target = git("rev-parse", "--short", args.target_commit)
+    base = git("rev-parse", "--short=7", args.base_commit)
+    target = git("rev-parse", "--short=7", args.target_commit)
     also_from = []
     for extra in args.also_from:
-        h = git("rev-parse", "--short", extra)
+        h = git("rev-parse", "--short=7", extra)
         if h != base and h not in also_from:
             also_from.append(h)
     edition = edition_at(args.target_commit)

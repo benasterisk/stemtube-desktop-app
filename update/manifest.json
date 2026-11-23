@@ -1,113 +1,113 @@
 {
   "edition": "standard",
   "min_engine_version": 1,
-  "base_commit": "5b9f3acb",
+  "base_commit": "5b9f3ac",
   "also_from": [
-    "df4160c3",
-    "2e6656b4",
-    "c27ed18d",
-    "82ee829e",
-    "454099fe",
-    "13a078dd",
-    "1abcad6c",
-    "9e17a70b",
-    "a58b726a",
-    "98ea21ad",
-    "fd08323f",
-    "6f12a063",
-    "49679073",
-    "a5778ac7",
-    "7905028b",
-    "80e80a5a",
-    "e628a935",
-    "744ac4c8"
+    "df4160c",
+    "2e6656b",
+    "c27ed18",
+    "82ee829",
+    "454099f",
+    "13a078d",
+    "1abcad6",
+    "9e17a70",
+    "a58b726",
+    "98ea21a",
+    "fd08323",
+    "6f12a06",
+    "4967907",
+    "a5778ac",
+    "7905028",
+    "80e80a5",
+    "e628a93",
+    "744ac4c"
   ],
-  "target_commit": "c802c804",
+  "target_commit": "c802c80",
   "restart_required": true,
   "files": [
     {
       "path": "app.py",
       "status": "M",
       "sha256": "8e9eeb4d18e13cbec8cbcb475bcee23d4f8a8e0faead2abdcca79537b04a4f95",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/app.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/app.py"
     },
     {
       "path": "core/__init__.py",
       "status": "M",
       "sha256": "5abf11ab2137af831c9c5dbf4e833d1b828fe88c263ed478c957b76cc05987ed",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/__init__.py"
     },
     {
       "path": "core/audio_analysis.py",
       "status": "M",
       "sha256": "66fc6f188e242d091b5b34e344ff837cbede4dbe4d341902fe60fa23416202db",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/audio_analysis.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/audio_analysis.py"
     },
     {
       "path": "core/automix/__init__.py",
       "status": "A",
       "sha256": "94d846706aea1f63517176995e5d982913bae0a334545b504ae6360a4402126f",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/__init__.py"
     },
     {
       "path": "core/automix/__main__.py",
       "status": "A",
       "sha256": "65ecd49ea688b47c4190a52e6b01c811c9a748661a19d00f42116362a5b59840",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/__main__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/__main__.py"
     },
     {
       "path": "core/automix/dereverb.py",
       "status": "A",
       "sha256": "32dcbfcd5c446912460a3617491163f0532b27a33029b31612ac75c4e3c35dfb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/dereverb.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/dereverb.py"
     },
     {
       "path": "core/automix/dsp.py",
       "status": "A",
       "sha256": "2328d741dedc745ccc2d35840e8d73a05618166c7fdaa1f97fc4ecc45d44935c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/dsp.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/dsp.py"
     },
     {
       "path": "core/automix/engine.py",
       "status": "A",
       "sha256": "b85fa9152efea024b10d9a42956db2a396665d38894e3de87e8bcc6728d24465",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/engine.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/engine.py"
     },
     {
       "path": "core/automix/job.py",
       "status": "A",
       "sha256": "0cfa8306631545d517d78aa8e1705e72e2aa0940c68c3dd6ac10cba6ba31e601",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/job.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/job.py"
     },
     {
       "path": "core/automix/neutral_reference.json",
       "status": "A",
       "sha256": "0a3b5463d986ddefb3b2b7c91c92537aaa6029ef23cc943c8bf0439fed8c73e2",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/neutral_reference.json"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/neutral_reference.json"
     },
     {
       "path": "core/automix/styles.py",
       "status": "A",
       "sha256": "832dacd67a706c9f70e890f9e3a398c935ae3d56f1331b6485da9b95984420cb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/automix/styles.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/automix/styles.py"
     },
     {
       "path": "core/btc_chord_detector.py",
       "status": "M",
       "sha256": "1780665ec146e7de7ee826ca35abb453e3e301c0ccfbb04077f5f318e5a880f5",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/btc_chord_detector.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/btc_chord_detector.py"
     },
     {
       "path": "core/chord_chart.py",
       "status": "A",
       "sha256": "82fc506de3f53d62fb88fa48e40179752839e28f4a623fd1f35eea8b7f155e9d",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/chord_chart.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/chord_chart.py"
     },
     {
       "path": "core/chord_chart_pdf.py",
       "status": "A",
       "sha256": "82091cf36e4193ec09dd5ac01798693d1ac5d00ddc497cbeb9422815f83681be",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/chord_chart_pdf.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/chord_chart_pdf.py"
     },
     {
       "path": "core/chord_detector.py",
@@ -117,49 +117,49 @@
       "path": "core/chord_refiner.py",
       "status": "A",
       "sha256": "46b9f8669ecadda5882d1954660afc79be6ce3946634429ba308ba4e97def451",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/chord_refiner.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/chord_refiner.py"
     },
     {
       "path": "core/config.py",
       "status": "M",
       "sha256": "14fe507268b6341f6db65c738f0f0557a6777bb38056b670b86b3a4040ed92bb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/config.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/config.py"
     },
     {
       "path": "core/db/__init__.py",
       "status": "M",
       "sha256": "c3545c0f5b392f118127ab4711c46dd93efc782f4dd89f8b6ca5a80743b0c6e3",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/db/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/db/__init__.py"
     },
     {
       "path": "core/db/downloads.py",
       "status": "M",
       "sha256": "1fc9414c30a188623b228366f8a633370e329c973b50f26139daa981ea565f4c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/db/downloads.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/db/downloads.py"
     },
     {
       "path": "core/db/extractions.py",
       "status": "M",
       "sha256": "9ff6dced8ee60c62261092da16c5e4ace6f2b585651834c61aa2926cd6ecdb8f",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/db/extractions.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/db/extractions.py"
     },
     {
       "path": "core/db/schema.py",
       "status": "M",
       "sha256": "b17c575585e73d0083dbabf8b18637f8c1214d32e9f3f47394aaca97fdec0e12",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/db/schema.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/db/schema.py"
     },
     {
       "path": "core/hybrid_chord_detector.py",
       "status": "M",
       "sha256": "b21e0c68e451dd55a721f5c0c7de140c4e8ac255705105f392f402e0b1321f06",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/hybrid_chord_detector.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/hybrid_chord_detector.py"
     },
     {
       "path": "core/lrclib_client.py",
       "status": "M",
       "sha256": "d5b996cde1eaaacd351c7e3ca7245656716b31999910fa2e1d33ebb5d2ec5322",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/lrclib_client.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/lrclib_client.py"
     },
     {
       "path": "core/lyrics_aligner.py",
@@ -169,139 +169,139 @@
       "path": "core/lyrics_detector.py",
       "status": "M",
       "sha256": "ad93464a4189ce5e83a3c88b51b6217ed49e60e3c81028076e2b4c2c380cbe75",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/lyrics_detector.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/lyrics_detector.py"
     },
     {
       "path": "core/lyrics_merger.py",
       "status": "M",
       "sha256": "3efa9b6fb56e243be697a8591d7ce31bc45bf4103d6f705f91f65c6ff62e4391",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/lyrics_merger.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/lyrics_merger.py"
     },
     {
       "path": "core/madmom_chord_detector.py",
       "status": "M",
       "sha256": "6adbd97c859b7d42cfb3bbcbbdcc8f55719f1483c50c121a27e2762c3802d1c3",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/madmom_chord_detector.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/madmom_chord_detector.py"
     },
     {
       "path": "core/media_metadata.py",
       "status": "A",
       "sha256": "c5e9fef09db0af448186ab8877c025da0e0ca6437b839ee76f1cca0b525405a2",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/media_metadata.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/media_metadata.py"
     },
     {
       "path": "core/metadata_extractor.py",
       "status": "M",
       "sha256": "7a6d11b0e4beb5b9ff54475a94036fa78009a129b021d04cba5026812317d498",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/metadata_extractor.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/metadata_extractor.py"
     },
     {
       "path": "core/midi/NOTICE",
       "status": "A",
       "sha256": "c7e7e96828cbc87554a51c4ba82ac6e6508e8f0625fbeac1513903f068a4a15e",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/NOTICE"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/NOTICE"
     },
     {
       "path": "core/midi/__init__.py",
       "status": "A",
       "sha256": "c22287821b230154d8dc77f25b82cc0f337790f1db1b2096f063d8d3f82a2565",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/__init__.py"
     },
     {
       "path": "core/midi/basic_pitch.py",
       "status": "A",
       "sha256": "5c182ce9fe46ada4dbf4c7a2c98b4b6ecbfc377378986fbcf682f0e41ac30359",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/basic_pitch.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/basic_pitch.py"
     },
     {
       "path": "core/midi/basic_pitch_nmp.onnx",
       "status": "A",
       "sha256": "2c3c1d144bfa61ad236e92e169c13535c880469a12a047d4e73451f2c059a0ec",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/basic_pitch_nmp.onnx"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/basic_pitch_nmp.onnx"
     },
     {
       "path": "core/midi/instruments.py",
       "status": "A",
       "sha256": "c443c537fe00cf632e9b55d7226d870c83139dfab8ee07096128abc6c67c9cbf",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/instruments.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/instruments.py"
     },
     {
       "path": "core/midi/seat.py",
       "status": "A",
       "sha256": "8e49db2b7ff3a2d91716982fb727670b812dd9bc26be43c7f8beafb26ff57649",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/seat.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/seat.py"
     },
     {
       "path": "core/midi/simplify.py",
       "status": "A",
       "sha256": "f85e0f8c3b509bd6e192beb737d8f3f542a21be2f3291d8d55648e75c80c6769",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/simplify.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/simplify.py"
     },
     {
       "path": "core/midi/smf.py",
       "status": "A",
       "sha256": "e2b2c67d33d889b3c26175aaf0f5b1727439d5cb3e735e6455b739caa709d702",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/smf.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/smf.py"
     },
     {
       "path": "core/midi/soundfont.py",
       "status": "A",
       "sha256": "f1fbaf6ea4269ef6185f1309bb649c5950bec76c5990d7d928ab27e6cbaef9a3",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/soundfont.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/soundfont.py"
     },
     {
       "path": "core/midi/synths.py",
       "status": "A",
       "sha256": "3f6e3c54a29826a7020a38f636d57751faf415e85a2fb73cb3bf491e9dec6da4",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/synths.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/synths.py"
     },
     {
       "path": "core/midi/tracks.py",
       "status": "A",
       "sha256": "0cdd11223d261e28af29c772069fe493249add8135d3754ad198d80e5e650d19",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/tracks.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/tracks.py"
     },
     {
       "path": "core/midi/transcribe.py",
       "status": "A",
       "sha256": "0db6cb6535d932e973459cba4151c33c081b29421b29626aa2b7b63765de4df4",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/midi/transcribe.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/midi/transcribe.py"
     },
     {
       "path": "core/msaf_structure_detector.py",
       "status": "M",
       "sha256": "44f62a238641618124b0e93b4099d51b9acb26530a0d9e5ccf9bed2afb93d03c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/msaf_structure_detector.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/msaf_structure_detector.py"
     },
     {
       "path": "core/msst/LICENSE",
       "status": "A",
       "sha256": "3282dc057695ef5b9a64909a7092ca40b2c292c232580fc6ace6e5d665cc0207",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/msst/LICENSE"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/msst/LICENSE"
     },
     {
       "path": "core/msst/__init__.py",
       "status": "A",
       "sha256": "d639ba4f8f1c9bc2921f08cab607c96b3dcadfa406731f868616fc54778657ed",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/msst/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/msst/__init__.py"
     },
     {
       "path": "core/msst/attend.py",
       "status": "A",
       "sha256": "645b6810a1c537396a7a1199fedc5c3a773582ad85a525e69ee5477cb4413234",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/msst/attend.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/msst/attend.py"
     },
     {
       "path": "core/msst/bs_roformer.py",
       "status": "A",
       "sha256": "9222cea2535b2e9c26eadf51fdd475d9a7085487af0633473a8e3bb60ad4de50",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/msst/bs_roformer.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/msst/bs_roformer.py"
     },
     {
       "path": "core/msst/separate.py",
       "status": "A",
       "sha256": "2ccec7510058f734483ac883749996c735e3d8192362a2fff965090226bb1f71",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/msst/separate.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/msst/separate.py"
     },
     {
       "path": "core/musixmatch_client.py",
@@ -311,49 +311,49 @@
       "path": "core/numpy_compat.py",
       "status": "A",
       "sha256": "cca8ba6c1ced3a78732bfc2932c329d5e1bcea47064f7f654ee802c3076cb745",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/numpy_compat.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/numpy_compat.py"
     },
     {
       "path": "core/poc/beats.py",
       "status": "M",
       "sha256": "0c4d1bd5872b909c52da86a0277751780d099523313c5b8f14c7f649a14d6273",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/poc/beats.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/poc/beats.py"
     },
     {
       "path": "core/poc/export_mix.py",
       "status": "M",
       "sha256": "83158fa008511d9c73e7713f744e2e814745b22baff24853fb819c74ca63941c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/poc/export_mix.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/poc/export_mix.py"
     },
     {
       "path": "core/poc/waveform.py",
       "status": "M",
       "sha256": "e601f879815a32be015e5198260d4f28a53ee441cf852b06393568ce5f315d2c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/poc/waveform.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/poc/waveform.py"
     },
     {
       "path": "core/retime/__init__.py",
       "status": "A",
       "sha256": "51848e623548bb297242118e65e3d147cd468a6ae2d0703671721275838ee9af",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/retime/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/retime/__init__.py"
     },
     {
       "path": "core/retime/job.py",
       "status": "A",
       "sha256": "b00847a179623a75d0fcc6c2283234c60ab3259f726652540743d262f4b97657",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/retime/job.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/retime/job.py"
     },
     {
       "path": "core/retime/warp.py",
       "status": "A",
       "sha256": "bde1d6d2ef9e131ff87082abf04471556923b2be53645d5e5b3fcde66af6c159",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/retime/warp.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/retime/warp.py"
     },
     {
       "path": "core/stems_extractor.py",
       "status": "M",
       "sha256": "5d2c8d038e9e53cf0bff295ac0f22b9ee6bdeb9d020e5b5dc57f4e46e55fe040",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/stems_extractor.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/stems_extractor.py"
     },
     {
       "path": "core/syncedlyrics_client.py",
@@ -363,7 +363,7 @@
       "path": "core/updater.py",
       "status": "M",
       "sha256": "93564cc1c0110c7bdd1ec80f9b649ab4d0196d7cc11dc4162fa31c57eda3ce29",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/core/updater.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/core/updater.py"
     },
     {
       "path": "core/vocal_onset_detector.py",
@@ -373,385 +373,385 @@
       "path": "extensions.py",
       "status": "M",
       "sha256": "635d56efd90755e8724d66e3f6b5108850d3b26173c2b37a36125f56f9b9ca8a",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/extensions.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/extensions.py"
     },
     {
       "path": "launcher.py",
       "status": "M",
       "sha256": "f4b1a1a2544fe00a7801fd98f5b0159d4c1d188b9c3d7ef3f079d70b658f5f19",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/launcher.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/launcher.py"
     },
     {
       "path": "routes/__init__.py",
       "status": "M",
       "sha256": "7439154a30079c07ffebe59cf2468c17cd136486553bfe3664ab1bea199d1a9d",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/__init__.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/__init__.py"
     },
     {
       "path": "routes/admin_api.py",
       "status": "M",
       "sha256": "3c77e90f443ed9789c8cd1bfc7dbef14124b3a538e980dd7a69f288d73290f2d",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/admin_api.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/admin_api.py"
     },
     {
       "path": "routes/automix.py",
       "status": "A",
       "sha256": "17e84958aa95ffdb5f095a047b6eb5aa30c920ebd1386d95e1c2fa4fa37c77a6",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/automix.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/automix.py"
     },
     {
       "path": "routes/config_routes.py",
       "status": "M",
       "sha256": "ea328c109be30f23aba74fc94d29c543cbfba0512515e1ec5757b12abc7ca039",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/config_routes.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/config_routes.py"
     },
     {
       "path": "routes/downloads.py",
       "status": "M",
       "sha256": "4c14075a54062a8310a2b0d2f7923dda6f6dd6fa484773da126e588bb96f3438",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/downloads.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/downloads.py"
     },
     {
       "path": "routes/extractions.py",
       "status": "M",
       "sha256": "e5822364e0b11b50d5ac3c7102e85004d966db2ad46195b51ba91f78cb59f860",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/extractions.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/extractions.py"
     },
     {
       "path": "routes/files.py",
       "status": "M",
       "sha256": "a6b8adc6d809440ee764f8ed6ddc42afa113d0610b9c10e261fe1218a9ed4a0c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/files.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/files.py"
     },
     {
       "path": "routes/media.py",
       "status": "M",
       "sha256": "3a66ee0c5fe4b1523a8029025883011fa96903efe98049c44dea77762f77f28e",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/media.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/media.py"
     },
     {
       "path": "routes/midi.py",
       "status": "A",
       "sha256": "91a662a7d2e131306b5e0d4509fe3989bce8debfa4e21b49d0183f96358bbc62",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/midi.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/midi.py"
     },
     {
       "path": "routes/pages.py",
       "status": "M",
       "sha256": "7a8aa83dbe5ba80117135a80af3d495eb3c68b63772b91aa8b8f648a9ec30008",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/pages.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/pages.py"
     },
     {
       "path": "routes/poc_mixer.py",
       "status": "M",
       "sha256": "732d47a4b13c5a3edba2dd7c5a41599c59ce70f5452fa23098994314d849f62c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/poc_mixer.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/poc_mixer.py"
     },
     {
       "path": "routes/recordings.py",
       "status": "M",
       "sha256": "886e7ceeb3103c9050bc716c6f509dd9ee9cf536cf5fd501df3217cbf64bb99c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/recordings.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/recordings.py"
     },
     {
       "path": "routes/retime.py",
       "status": "A",
       "sha256": "bf64798a52fbce4769a6b6b62bccb0f528b490af92a1feea322ed259b7481463",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/routes/retime.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/routes/retime.py"
     },
     {
       "path": "static/css/desktop/items.css",
       "status": "M",
       "sha256": "3b5cca72659bf9d25f288485b73f55b83a8564d449a0afa14fbd3bee980741d1",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/desktop/items.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/desktop/items.css"
     },
     {
       "path": "static/css/mixer/chords.css",
       "status": "M",
       "sha256": "4a8ccd94a22d70f028dce68f38b1127950953c28a2f4aeff07ce4a20c63acaec",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/chords.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/chords.css"
     },
     {
       "path": "static/css/mixer/cyberpunk.css",
       "status": "M",
       "sha256": "420fde432be2be32bde162ca7e23e06c1f89593a60e2c8f7a74c03681dec6dde",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/cyberpunk.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/cyberpunk.css"
     },
     {
       "path": "static/css/mixer/export.css",
       "status": "M",
       "sha256": "10f5c21d88c170dcd62ac626d24c7244b4d5b1efda5c62ff4d3bd2aa539a4a72",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/export.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/export.css"
     },
     {
       "path": "static/css/mixer/glassmorphism.css",
       "status": "M",
       "sha256": "b7877b81f5d280ced1dfd3643e263828861e169eeffb9a4cf2fc9099815ad9c0",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/glassmorphism.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/glassmorphism.css"
     },
     {
       "path": "static/css/mixer/karaoke.css",
       "status": "M",
       "sha256": "7e8fd350aafef1ad34cddd15c16885a67899ae42f2eaae603f421ce4e8e410d2",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/karaoke.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/karaoke.css"
     },
     {
       "path": "static/css/mixer/layout.css",
       "status": "M",
       "sha256": "053e227460277893ea8545233c363e4252915714edad8bdaee44924ecdfbce0e",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/layout.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/layout.css"
     },
     {
       "path": "static/css/mixer/lyrics-popup.css",
       "status": "M",
       "sha256": "784f73f09693c845e546f4ed3cc7958f53bb5e1418ce047fb17789e1742d3e65",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/lyrics-popup.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/lyrics-popup.css"
     },
     {
       "path": "static/css/mixer/neumorphic.css",
       "status": "M",
       "sha256": "1d7086fd6e51915d2c32c1860dd1f95fcf5c55433e4977d96ec94f06977968dd",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/mixer/neumorphic.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/mixer/neumorphic.css"
     },
     {
       "path": "static/css/recording.css",
       "status": "M",
       "sha256": "0314836481a9a79f472848b8ff53e53dfd8de710fb6277c7b8abc67737dea4a8",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/recording.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/recording.css"
     },
     {
       "path": "static/css/style.css",
       "status": "M",
       "sha256": "678a3e42a189ae5899b1e1b1259144367d1e638c9761b695c085a803f7a510c8",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/css/style.css"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/css/style.css"
     },
     {
       "path": "static/js/app-automix.js",
       "status": "A",
       "sha256": "4b6bfeb870f0366add102f0cc002710d33db3c535144513a52c7e67edebc55f0",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/app-automix.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/app-automix.js"
     },
     {
       "path": "static/js/app-core.js",
       "status": "M",
       "sha256": "6bdbda8718b0f70734d15f831982e116aa5f9ca4cbe6f9157cff807e3f21f7b1",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/app-core.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/app-core.js"
     },
     {
       "path": "static/js/app-downloads.js",
       "status": "M",
       "sha256": "049d99a419be71ff726a58ea47b9798102f5dc6d6098195fcc7c7b9e5220f0b7",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/app-downloads.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/app-downloads.js"
     },
     {
       "path": "static/js/app-utils.js",
       "status": "M",
       "sha256": "c62b0631d1280bf826c4aa5cb49412787586e2f40cdb567daa2e0081be8a1303",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/app-utils.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/app-utils.js"
     },
     {
       "path": "static/js/follow-scroll.js",
       "status": "A",
       "sha256": "531f7c1e67d4f2fcf324ea4ad5f46442291d5e3764e7a741e785061c10f91585",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/follow-scroll.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/follow-scroll.js"
     },
     {
       "path": "static/js/mixer/chord-display.js",
       "status": "M",
       "sha256": "d950255c8426e52b15c49059327e51aadabfd7d7862dbd1f375061f3c4275b9b",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/chord-display.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/chord-display.js"
     },
     {
       "path": "static/js/mixer/core.js",
       "status": "M",
       "sha256": "97ccbda40d8ecdcc8fac65b84dec0d88ac82396336d34d9a82868aed91369793",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/core.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/core.js"
     },
     {
       "path": "static/js/mixer/export-handler.js",
       "status": "M",
       "sha256": "fca86d7feac92d430a7513a35b8a9c9ae753b9cb3a8e8b77ae965cd6ad7e8079",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/export-handler.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/export-handler.js"
     },
     {
       "path": "static/js/mixer/karaoke-display.js",
       "status": "M",
       "sha256": "d1942fd9a89bba2f42576f2076236467ec34c00a180297c5a356763b60ea5305",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/karaoke-display.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/karaoke-display.js"
     },
     {
       "path": "static/js/mixer/lyrics-popup.js",
       "status": "M",
       "sha256": "5f26d50e38ce2b2b3e88c761e9aca2a6f0a3c07e25d9137d3ce4fadf91a03d79",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/lyrics-popup.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/lyrics-popup.js"
     },
     {
       "path": "static/js/mixer/mixer-persistence.js",
       "status": "M",
       "sha256": "caf81cd7140796a4f61c8cbd2c6f6ce2b595b97022002d79a970378329f4321a",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/mixer-persistence.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/mixer-persistence.js"
     },
     {
       "path": "static/js/mixer/recording-engine.js",
       "status": "M",
       "sha256": "19ea58dd197f0f840cae402c09a333b560c9f83660d91a9df9e953f1652da13c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/recording-engine.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/recording-engine.js"
     },
     {
       "path": "static/js/mixer/stage-window.js",
       "status": "A",
       "sha256": "fdcfb1e1320fadc0a3ab96af3b66d3045c9c67a1eb83f40f40bd9815fe2e58ce",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/stage-window.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/stage-window.js"
     },
     {
       "path": "static/js/mixer/structure-display.js",
       "status": "M",
       "sha256": "64b5f386879dcec0f17a88f5caf3b800a07c147f70e0082b80cc30a3aac60482",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/structure-display.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/structure-display.js"
     },
     {
       "path": "static/js/mixer/tab-manager.js",
       "status": "M",
       "sha256": "faf38e8e0e6d639d8f12218ea80179820d3ef62da1ed4fb4a790a334db26a60b",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/tab-manager.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/tab-manager.js"
     },
     {
       "path": "static/js/mixer/track-controls.js",
       "status": "M",
       "sha256": "87c977a12cce5b32d41186e21b50570ac17c5933fb585bd77b263098aabcf662",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/mixer/track-controls.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/mixer/track-controls.js"
     },
     {
       "path": "static/js/poc/api.js",
       "status": "M",
       "sha256": "aa1075a95ddc1bcf1c02f1c76e0adbb74e184ab0d79eccc66044ce51656307aa",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/api.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/api.js"
     },
     {
       "path": "static/js/poc/audio.js",
       "status": "M",
       "sha256": "f21cc2f022cbe030ebfeb8ff3bf9cabd3e5e3ed9679ca38a157c2fb34f9ad9cf",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/audio.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/audio.js"
     },
     {
       "path": "static/js/poc/export.js",
       "status": "M",
       "sha256": "1229d10c5501ae7860ceeb6598601e7f01cbda89a5241d60244ddfbdcdc34791",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/export.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/export.js"
     },
     {
       "path": "static/js/poc/loader.js",
       "status": "M",
       "sha256": "ed9309073d9326bf8155d3014ee937acc24976c80695d57c50ada716de6cdd62",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/loader.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/loader.js"
     },
     {
       "path": "static/js/poc/loop.js",
       "status": "M",
       "sha256": "ccece11a9f69231b5a910d40c9420cb20a556431be3551e6c4f0ebd70d892c3c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/loop.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/loop.js"
     },
     {
       "path": "static/js/poc/main.js",
       "status": "M",
       "sha256": "7578fc4041427c4d88fe7527e1455b7ccfd9f4b5d3d3c9f6e85c8b7560e0841b",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/main.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/main.js"
     },
     {
       "path": "static/js/poc/midi-editor.js",
       "status": "A",
       "sha256": "384854a0267f681912061b2bfd2fd287f179f52ff842e27111cdf10d23f115b2",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/midi-editor.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/midi-editor.js"
     },
     {
       "path": "static/js/poc/midi.js",
       "status": "A",
       "sha256": "7302549144a5cc33435817155261786b24e19231207556e9375f21e920440d47",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/midi.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/midi.js"
     },
     {
       "path": "static/js/poc/mixer.js",
       "status": "M",
       "sha256": "2689409e1f54a9d8ef4f4d54f398ab5d2dc0f09221714310a25bc54a1a259fa5",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/mixer.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/mixer.js"
     },
     {
       "path": "static/js/poc/precount.js",
       "status": "M",
       "sha256": "23699f5a3312dd05c2dda729aef7587c72ae0ad236cc19e6991f0ee850c7f762",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/precount.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/precount.js"
     },
     {
       "path": "static/js/poc/premix.js",
       "status": "A",
       "sha256": "aee6f331c273850a0f79123d3518d4c0b3d20a86f4fad46d00e7ce3de27b433c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/premix.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/premix.js"
     },
     {
       "path": "static/js/poc/recording-ui.js",
       "status": "M",
       "sha256": "9bedd8993665c4cc697847eb3686f9d4b83bd3e60d5868ea2c10e7baa3c581cb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/recording-ui.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/recording-ui.js"
     },
     {
       "path": "static/js/poc/scrub.js",
       "status": "A",
       "sha256": "54e4dc2d84a25f155075a55fb55621a5937b5801b36607185fa5ec6eedbc67ba",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/scrub.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/scrub.js"
     },
     {
       "path": "static/js/poc/snap.js",
       "status": "A",
       "sha256": "6b9e6124ba2f84207601c40fed9f33f1ebc2f8455dfe58dfe0b304b567725b6b",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/snap.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/snap.js"
     },
     {
       "path": "static/js/poc/state.js",
       "status": "M",
       "sha256": "407c1c9184d1580d4d4c8fd097e0dcda2582f9dcc15dd853b35a05332a0b7fb4",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/state.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/state.js"
     },
     {
       "path": "static/js/poc/tempo.js",
       "status": "M",
       "sha256": "2039dca134c7dc4b3d85743945f7573b2dad1bc4a4ed591fec00616706feab1f",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/tempo.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/tempo.js"
     },
     {
       "path": "static/js/poc/timeline.js",
       "status": "M",
       "sha256": "493d7b75e958db6e9e83e6fe01654b9d7eb87ded2f0a77e76b91873961a496fb",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/poc/timeline.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/poc/timeline.js"
     },
     {
       "path": "static/js/recording-utils.js",
       "status": "M",
       "sha256": "96e6db4f2b9e6c1da3d465cac0bd0a74ae66e362a2edf6e49fbf092e5b38d39d",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/static/js/recording-utils.js"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/static/js/recording-utils.js"
     },
     {
       "path": "templates/index.html",
       "status": "M",
       "sha256": "fb0aafe7f194148f2ae27b1181f7cccf51a1776c421673004c1b263c80aa4025",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/templates/index.html"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/templates/index.html"
     },
     {
       "path": "templates/mixer.html",
       "status": "M",
       "sha256": "e75d2f25d1dd5eb551a90391cbd81e5ecf421c9479d3fb5fcc0ae84a93468dc5",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/templates/mixer.html"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/templates/mixer.html"
     },
     {
       "path": "tests/test_tauri_integration.py",
       "status": "M",
       "sha256": "cea077e7dbf6d395ecbf74f69f2409dfceb3e48c13904f8b111388e40677ec8c",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/tests/test_tauri_integration.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/tests/test_tauri_integration.py"
     },
     {
       "path": "utils/analysis/reanalyze_all_chords.py",
       "status": "M",
       "sha256": "3723d513d5c8491b5847f03685d0afeaff6e830d0648dbf2bf7bde7024192b10",
-      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c804/utils/analysis/reanalyze_all_chords.py"
+      "url": "https://raw.githubusercontent.com/benasterisk/stemtube-desktop-app/c802c80/utils/analysis/reanalyze_all_chords.py"
     },
     {
       "path": "utils/analysis/reanalyze_neil_young.py",
