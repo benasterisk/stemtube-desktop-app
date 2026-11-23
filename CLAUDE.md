@@ -43,11 +43,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |------|---------|
 | `core/automix/engine.py` | `remix(stem_paths, out_dir, style, dereverb=None, ...)`: cleaning, per-stem tone and dynamics, style balance, stereo, master; writes stems that sum to the mix. `dsp.py` holds the numpy/scipy blocks, `styles.py` the eight styles and the stem-name to family map, `neutral_reference.json` the target spectra |
 | `core/automix/job.py` | Duplicates a library song: new `video_id` (`autoremix_...`), folder named after the new title, analysis columns copied, the source's `drums_full` copied so the mixer's beat snapping matches, MIDI tracks carried over |
-| `core/automix/dereverb.py` | Optional vocal de-reverb (anvuew `dereverb_room`, GPL-3.0 weights downloaded to `core/models/dereverb/`), reuses `core.msst` |
+| `core/automix/dereverb.py` | Optional vocal de-reverb (anvuew `dereverb_room`, GPL-3.0 weights downloaded to `<user data>/models/dereverb/`), reuses `core.msst` |
 | `routes/automix.py`, `static/js/app-automix.js` | `/api/automix` (+ `/styles`, `/status/<id>`), Socket.IO `automix_progress/complete/error`, wand button and dialog in the library |
 | `core/midi/transcribe.py` | Stem to notes: `basic_pitch.py` (ONNX port of Spotify Basic Pitch) for pitched stems, attack detection for drums |
 | `core/midi/simplify.py` | "Simplifié" mode: block chords from the song's `chords_data` and beat grid |
-| `core/midi/synths.py` | numba synth engines: analog, fm, wavetable, pluck, organ, drum machine. `soundfont.py` plays GeneralUser GS through tinysoundfont (bank downloaded to `core/models/soundfonts/`). `instruments.py` is the per-stem catalogue (French labels) |
+| `core/midi/synths.py` | numba synth engines: analog, fm, wavetable, pluck, organ, drum machine. `soundfont.py` plays GeneralUser GS through tinysoundfont (bank downloaded to `<user data>/models/soundfonts/`, player installed on first need with `--no-deps`). `instruments.py` is the per-stem catalogue (French labels) |
 | `core/midi/tracks.py` | The sidecar `<stems_dir>/midi/` (`tracks.json`, `<stem>.mid`, `<stem>.simple.mid`, `<stem>.mp3`, `song.mid`): `build` (`keep_notes=True` renders again without transcribing), `build_for_video`, `update`, `notes_of`, `set_notes`, `describe`, `carry_over` |
 | `core/midi/seat.py` | Seats a render in the mix: `bleed_shares`, `targets` (level from a mix model, not from the stem), `process` (family EQ + room), `finish` (level, limiter), `even_velocities` |
 | `routes/midi.py`, `static/js/poc/midi.js`, `midi-editor.js` | `/api/midi/<extraction_id>/tracks|track|notes|generate|file/<name>`; lanes as piano rolls, per-track popover, swap button, presets, piano-roll editor |
