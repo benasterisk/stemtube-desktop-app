@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Version 2.3.0",
+  "news.v230.title": "Auto remix, MIDI tracks and quantize",
+  "news.v230.desc": "Made for rough recordings such as a rehearsal taped on a phone: StemTube now cleans and mixes the separated stems for you, doubles every stem with a MIDI track you can edit, and can straighten the timing of the whole song.",
+  "news.v230.p1": "<strong>Auto remix</strong> — a new copy of the song with cleaned, balanced stems in one of eight mixing styles (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). The original is untouched and every fader still works on the copy.",
+  "news.v230.p2": "<strong>MIDI tracks</strong> — every stem is transcribed to notes and played by a sampled instrument or a built-in synth (analog, FM, wavetable, plucked string, tonewheel organ, drum machine). Choose the sound per track, play the MIDI instead of a stem full of bleed, download the .mid files.",
+  "news.v230.p3": "<strong>Piano-roll editor</strong> — move, stretch, draw, delete and quantize notes on the song's own beat grid.",
+  "news.v230.p4": "<strong>Pre-mix</strong> — once you have chosen what plays (mute, solo, MIDI instead of audio), one button redoes the mix of exactly those tracks as a new song with independent tracks.",
+  "news.v230.p5": "<strong>Quantize</strong> — a copy of the song on a regular beat grid: every audio track is stretched along the same tempo map, so the voice follows, and the MIDI notes are pulled onto the grid.",
+  "news.v230.note": "Delivered automatically by the in-app updater to version 2.2.0 on Windows and Linux; a fresh install updates itself on first launch. No AI service or API key is involved: everything runs on your machine."
 }

@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Wersja 2.3.0",
+  "news.v230.title": "Automatyczny remiks, ścieżki MIDI i kwantyzacja",
+  "news.v230.desc": "Z myślą o surowych nagraniach, takich jak próba nagrana telefonem: StemTube sam czyści i miksuje rozdzielone ścieżki, dubluje każdą z nich edytowalną ścieżką MIDI i potrafi wyrównać rytm całego utworu.",
+  "news.v230.p1": "<strong>Automatyczny remiks</strong> — nowa kopia utworu z oczyszczonymi, wyważonymi ścieżkami w jednym z ośmiu stylów miksu (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Oryginał pozostaje nietknięty, a wszystkie suwaki działają także na kopii.",
+  "news.v230.p2": "<strong>Ścieżki MIDI</strong> — każda ścieżka jest zapisywana jako nuty i grana przez instrument samplowany lub wbudowany syntezator (analogowy, FM, wavetable, szarpana struna, organy z kołami tonowymi, automat perkusyjny). Wybierz brzmienie osobno dla każdej ścieżki, graj MIDI zamiast ścieżki pełnej przesłuchów, pobierz pliki .mid.",
+  "news.v230.p3": "<strong>Edytor piano-roll</strong> — przesuwaj, rozciągaj, rysuj, usuwaj i kwantyzuj nuty na siatce rytmicznej samego utworu.",
+  "news.v230.p4": "<strong>Pre-miks</strong> — gdy wybierzesz, co gra (mute, solo, MIDI zamiast audio), jeden przycisk robi miks dokładnie tych ścieżek jako nowy utwór z niezależnymi ścieżkami.",
+  "news.v230.p5": "<strong>Kwantyzacja</strong> — kopia utworu na równej siatce rytmicznej: wszystkie ścieżki audio są rozciągane według tej samej mapy tempa, głos podąża za nimi, a nuty MIDI trafiają na siatkę.",
+  "news.v230.note": "Dostarczane automatycznie przez wbudowany aktualizator do wersji 2.2.0 w systemach Windows i Linux; nowa instalacja aktualizuje się przy pierwszym uruchomieniu. Bez usługi AI i klucza API: wszystko działa na twoim komputerze."
 }

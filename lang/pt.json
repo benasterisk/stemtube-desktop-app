@@ -117,5 +117,14 @@
   "news.lyrics.p2": "As alucinações de créditos que o Whisper produzia nas passagens instrumentais são descartadas.",
   "news.structure.tag": "Correção",
   "news.structure.title": "A deteção de estrutura voltou a funcionar",
-  "news.structure.desc": "O MSAF não era importado nas versões recentes do SciPy, pelo que as secções das músicas nunca eram detetadas. Agora são identificadas como A, B, C… por semelhança."
+  "news.structure.desc": "O MSAF não era importado nas versões recentes do SciPy, pelo que as secções das músicas nunca eram detetadas. Agora são identificadas como A, B, C… por semelhança.",
+  "news.v230.tag": "Versão 2.3.0",
+  "news.v230.title": "Remix automático, faixas MIDI e quantização",
+  "news.v230.desc": "Pensado para gravações em bruto, como um ensaio gravado no telemóvel: o StemTube agora limpa e mistura as faixas separadas, duplica cada faixa com uma faixa MIDI editável e consegue endireitar o tempo da música inteira.",
+  "news.v230.p1": "<strong>Remix automático</strong> — uma nova cópia da música com faixas limpas e equilibradas num de oito estilos de mistura (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). O original fica intacto e todos os faders continuam a funcionar na cópia.",
+  "news.v230.p2": "<strong>Faixas MIDI</strong> — cada faixa é transcrita em notas e tocada por um instrumento amostrado ou por um sintetizador integrado (analógico, FM, wavetable, corda dedilhada, órgão de rodas tonais, caixa de ritmos). Escolha o som por faixa, toque o MIDI em vez de uma faixa cheia de vazamento, descarregue os ficheiros .mid.",
+  "news.v230.p3": "<strong>Editor piano-roll</strong> — mova, estique, desenhe, apague e quantize notas na grelha de tempos da própria música.",
+  "news.v230.p4": "<strong>Pré-mix</strong> — depois de escolher o que toca (mute, solo, MIDI em vez de áudio), um botão refaz a mistura dessas faixas como uma nova música com faixas independentes.",
+  "news.v230.p5": "<strong>Quantização</strong> — uma cópia da música numa grelha regular: todas as faixas de áudio são esticadas pelo mesmo mapa de tempo, a voz acompanha e as notas MIDI vão para a grelha.",
+  "news.v230.note": "Entregue automaticamente pelo atualizador integrado à versão 2.2.0 em Windows e Linux; uma instalação nova atualiza-se no primeiro arranque. Sem serviço de IA nem chave de API: tudo corre na sua máquina."
 }

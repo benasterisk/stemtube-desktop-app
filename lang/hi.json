@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "संस्करण 2.3.0",
+  "news.v230.title": "ऑटो रीमिक्स, MIDI ट्रैक और क्वांटाइज़",
+  "news.v230.desc": "फ़ोन से रिकॉर्ड किए गए रिहर्सल जैसी कच्ची रिकॉर्डिंग के लिए: StemTube अब अलग किए गए ट्रैक को खुद साफ़ करके मिक्स करता है, हर ट्रैक के साथ एक संपादन-योग्य MIDI ट्रैक जोड़ता है और पूरे गाने की टाइमिंग सीधी कर सकता है।",
+  "news.v230.p1": "<strong>ऑटो रीमिक्स</strong> — गाने की एक नई प्रति, जिसमें ट्रैक साफ़ और संतुलित होते हैं, आठ मिक्सिंग शैलियों में से किसी एक में (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues)। मूल गाना जस का तस रहता है और प्रति पर सभी फ़ेडर काम करते हैं।",
+  "news.v230.p2": "<strong>MIDI ट्रैक</strong> — हर ट्रैक को स्वरों में लिखा जाता है और उसे सैंपल किए गए वाद्य या अंतर्निहित सिंथ (एनालॉग, FM, वेवटेबल, छेड़ा हुआ तार, टोनव्हील ऑर्गन, ड्रम मशीन) से बजाया जाता है। हर ट्रैक की ध्वनि चुनें, दूसरे वाद्यों की आवाज़ से भरे ट्रैक की जगह MIDI बजाएँ, .mid फ़ाइलें डाउनलोड करें।",
+  "news.v230.p3": "<strong>पियानो-रोल एडिटर</strong> — गाने के अपने बीट ग्रिड पर स्वरों को खिसकाएँ, खींचें, बनाएँ, मिटाएँ और क्वांटाइज़ करें।",
+  "news.v230.p4": "<strong>प्री-मिक्स</strong> — जब आप तय कर लें कि क्या बजेगा (म्यूट, सोलो, ऑडियो की जगह MIDI), तो एक बटन ठीक उन्हीं ट्रैक का मिक्स दोबारा बनाता है, स्वतंत्र ट्रैक वाले नए गाने के रूप में।",
+  "news.v230.p5": "<strong>क्वांटाइज़</strong> — नियमित बीट ग्रिड पर गाने की एक प्रति: सभी ऑडियो ट्रैक एक ही टेम्पो मैप के अनुसार खींचे जाते हैं, इसलिए आवाज़ भी साथ चलती है, और MIDI स्वर ग्रिड पर आ जाते हैं।",
+  "news.v230.note": "ऐप के अंदर मौजूद अपडेटर इसे Windows और Linux पर संस्करण 2.2.0 तक अपने-आप पहुँचाता है; नया इंस्टॉल पहली बार चलने पर खुद अपडेट हो जाता है। कोई AI सेवा या API कुंजी नहीं: सब कुछ आपकी मशीन पर चलता है।"
 }

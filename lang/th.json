@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "เวอร์ชัน 2.3.0",
+  "news.v230.title": "รีมิกซ์อัตโนมัติ แทร็ก MIDI และควอนไทซ์",
+  "news.v230.desc": "ออกแบบมาสำหรับงานบันทึกแบบดิบ เช่น การซ้อมที่อัดด้วยโทรศัพท์: ตอนนี้ StemTube ทำความสะอาดและมิกซ์แทร็กที่แยกแล้วให้เอง เพิ่มแทร็ก MIDI ที่แก้ไขได้คู่กับทุกแทร็ก และปรับจังหวะของทั้งเพลงให้ตรงได้",
+  "news.v230.p1": "<strong>รีมิกซ์อัตโนมัติ</strong> — สำเนาใหม่ของเพลงที่มีแทร็กสะอาดและสมดุลในสไตล์การมิกซ์หนึ่งในแปดแบบ (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues) ต้นฉบับไม่ถูกแก้ไข และเฟดเดอร์ทุกตัวยังใช้กับสำเนาได้",
+  "news.v230.p2": "<strong>แทร็ก MIDI</strong> — ทุกแทร็กถูกถอดเป็นโน้ตและเล่นด้วยเครื่องดนตรีแบบแซมเปิลหรือซินธ์ในตัว (อนาล็อก, FM, wavetable, สายดีด, ออร์แกนโทนวีล, ดรัมแมชชีน) เลือกเสียงแยกตามแทร็ก เล่น MIDI แทนแทร็กที่มีเสียงรั่วเข้ามามาก และดาวน์โหลดไฟล์ .mid ได้",
+  "news.v230.p3": "<strong>ตัวแก้ไขเปียโนโรล</strong> — ย้าย ยืด วาด ลบ และควอนไทซ์โน้ตบนกริดจังหวะของเพลงเอง",
+  "news.v230.p4": "<strong>พรีมิกซ์</strong> — เมื่อเลือกแล้วว่าอะไรจะเล่น (mute, solo, MIDI แทนเสียงจริง) ปุ่มเดียวจะมิกซ์เฉพาะแทร็กเหล่านั้นใหม่เป็นเพลงใหม่ที่แทร็กแยกอิสระ",
+  "news.v230.p5": "<strong>ควอนไทซ์</strong> — สำเนาของเพลงบนกริดจังหวะที่สม่ำเสมอ: แทร็กเสียงทั้งหมดถูกยืดตามแผนที่เทมโปเดียวกัน เสียงร้องจึงตามไปด้วย และโน้ต MIDI ถูกดึงเข้ากริด",
+  "news.v230.note": "ส่งให้อัตโนมัติผ่านตัวอัปเดตในแอปสำหรับเวอร์ชัน 2.2.0 บน Windows และ Linux การติดตั้งใหม่จะอัปเดตตัวเองเมื่อเปิดครั้งแรก ไม่ใช้บริการ AI หรือคีย์ API: ทุกอย่างทำงานบนเครื่องของคุณ"
 }

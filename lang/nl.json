@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whispers hallucinaties van aftitelingsteksten bij instrumentale passages worden weggelaten.",
   "news.structure.tag": "Opgelost",
   "news.structure.title": "Structuurdetectie werkt weer",
-  "news.structure.desc": "MSAF kon niet meer worden geïmporteerd met moderne SciPy-versies, waardoor songsecties nooit werden gedetecteerd. Ze krijgen nu op basis van gelijkenis het label A, B, C…"
+  "news.structure.desc": "MSAF kon niet meer worden geïmporteerd met moderne SciPy-versies, waardoor songsecties nooit werden gedetecteerd. Ze krijgen nu op basis van gelijkenis het label A, B, C…",
+  "news.v230.tag": "Versie 2.3.0",
+  "news.v230.title": "Automatische remix, MIDI-sporen en kwantiseren",
+  "news.v230.desc": "Bedoeld voor ruwe opnamen, zoals een repetitie opgenomen met een telefoon: StemTube maakt de gescheiden sporen nu zelf schoon en mixt ze, verdubbelt elk spoor met een bewerkbaar MIDI-spoor en kan de timing van het hele nummer rechttrekken.",
+  "news.v230.p1": "<strong>Automatische remix</strong> — een nieuwe kopie van het nummer met schoongemaakte, gebalanceerde sporen in een van acht mixstijlen (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Het origineel blijft onaangeroerd en alle faders werken ook op de kopie.",
+  "news.v230.p2": "<strong>MIDI-sporen</strong> — elk spoor wordt omgezet in noten en gespeeld door een gesampled instrument of een ingebouwde synth (analoog, FM, wavetable, getokkelde snaar, toonwielorgel, drummachine). Kies het geluid per spoor, speel de MIDI in plaats van een spoor vol overspraak, download de .mid-bestanden.",
+  "news.v230.p3": "<strong>Pianoroll-editor</strong> — verplaats, rek, teken, verwijder en kwantiseer noten op het beatraster van het nummer zelf.",
+  "news.v230.p4": "<strong>Pre-mix</strong> — zodra je hebt gekozen wat er speelt (mute, solo, MIDI in plaats van audio), maakt één knop de mix van precies die sporen opnieuw, als nieuw nummer met losse sporen.",
+  "news.v230.p5": "<strong>Kwantiseren</strong> — een kopie van het nummer op een regelmatig beatraster: alle audiosporen worden langs dezelfde tempokaart gerekt, de stem volgt mee en de MIDI-noten komen op het raster.",
+  "news.v230.note": "Wordt automatisch geleverd door de ingebouwde updater aan versie 2.2.0 op Windows en Linux; een nieuwe installatie werkt zichzelf bij de eerste start bij. Geen AI-dienst of API-sleutel: alles draait op je eigen computer."
 }

@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Les hallucinations de générique produites par Whisper sur les passages instrumentaux sont supprimées.",
   "news.structure.tag": "Correctif",
   "news.structure.title": "La détection de structure fonctionne de nouveau",
-  "news.structure.desc": "MSAF ne s'importait plus avec les versions récentes de SciPy : les sections des morceaux n'étaient donc jamais détectées. Elles sont maintenant étiquetées A, B, C… par similarité."
+  "news.structure.desc": "MSAF ne s'importait plus avec les versions récentes de SciPy : les sections des morceaux n'étaient donc jamais détectées. Elles sont maintenant étiquetées A, B, C… par similarité.",
+  "news.v230.tag": "Version 2.3.0",
+  "news.v230.title": "Remix automatique, pistes MIDI et quantize",
+  "news.v230.desc": "Pensé pour les enregistrements bruts, comme une répétition prise au téléphone : StemTube nettoie et mixe maintenant les pistes séparées, double chaque piste par une piste MIDI modifiable et peut remettre tout le morceau au carré.",
+  "news.v230.p1": "<strong>Remix automatique</strong> — une copie du morceau aux pistes nettoyées et équilibrées dans l'un des huit styles de mixage (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). L'original n'est pas modifié et tous les faders restent utilisables sur la copie.",
+  "news.v230.p2": "<strong>Pistes MIDI</strong> — chaque piste est transcrite en notes et jouée par un instrument échantillonné ou un synthé intégré (analogique, FM, wavetable, corde pincée, orgue à roues phoniques, boîte à rythmes). Choisissez le son piste par piste, jouez le MIDI à la place d'une piste pleine de repisse, téléchargez les fichiers .mid.",
+  "news.v230.p3": "<strong>Éditeur piano-roll</strong> — déplacez, étirez, dessinez, supprimez et quantisez les notes sur la grille de temps du morceau.",
+  "news.v230.p4": "<strong>Pré-mix</strong> — une fois choisi ce qui joue (mute, solo, MIDI à la place de l'audio), un bouton refait le mix de ces pistes dans un nouveau morceau aux pistes indépendantes.",
+  "news.v230.p5": "<strong>Quantize</strong> — une copie du morceau sur une grille régulière : toutes les pistes audio sont étirées selon la même carte de tempo, la voix suit, et les notes MIDI sont calées sur la grille.",
+  "news.v230.note": "Livré automatiquement par la mise à jour intégrée à la version 2.2.0, sous Windows et Linux ; une nouvelle installation se met à jour au premier lancement. Aucun service d'IA ni clé d'API : tout tourne sur votre machine."
 }

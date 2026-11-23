@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "الإصدار 2.3.0",
+  "news.v230.title": "ريمكس تلقائي ومسارات MIDI وتكميم الإيقاع",
+  "news.v230.desc": "مصمَّم للتسجيلات الخام مثل بروفة مسجَّلة بالهاتف: أصبح StemTube ينظّف المسارات المفصولة ويمزجها بنفسه، ويضيف إلى كل مسار مسار MIDI قابلًا للتعديل، ويستطيع ضبط توقيت الأغنية كلها.",
+  "news.v230.p1": "<strong>ريمكس تلقائي</strong> — نسخة جديدة من الأغنية بمسارات منظَّفة ومتوازنة وفق أحد ثمانية أساليب مزج (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). يبقى الأصل كما هو، وتعمل جميع المنزلقات على النسخة أيضًا.",
+  "news.v230.p2": "<strong>مسارات MIDI</strong> — يُدوَّن كل مسار كنوتات ويُعزف بآلة من عيّنات صوتية أو بمُركِّب صوت مدمج (تماثلي، FM، جدول موجي، وتر منقور، أورغ بعجلات نغمية، آلة إيقاع). اختر الصوت لكل مسار، وشغّل MIDI بدل مسار مليء بتسرّب الآلات الأخرى، ونزّل ملفات ‎.mid.",
+  "news.v230.p3": "<strong>محرّر بيانو رول</strong> — حرّك النوتات ومدّدها وارسمها واحذفها وكمِّمها على شبكة إيقاع الأغنية نفسها.",
+  "news.v230.p4": "<strong>مزج أوّلي</strong> — بعد أن تحدّد ما يُعزف (كتم، انفراد، MIDI بدل الصوت)، يعيد زر واحد مزج هذه المسارات بالتحديد كأغنية جديدة بمسارات مستقلة.",
+  "news.v230.p5": "<strong>تكميم الإيقاع</strong> — نسخة من الأغنية على شبكة إيقاع منتظمة: تُمدَّد جميع المسارات الصوتية وفق خريطة سرعة واحدة فيتبعها صوت المغنّي، وتُسحب نوتات MIDI إلى الشبكة.",
+  "news.v230.note": "يصل تلقائيًا عبر المحدِّث المدمج إلى الإصدار 2.2.0 على Windows وLinux، والتثبيت الجديد يحدّث نفسه عند أول تشغيل. لا خدمة ذكاء اصطناعي ولا مفتاح API: كل شيء يعمل على جهازك."
 }

@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Версія 2.3.0",
+  "news.v230.title": "Авторемікс, MIDI-доріжки та квантизація",
+  "news.v230.desc": "Для сирих записів, наприклад репетиції, знятої на телефон: StemTube тепер сам чистить і зводить розділені доріжки, дублює кожну редагованою MIDI-доріжкою та вміє вирівнювати ритм усієї пісні.",
+  "news.v230.p1": "<strong>Авторемікс</strong> — нова копія пісні з очищеними та збалансованими доріжками в одному з восьми стилів зведення (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Оригінал не змінюється, а всі фейдери працюють і на копії.",
+  "news.v230.p2": "<strong>MIDI-доріжки</strong> — кожна доріжка переводиться в ноти й відтворюється семпльованим інструментом або вбудованим синтезатором (аналоговий, FM, wavetable, щипкова струна, орган із тоновими колесами, драм-машина). Обирайте звук для кожної доріжки, вмикайте MIDI замість доріжки з просочуванням інших інструментів, завантажуйте файли .mid.",
+  "news.v230.p3": "<strong>Редактор piano-roll</strong> — переміщуйте, розтягуйте, малюйте, видаляйте та квантизуйте ноти за сіткою долей самої пісні.",
+  "news.v230.p4": "<strong>Пре-мікс</strong> — коли вибрано, що звучить (mute, solo, MIDI замість аудіо), одна кнопка заново зводить саме ці доріжки в нову пісню з незалежними доріжками.",
+  "news.v230.p5": "<strong>Квантизація</strong> — копія пісні на рівній сітці долей: усі аудіодоріжки розтягуються за однією темповою картою, голос іде за ними, а MIDI-ноти стають на сітку.",
+  "news.v230.note": "Доставляється автоматично вбудованим оновленням для версії 2.2.0 у Windows і Linux; нова інсталяція оновлюється під час першого запуску. Жодних ШІ-сервісів чи API-ключів: усе працює на вашому комп'ютері."
 }

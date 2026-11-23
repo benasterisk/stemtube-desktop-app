@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Sürüm 2.3.0",
+  "news.v230.title": "Otomatik remiks, MIDI kanalları ve kuantize",
+  "news.v230.desc": "Telefonla kaydedilmiş bir prova gibi ham kayıtlar için: StemTube artık ayrılan kanalları kendisi temizleyip miksliyor, her kanalı düzenlenebilir bir MIDI kanalıyla ikiliyor ve tüm şarkının zamanlamasını düzeltebiliyor.",
+  "news.v230.p1": "<strong>Otomatik remiks</strong> — şarkının, sekiz miks tarzından birinde (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues) temizlenmiş ve dengelenmiş kanallara sahip yeni bir kopyası. Orijinal değişmez ve tüm fader'lar kopyada da çalışır.",
+  "news.v230.p2": "<strong>MIDI kanalları</strong> — her kanal notalara çevrilir ve örneklenmiş bir enstrüman ya da yerleşik bir synth (analog, FM, wavetable, çekme tel, ton çarklı org, davul makinesi) tarafından çalınır. Sesi kanal bazında seçin, sızıntı dolu bir kanal yerine MIDI'yi çalın, .mid dosyalarını indirin.",
+  "news.v230.p3": "<strong>Piano-roll düzenleyici</strong> — notaları şarkının kendi vuruş ızgarasında taşıyın, uzatın, çizin, silin ve kuantize edin.",
+  "news.v230.p4": "<strong>Ön miks</strong> — neyin çalacağını seçtikten sonra (mute, solo, ses yerine MIDI) tek bir düğme tam olarak o kanalların miksini, bağımsız kanallı yeni bir şarkı olarak yeniden yapar.",
+  "news.v230.p5": "<strong>Kuantize</strong> — şarkının düzenli bir vuruş ızgarasındaki kopyası: tüm ses kanalları aynı tempo haritası boyunca esnetilir, vokal de onu izler ve MIDI notaları ızgaraya oturur.",
+  "news.v230.note": "Yerleşik güncelleyici tarafından Windows ve Linux'ta 2.2.0 sürümüne otomatik olarak iletilir; yeni bir kurulum ilk açılışta kendini günceller. Yapay zekâ servisi veya API anahtarı yok: her şey kendi bilgisayarınızda çalışır."
 }

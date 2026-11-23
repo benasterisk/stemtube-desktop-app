@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "バージョン 2.3.0",
+  "news.v230.title": "自動リミックス、MIDIトラック、クオンタイズ",
+  "news.v230.desc": "スマートフォンで録ったリハーサルのような粗い録音のために：StemTube が分離したトラックを自動で整えてミックスし、各トラックに編集可能な MIDI トラックを重ね、曲全体のタイミングを揃えられるようになりました。",
+  "news.v230.p1": "<strong>自動リミックス</strong> — 8 種類のミックススタイル（pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues）のいずれかで、トラックを整えてバランスを取った曲の新しいコピーを作ります。元の曲は変更されず、コピーでもすべてのフェーダーが使えます。",
+  "news.v230.p2": "<strong>MIDI トラック</strong> — 各トラックを音符に書き起こし、サンプル音源または内蔵シンセ（アナログ、FM、ウェーブテーブル、撥弦、トーンホイールオルガン、ドラムマシン）で鳴らします。トラックごとに音色を選び、かぶりの多いトラックの代わりに MIDI を鳴らし、.mid ファイルをダウンロードできます。",
+  "news.v230.p3": "<strong>ピアノロールエディタ</strong> — 曲自身のビートグリッド上で、ノートの移動・伸縮・入力・削除・クオンタイズができます。",
+  "news.v230.p4": "<strong>プリミックス</strong> — 何を鳴らすか（ミュート、ソロ、オーディオの代わりに MIDI）を決めたら、ボタンひとつでそのトラックだけをミックスし直し、独立したトラックを持つ新しい曲として保存します。",
+  "news.v230.p5": "<strong>クオンタイズ</strong> — 一定のビートグリッドに乗せた曲のコピー：すべてのオーディオトラックを同じテンポマップに沿って伸縮するのでボーカルも追従し、MIDI ノートはグリッドに揃います。",
+  "news.v230.note": "Windows と Linux のバージョン 2.2.0 にはアプリ内アップデーターで自動配信され、新規インストールは初回起動時に自動で更新されます。AI サービスや API キーは不要で、すべてお使いのマシン上で動作します。"
 }

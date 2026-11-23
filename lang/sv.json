@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Version 2.3.0",
+  "news.v230.title": "Automatisk remix, MIDI-spår och kvantisering",
+  "news.v230.desc": "Gjort för råa inspelningar, som ett rep inspelat med en telefon: StemTube rensar och mixar nu de separerade spåren, dubblar varje spår med ett redigerbart MIDI-spår och kan räta upp timingen i hela låten.",
+  "news.v230.p1": "<strong>Automatisk remix</strong> — en ny kopia av låten med rensade, balanserade spår i en av åtta mixstilar (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Originalet lämnas orört och alla reglar fungerar på kopian.",
+  "news.v230.p2": "<strong>MIDI-spår</strong> — varje spår skrivs om till noter och spelas av ett samplat instrument eller en inbyggd synt (analog, FM, wavetable, knäppt sträng, tonhjulsorgel, trummaskin). Välj ljud per spår, spela MIDI i stället för ett spår fullt av överhörning, ladda ner .mid-filerna.",
+  "news.v230.p3": "<strong>Pianorulle-editor</strong> — flytta, sträck, rita, radera och kvantisera noter på låtens eget taktrutnät.",
+  "news.v230.p4": "<strong>Förmix</strong> — när du har valt vad som spelar (mute, solo, MIDI i stället för ljud) gör en knapp om mixen av just de spåren som en ny låt med fristående spår.",
+  "news.v230.p5": "<strong>Kvantisering</strong> — en kopia av låten på ett jämnt taktrutnät: alla ljudspår sträcks längs samma tempokarta, rösten följer med och MIDI-noterna hamnar på rutnätet.",
+  "news.v230.note": "Levereras automatiskt av den inbyggda uppdateraren till version 2.2.0 på Windows och Linux; en ny installation uppdaterar sig vid första start. Ingen AI-tjänst eller API-nyckel: allt körs på din dator."
 }

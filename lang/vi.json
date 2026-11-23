@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Phiên bản 2.3.0",
+  "news.v230.title": "Remix tự động, track MIDI và lượng tử hóa",
+  "news.v230.desc": "Dành cho các bản thu thô như buổi tập thu bằng điện thoại: StemTube giờ tự làm sạch và trộn các track đã tách, nhân đôi mỗi track bằng một track MIDI có thể chỉnh sửa và có thể nắn lại nhịp của cả bài.",
+  "news.v230.p1": "<strong>Remix tự động</strong> — một bản sao mới của bài hát với các track được làm sạch và cân bằng theo một trong tám phong cách mix (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Bản gốc không bị thay đổi và mọi fader vẫn dùng được trên bản sao.",
+  "news.v230.p2": "<strong>Track MIDI</strong> — mỗi track được chép thành nốt và phát bằng nhạc cụ lấy mẫu hoặc synth tích hợp (analog, FM, wavetable, dây gảy, organ tonewheel, trống điện tử). Chọn âm sắc cho từng track, phát MIDI thay cho track đầy tiếng lọt, tải về các tệp .mid.",
+  "news.v230.p3": "<strong>Trình chỉnh piano-roll</strong> — di chuyển, kéo dài, vẽ, xóa và lượng tử hóa nốt trên lưới phách của chính bài hát.",
+  "news.v230.p4": "<strong>Pre-mix</strong> — khi đã chọn những gì sẽ phát (mute, solo, MIDI thay cho audio), một nút sẽ trộn lại đúng các track đó thành một bài mới với các track độc lập.",
+  "news.v230.p5": "<strong>Lượng tử hóa</strong> — một bản sao của bài hát trên lưới phách đều: mọi track audio được kéo giãn theo cùng một bản đồ tempo, giọng hát đi theo, và nốt MIDI được kéo về lưới.",
+  "news.v230.note": "Được trình cập nhật tích hợp tự động gửi tới phiên bản 2.2.0 trên Windows và Linux; bản cài mới sẽ tự cập nhật ở lần chạy đầu tiên. Không dùng dịch vụ AI hay khóa API: mọi thứ chạy trên máy của bạn."
 }

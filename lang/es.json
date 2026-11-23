@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Se descartan las alucinaciones de créditos que Whisper generaba en los pasajes instrumentales.",
   "news.structure.tag": "Corrección",
   "news.structure.title": "La detección de estructura vuelve a funcionar",
-  "news.structure.desc": "MSAF no se podía importar con las versiones modernas de SciPy, así que las secciones de las canciones nunca se detectaban. Ahora se etiquetan A, B, C… por similitud."
+  "news.structure.desc": "MSAF no se podía importar con las versiones modernas de SciPy, así que las secciones de las canciones nunca se detectaban. Ahora se etiquetan A, B, C… por similitud.",
+  "news.v230.tag": "Versión 2.3.0",
+  "news.v230.title": "Remezcla automática, pistas MIDI y cuantización",
+  "news.v230.desc": "Pensado para grabaciones en bruto, como un ensayo grabado con el móvil: StemTube ahora limpia y mezcla las pistas separadas, duplica cada pista con una pista MIDI editable y puede enderezar el tempo de toda la canción.",
+  "news.v230.p1": "<strong>Remezcla automática</strong> — una copia nueva de la canción con pistas limpias y equilibradas en uno de ocho estilos de mezcla (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). El original no se toca y todos los faders siguen funcionando en la copia.",
+  "news.v230.p2": "<strong>Pistas MIDI</strong> — cada pista se transcribe a notas y la toca un instrumento muestreado o un sintetizador integrado (analógico, FM, wavetable, cuerda pulsada, órgano de ruedas tonales, caja de ritmos). Elige el sonido por pista, reproduce el MIDI en lugar de una pista llena de filtraciones, descarga los archivos .mid.",
+  "news.v230.p3": "<strong>Editor piano-roll</strong> — mueve, estira, dibuja, borra y cuantiza notas sobre la rejilla de tiempos de la propia canción.",
+  "news.v230.p4": "<strong>Premezcla</strong> — una vez elegido lo que suena (mute, solo, MIDI en lugar de audio), un botón rehace la mezcla de esas pistas como una canción nueva con pistas independientes.",
+  "news.v230.p5": "<strong>Cuantización</strong> — una copia de la canción sobre una rejilla regular: todas las pistas de audio se estiran con el mismo mapa de tempo, la voz lo sigue y las notas MIDI se ajustan a la rejilla.",
+  "news.v230.note": "Lo entrega automáticamente el actualizador integrado a la versión 2.2.0 en Windows y Linux; una instalación nueva se actualiza en el primer arranque. Sin servicio de IA ni clave de API: todo funciona en tu equipo."
 }

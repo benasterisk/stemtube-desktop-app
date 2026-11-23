@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whispers Halluzinationen von Abspann-Texten über instrumentalen Passagen werden verworfen.",
   "news.structure.tag": "Fehlerbehebung",
   "news.structure.title": "Die Strukturerkennung funktioniert wieder",
-  "news.structure.desc": "MSAF ließ sich mit modernen SciPy-Versionen nicht mehr importieren, sodass Songabschnitte nie erkannt wurden. Die Abschnitte werden jetzt nach Ähnlichkeit mit A, B, C… beschriftet."
+  "news.structure.desc": "MSAF ließ sich mit modernen SciPy-Versionen nicht mehr importieren, sodass Songabschnitte nie erkannt wurden. Die Abschnitte werden jetzt nach Ähnlichkeit mit A, B, C… beschriftet.",
+  "news.v230.tag": "Version 2.3.0",
+  "news.v230.title": "Auto-Remix, MIDI-Spuren und Quantisierung",
+  "news.v230.desc": "Für rohe Aufnahmen wie eine mit dem Handy mitgeschnittene Probe: StemTube säubert und mischt die getrennten Spuren jetzt selbst, verdoppelt jede Spur mit einer bearbeitbaren MIDI-Spur und kann das Timing des ganzen Songs begradigen.",
+  "news.v230.p1": "<strong>Auto-Remix</strong> — eine neue Kopie des Songs mit gesäuberten, ausbalancierten Spuren in einem von acht Mix-Stilen (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Das Original bleibt unverändert, und alle Regler funktionieren auch auf der Kopie.",
+  "news.v230.p2": "<strong>MIDI-Spuren</strong> — jede Spur wird in Noten umgeschrieben und von einem gesampelten Instrument oder einem eingebauten Synthesizer gespielt (analog, FM, Wavetable, gezupfte Saite, Zugriegel-Orgel, Drumcomputer). Klang pro Spur wählbar, MIDI statt einer Spur voller Übersprechen abspielen, .mid-Dateien herunterladen.",
+  "news.v230.p3": "<strong>Piano-Roll-Editor</strong> — Noten auf dem Beat-Raster des Songs verschieben, dehnen, zeichnen, löschen und quantisieren.",
+  "news.v230.p4": "<strong>Pre-Mix</strong> — sobald feststeht, was spielt (Mute, Solo, MIDI statt Audio), mischt ein Knopf genau diese Spuren neu, als neuen Song mit unabhängigen Spuren.",
+  "news.v230.p5": "<strong>Quantisierung</strong> — eine Kopie des Songs auf einem gleichmäßigen Beat-Raster: alle Audiospuren werden entlang derselben Tempokarte gedehnt, die Stimme folgt, und die MIDI-Noten rücken aufs Raster.",
+  "news.v230.note": "Wird vom integrierten Updater automatisch an Version 2.2.0 unter Windows und Linux geliefert; eine Neuinstallation aktualisiert sich beim ersten Start. Kein KI-Dienst, kein API-Schlüssel: alles läuft auf Ihrem Rechner."
 }

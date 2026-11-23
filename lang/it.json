@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Le allucinazioni dei titoli di coda prodotte da Whisper sui passaggi strumentali vengono scartate.",
   "news.structure.tag": "Correzione",
   "news.structure.title": "Il rilevamento della struttura funziona di nuovo",
-  "news.structure.desc": "MSAF non si importava con le versioni recenti di SciPy, quindi le sezioni dei brani non venivano mai rilevate. Ora sono etichettate A, B, C… per somiglianza."
+  "news.structure.desc": "MSAF non si importava con le versioni recenti di SciPy, quindi le sezioni dei brani non venivano mai rilevate. Ora sono etichettate A, B, C… per somiglianza.",
+  "news.v230.tag": "Versione 2.3.0",
+  "news.v230.title": "Remix automatico, tracce MIDI e quantizzazione",
+  "news.v230.desc": "Pensato per registrazioni grezze, come una prova ripresa col telefono: StemTube ora pulisce e mixa le tracce separate, raddoppia ogni traccia con una traccia MIDI modificabile e può raddrizzare il tempo dell'intero brano.",
+  "news.v230.p1": "<strong>Remix automatico</strong> — una nuova copia del brano con tracce pulite e bilanciate in uno di otto stili di mix (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). L'originale resta intatto e tutti i fader funzionano anche sulla copia.",
+  "news.v230.p2": "<strong>Tracce MIDI</strong> — ogni traccia viene trascritta in note e suonata da uno strumento campionato o da un synth integrato (analogico, FM, wavetable, corda pizzicata, organo a ruote foniche, drum machine). Scegli il suono traccia per traccia, suona il MIDI al posto di una traccia piena di rientri, scarica i file .mid.",
+  "news.v230.p3": "<strong>Editor piano-roll</strong> — sposta, allunga, disegna, elimina e quantizza le note sulla griglia di battute del brano.",
+  "news.v230.p4": "<strong>Pre-mix</strong> — una volta scelto cosa suona (mute, solo, MIDI al posto dell'audio), un pulsante rifà il mix di quelle tracce come nuovo brano a tracce indipendenti.",
+  "news.v230.p5": "<strong>Quantizzazione</strong> — una copia del brano su una griglia regolare: tutte le tracce audio vengono stirate lungo la stessa mappa di tempo, la voce segue e le note MIDI vanno sulla griglia.",
+  "news.v230.note": "Distribuito automaticamente dall'aggiornamento integrato alla versione 2.2.0 su Windows e Linux; una nuova installazione si aggiorna al primo avvio. Nessun servizio di IA né chiave API: tutto gira sul tuo computer."
 }

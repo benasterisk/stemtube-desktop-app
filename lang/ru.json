@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Версия 2.3.0",
+  "news.v230.title": "Авторемикс, MIDI-дорожки и квантизация",
+  "news.v230.desc": "Для сырых записей, например репетиции, снятой на телефон: StemTube теперь сам чистит и сводит разделённые дорожки, дублирует каждую редактируемой MIDI-дорожкой и умеет выравнивать ритм всей песни.",
+  "news.v230.p1": "<strong>Авторемикс</strong> — новая копия песни с очищенными и сбалансированными дорожками в одном из восьми стилей сведения (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Оригинал не меняется, а все фейдеры работают и на копии.",
+  "news.v230.p2": "<strong>MIDI-дорожки</strong> — каждая дорожка переводится в ноты и играется семплированным инструментом или встроенным синтезатором (аналоговый, FM, wavetable, щипковая струна, орган с тоновыми колёсами, драм-машина). Выбирайте звук для каждой дорожки, включайте MIDI вместо дорожки с проникновением чужих инструментов, скачивайте файлы .mid.",
+  "news.v230.p3": "<strong>Редактор piano-roll</strong> — перемещайте, растягивайте, рисуйте, удаляйте и квантизуйте ноты по сетке долей самой песни.",
+  "news.v230.p4": "<strong>Пре-микс</strong> — когда выбрано, что звучит (mute, solo, MIDI вместо аудио), одна кнопка заново сводит именно эти дорожки в новую песню с независимыми дорожками.",
+  "news.v230.p5": "<strong>Квантизация</strong> — копия песни на ровной сетке долей: все аудиодорожки растягиваются по одной темповой карте, голос следует за ними, а MIDI-ноты встают на сетку.",
+  "news.v230.note": "Доставляется автоматически встроенным обновлением для версии 2.2.0 в Windows и Linux; новая установка обновляется при первом запуске. Никаких ИИ-сервисов и API-ключей: всё работает на вашем компьютере."
 }

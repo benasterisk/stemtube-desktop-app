@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "Versi 2.3.0",
+  "news.v230.title": "Remix otomatis, trek MIDI, dan kuantisasi",
+  "news.v230.desc": "Dibuat untuk rekaman mentah seperti latihan yang direkam dengan ponsel: StemTube kini membersihkan dan mencampur sendiri trek yang dipisahkan, menggandakan setiap trek dengan trek MIDI yang bisa diedit, dan dapat meluruskan tempo seluruh lagu.",
+  "news.v230.p1": "<strong>Remix otomatis</strong> — salinan baru lagu dengan trek yang dibersihkan dan diseimbangkan dalam salah satu dari delapan gaya mixing (pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues). Aslinya tidak diubah dan semua fader tetap berfungsi pada salinan.",
+  "news.v230.p2": "<strong>Trek MIDI</strong> — setiap trek ditranskripsi menjadi not dan dimainkan oleh instrumen sampel atau synth bawaan (analog, FM, wavetable, senar petik, organ tonewheel, drum machine). Pilih suara per trek, mainkan MIDI sebagai pengganti trek yang penuh bocoran, unduh berkas .mid.",
+  "news.v230.p3": "<strong>Editor piano-roll</strong> — pindahkan, regangkan, gambar, hapus, dan kuantisasi not pada grid ketukan lagu itu sendiri.",
+  "news.v230.p4": "<strong>Pre-mix</strong> — setelah memilih apa yang dimainkan (mute, solo, MIDI sebagai pengganti audio), satu tombol membuat ulang mix dari trek-trek itu sebagai lagu baru dengan trek terpisah.",
+  "news.v230.p5": "<strong>Kuantisasi</strong> — salinan lagu pada grid ketukan yang teratur: semua trek audio diregangkan mengikuti peta tempo yang sama, vokal ikut serta, dan not MIDI ditarik ke grid.",
+  "news.v230.note": "Dikirim otomatis oleh pembaru bawaan ke versi 2.2.0 di Windows dan Linux; instalasi baru memperbarui dirinya saat pertama dijalankan. Tanpa layanan AI atau kunci API: semuanya berjalan di komputer Anda."
 }

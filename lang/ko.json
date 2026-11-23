@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "버전 2.3.0",
+  "news.v230.title": "자동 리믹스, MIDI 트랙, 퀀타이즈",
+  "news.v230.desc": "휴대폰으로 녹음한 합주처럼 거친 녹음을 위한 기능입니다. 이제 StemTube가 분리된 트랙을 직접 정리하고 믹스하며, 모든 트랙에 편집 가능한 MIDI 트랙을 덧붙이고, 곡 전체의 타이밍을 바로잡을 수 있습니다.",
+  "news.v230.p1": "<strong>자동 리믹스</strong> — 여덟 가지 믹싱 스타일(pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues) 중 하나로 트랙을 정리하고 균형을 맞춘 곡의 새 사본을 만듭니다. 원본은 그대로이며 사본에서도 모든 페이더를 쓸 수 있습니다.",
+  "news.v230.p2": "<strong>MIDI 트랙</strong> — 각 트랙을 음표로 채보하여 샘플 악기나 내장 신스(아날로그, FM, 웨이브테이블, 뜯는 현, 톤휠 오르간, 드럼 머신)로 연주합니다. 트랙마다 음색을 고르고, 다른 악기 소리가 많이 섞인 트랙 대신 MIDI를 재생하고, .mid 파일을 내려받을 수 있습니다.",
+  "news.v230.p3": "<strong>피아노 롤 편집기</strong> — 곡 자체의 비트 그리드 위에서 음표를 옮기고, 늘이고, 그리고, 지우고, 퀀타이즈합니다.",
+  "news.v230.p4": "<strong>프리믹스</strong> — 무엇을 재생할지(뮤트, 솔로, 오디오 대신 MIDI) 정한 뒤 버튼 하나로 바로 그 트랙들만 다시 믹스하여 트랙이 독립된 새 곡으로 만듭니다.",
+  "news.v230.p5": "<strong>퀀타이즈</strong> — 일정한 비트 그리드에 맞춘 곡의 사본: 모든 오디오 트랙을 같은 템포 맵에 따라 늘이고 줄이므로 보컬도 함께 따라가고, MIDI 음표는 그리드에 맞춰집니다.",
+  "news.v230.note": "Windows와 Linux의 2.2.0 버전에는 앱 내 업데이터가 자동으로 전달하며, 새로 설치하면 첫 실행 때 스스로 업데이트됩니다. AI 서비스나 API 키가 필요 없고 모든 것이 사용자의 컴퓨터에서 실행됩니다."
 }

@@ -117,5 +117,14 @@
   "news.lyrics.p2": "Whisper's credit hallucinations over instrumental passages are dropped.",
   "news.structure.tag": "Fix",
   "news.structure.title": "Structure detection works again",
-  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity."
+  "news.structure.desc": "MSAF failed to import on modern SciPy, so song sections were never detected. Sections are now labelled A, B, C… by similarity.",
+  "news.v230.tag": "版本 2.3.0",
+  "news.v230.title": "自动混音、MIDI 音轨与量化",
+  "news.v230.desc": "为粗糙的录音而生，例如用手机录下的排练：StemTube 现在会自动清理并混合分离出的音轨，为每条音轨配上一条可编辑的 MIDI 音轨，还能把整首歌的节奏拉齐。",
+  "news.v230.p1": "<strong>自动混音</strong> — 按八种混音风格之一（pop, rock, metal, soul/funk, jazz, acoustic/folk, reggae, blues）生成歌曲的新副本，音轨经过清理和平衡。原曲保持不变，副本上的所有推子照常可用。",
+  "news.v230.p2": "<strong>MIDI 音轨</strong> — 每条音轨都会被转写成音符，并由采样乐器或内置合成器（模拟、FM、波表、拨弦、音轮风琴、鼓机）演奏。可逐轨选择音色，用 MIDI 替代串音严重的音轨，并下载 .mid 文件。",
+  "news.v230.p3": "<strong>钢琴卷帘编辑器</strong> — 在歌曲自身的节拍网格上移动、拉伸、绘制、删除和量化音符。",
+  "news.v230.p4": "<strong>预混</strong> — 选好要播放的内容（静音、独奏、用 MIDI 替代音频）后，一个按钮即可只把这些音轨重新混音，生成一首音轨相互独立的新歌曲。",
+  "news.v230.p5": "<strong>量化</strong> — 生成一份位于规则节拍网格上的歌曲副本：所有音频轨按同一张速度图拉伸，人声随之对齐，MIDI 音符吸附到网格。",
+  "news.v230.note": "通过应用内更新器自动推送到 Windows 和 Linux 上的 2.2.0 版本；全新安装会在首次启动时自行更新。无需任何 AI 服务或 API 密钥：一切都在你的电脑上运行。"
 }
